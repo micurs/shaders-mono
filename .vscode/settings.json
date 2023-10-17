@@ -1,0 +1,9 @@
+{
+  "vitest.debugExclude": [
+    "<node_internals>/**",
+    "**/node_modules/**"
+  ],
+  "cSpell.words": [
+    "geopro"
+  ],
+}
