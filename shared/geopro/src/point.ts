@@ -10,14 +10,13 @@ export class Point {
   private _coord: vec4;
 
   private constructor() {
-    this._coord = vec4.fromValues(0,0,0,1);
+    this._coord = vec4.fromValues(0, 0, 0, 1);
   }
 
   static origin() {
     const p = new Point();
     return p;
   }
-
 
   static fromValues(x: number, y: number, z: number, w = 1.0) {
     const p = new Point();
@@ -27,7 +26,7 @@ export class Point {
 
   static fromVec4(v: vec4) {
     const p = new Point();
-    const w = v[3] !==0 ? v[3] : 1.0;
+    const w = v[3] !== 0 ? v[3] : 1.0;
     p._coord = vec4.fromValues(v[0] / w, v[1] / w, v[2] / w, 1.0);
     return p;
   }
@@ -36,6 +35,10 @@ export class Point {
     const p = new Point();
     p._coord = vec4.fromValues(v[0], v[1], v[2], 1.0);
     return p;
+  }
+
+  toString() {
+    return `Point(${this.x}, ${this.y}, ${this.z})`;
   }
 
   /**
@@ -71,7 +74,6 @@ export class Point {
     }
     return p;
   }
-
 
   relative(f: Frame): Point {
     return this.unMap(f);
