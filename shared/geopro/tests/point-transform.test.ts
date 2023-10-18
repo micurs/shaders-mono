@@ -20,6 +20,11 @@ describe('Transform points', () =>{
     expect(p2.x).toBe(10);
     expect(p2.y).toBe(20);
     expect(p2.z).toBe(15);
+
+    const p3 = p1.unMap(t1);
+    const p4 = p2.unMap(t2);
+    expect(p3).toEqual(p1);
+    expect(p4).toEqual(p2);
   });
 
   test('Transform a point with a translation', () => {

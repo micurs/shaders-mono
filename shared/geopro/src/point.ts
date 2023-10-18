@@ -98,17 +98,9 @@ export class Point {
   }
 
   scale(s: number): Point {
-    const v = vec4.create();
-    vec4.scale(v, this._coord, s);
-    return Point.fromVec4(v);
-  }
-
-  relativeTo(f: Frame): Point {
-    return this.map(f.invert());
-  }
-
-  absoluteFrom(f: Frame): Point {
-    return this.map(f);
+    const v = vec3.create();
+    vec3.scale(v, this.vec3(), s);
+    return Point.fromVec3(v);
   }
 
   isPoint() {

@@ -58,10 +58,4 @@ export class Ray {
     rw._direction = this._direction.absolute(f);
     return rw;
   }
-
-  rotateFrame(f: Frame, a: number) {
-    const t = Transform.fromRotation(a, this);
-    return f.map(t);
-  }
-
 }

@@ -1,12 +1,11 @@
 import { mat4, quat } from "gl-matrix";
 import { GeoMap } from "./operations";
 import { Ray } from "./ray";
-
+import { Point } from './point';
 
 export class Transform {
   _direct: mat4;
   _inverse: mat4;
-
 
   private constructor() {
     this._direct = mat4.create();
@@ -19,15 +18,20 @@ export class Transform {
     return t;
   }
 
-  static fromMatrices(direct: mat4, invert: mat4) {
-    const t =  new Transform();
+  static fromMat4(direct: mat4) {
+    const t = new Transform();
+    const inverse = mat4.create();
+    mat4.invert(inverse, direct);
     t._direct = mat4.clone(direct);
-    t._inverse = mat4.clone(invert);
+    t._inverse = mat4.clone(inverse);
     return t;
   }
 
-  static invert(t: Transform): Transform {
-    return Transform.fromMatrices(t._inverse, t._direct);
+  static invert(s: Transform): Transform {
+    const t = new Transform();
+    t._direct = mat4.clone(s._inverse);
+    t._inverse = mat4.clone(s._direct);
+    return t;
   }
 
   static translation(tx: number, ty: number, tz: number) {
@@ -65,7 +69,7 @@ export class Transform {
     return t;
   }
 
-  static fromRotation( angle: number, axes: Ray): Transform {
+  static fromRotation(angle: number, axes: Ray): Transform {
     const t = new Transform();
 
     const transToOrigin = mat4.create();
@@ -77,7 +81,7 @@ export class Transform {
     mat4.invert(transToOrigin, transToPoint);
     quat.setAxisAngle(rot, axes.d.vec3(), angle);
 
-    mat4.fromQuat(rotMat, rot)
+    mat4.fromQuat(rotMat, rot);
 
     // The full transformation is: transBack · rotM · transTo
     mat4.multiply(t._direct, transToPoint, rotMat);
@@ -89,6 +93,10 @@ export class Transform {
 
   isFrame() {
     return false;
+  }
+
+  mapPoint(p: Point): Point {
+    return p.map(this);
   }
 
   /**
@@ -118,5 +126,4 @@ export class Transform {
   get inverseMatrix() {
     return this._inverse;
   }
-
 }

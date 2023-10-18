@@ -31,5 +31,15 @@ describe('Ray basic operations', () =>{
     expect(r.d.z).toBe(uv.z);
   });
 
+  test('Create a ray from a point and a unit vector', () => {
+    const o = Point.fromValues(10, 10, 10);
+    const d = Vector.fromValues(5, 5, 5);
+    const uv = UnitVector.fromValues(5, 5, 5);
+    const r = Ray.fromPointAndVector(o, uv);
+    expect(r.o.x).toBe(10);
+    expect(r.o.y).toBe(10);
+    expect(r.o.z).toBe(10);
+    expect(r.d).toEqual(uv);
+  });
 
 });
