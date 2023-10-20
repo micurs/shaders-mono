@@ -1,0 +1,29 @@
+{
+  "name": "@shaders-mono/webgpu",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "main": "./dist/webgpu.umd.cjs",
+  "module": "./dist/webgpu.js",
+  "types": "./dist/webgpu.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/webgpu.js",
+      "require": "./dist/webgpu.umd.cjs"
+    }
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "rimraf dist && tsc && vite build",
+    "preview": "vite preview",
+    "test": "vitest run --coverage",
+    "watch:test": "vitest watch",
+    "watch:code": "vite watch"
+  },
+  "devDependencies": {
+    "@webgpu/types": "^0.1.38",
+    "typescript": "^5.0.2",
+    "vite": "^4.4.5",
+    "vite-plugin-dts": "^3.6.0"
+  }
+}
