@@ -1,6 +1,6 @@
 export interface GPUConnection {
-  canvas: HTMLCanvasElement;
-  context: GPUCanvasContext;
-  device: GPUDevice;
-  format: GPUTextureFormat;
+  readonly canvas: HTMLCanvasElement;
+  readonly context: GPUCanvasContext;
+  readonly device: GPUDevice;
+  readonly format: GPUTextureFormat;
 }

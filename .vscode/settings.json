@@ -1,7 +1,21 @@
 {
   "vitest.debugExclude": ["<node_internals>/**", "**/node_modules/**"],
-  "cSpell.words": [
-    "geopro",
-    "webgpu"
-  ]
+  "cSpell.words": ["geopro", "webgpu"],
+  "workbench.colorCustomizations": {
+    "activityBar.background": "#190743",
+    "titleBar.activeBackground": "#140631",
+    "titleBar.activeForeground": "#dada1e",
+    "titleBar.inactiveBackground": "#190743",
+    "activityBar.foreground": "#dada1e",
+    "activityBar.activeBorder": "#ff0000",
+    "activityBar.border": "#cbed0d",
+    "statusBar.background": "#190743",
+    "statusBar.foreground": "#dada1e",
+    "statusBar.focusBorder": "#cbed0d",
+    "statusBar.border": "#341770",
+    "tab.activeBackground": "#602020",
+    "tab.activeForeground": "#fff",
+    "tab.inactiveForeground": "#fff",
+    "tab.inactiveBackground": "#444"
+  }
 }
