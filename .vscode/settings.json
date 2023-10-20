@@ -1,9 +1,7 @@
 {
-  "vitest.debugExclude": [
-    "<node_internals>/**",
-    "**/node_modules/**"
-  ],
+  "vitest.debugExclude": ["<node_internals>/**", "**/node_modules/**"],
   "cSpell.words": [
-    "geopro"
-  ],
+    "geopro",
+    "webgpu"
+  ]
 }

@@ -125,6 +125,6 @@ export class Point {
   }
 
   vec4(): Readonly<vec4> {
-    return vec4.fromValues(this.x, this.y, this.z, 0.0);
+    return vec4.fromValues(this.x, this.y, this.z, 1.0);
   }
 }

@@ -17,7 +17,8 @@
     "build": "rimraf dist && vite build",
     "preview": "vite preview",
     "test": "vitest run --coverage",
-    "watch": "vitest watch"
+    "watch:test": "vitest watch",
+    "watch:code": "vite watch"
   },
   "devDependencies": {
     "@types/node": "^20.8.6",

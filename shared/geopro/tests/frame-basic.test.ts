@@ -104,7 +104,47 @@ describe('Frame basic operations', () => {
     expect(rel.z).toBe(0);
   });
 
-  test('Compute the relative position of a point in a (rotate) frame - on the X axis', () => {
+  test('Compute the relative coordinates of a vector in a (rotated) frame - on the X axis', () => {
+    const o = Point.fromValues(10, 10, 10);
+    const v1 = Vector.fromValues(0, 1, 0);
+    const v2 = Vector.fromValues(1, 0, 0);
+    const f = Frame.from2Vectors(o, v1, v2);
+
+    // f k is Y, j is -Z, i is X
+    const v = Vector.fromValues(0, 0, 10);
+    const rel = v.relative(f);
+
+    expect(rel.x).toBe(0);
+    expect(rel.y).toBe(10);
+    expect(rel.z).toBe(0);
+
+    const abs = rel.absolute(f);
+    expect(abs.x).toBe(0);
+    expect(abs.y).toBe(0);
+    expect(abs.z).toBe(10);
+  });
+
+  test('Compute the relative coordinates of a unit-vector in a (rotated) frame - on the X axis', () => {
+    const o = Point.fromValues(10, 10, 10);
+    const v1 = Vector.fromValues(0, 1, 0);
+    const v2 = Vector.fromValues(1, 0, 0);
+    const f = Frame.from2Vectors(o, v1, v2);
+
+    // f k is Y, j is -Z, i is X
+    const v = UnitVector.fromValues(0, 0, 10);
+    const rel = v.relative(f);
+
+    expect(rel.x).toBe(0);
+    expect(rel.y).toBe(1);
+    expect(rel.z).toBe(0);
+
+    const abs = rel.absolute(f);
+    expect(abs.x).toBe(0);
+    expect(abs.y).toBe(0);
+    expect(abs.z).toBe(1);
+  });
+
+  test('Compute the relative position of a point in a (rotated) frame - on the X axis', () => {
     const o = Point.fromValues(10, 10, 10);
     const v1 = Vector.fromValues(0, 1, 0);
     const v2 = Vector.fromValues(1, 0, 0);

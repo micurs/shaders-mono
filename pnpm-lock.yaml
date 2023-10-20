@@ -40,6 +40,22 @@ importers:
         specifier: ^4.2.1
         version: 4.2.1(typescript@5.0.2)(vite@4.4.11)
 
+  demos/demo-01:
+    dependencies:
+      '@shaders-mono/geopro':
+        specifier: workspace:^
+        version: link:../../shared/geopro
+      '@shaders-mono/webgpu':
+        specifier: workspace:^
+        version: link:../../shared/webgpu
+    devDependencies:
+      typescript:
+        specifier: ^5.0.2
+        version: 5.0.2
+      vite:
+        specifier: ^4.4.5
+        version: 4.4.11(@types/node@20.8.6)
+
   shared/geopro:
     dependencies:
       gl-matrix:
@@ -70,12 +86,18 @@ importers:
 
   shared/webgpu:
     devDependencies:
+      '@webgpu/types':
+        specifier: ^0.1.38
+        version: 0.1.38
       typescript:
         specifier: ^5.0.2
         version: 5.0.2
       vite:
         specifier: ^4.4.5
         version: 4.4.11(@types/node@20.8.6)
+      vite-plugin-dts:
+        specifier: ^3.6.0
+        version: 3.6.0(@types/node@20.8.6)(typescript@5.0.2)(vite@4.4.11)
 
 packages:
 
@@ -648,6 +670,10 @@ packages:
       '@vue/language-core': 1.8.19(typescript@5.0.2)
     transitivePeerDependencies:
       - typescript
+    dev: true
+
+  /@webgpu/types@0.1.38:
+    resolution: {integrity: sha512-7LrhVKz2PRh+DD7+S+PVaFd5HxaWQvoMqBbsV9fNJO1pjUs1P8bM2vQVNfk+3URTqbuTI7gkXi0rfsN0IadoBA==}
     dev: true
 
   /acorn-walk@8.2.0:

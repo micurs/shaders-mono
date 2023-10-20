@@ -47,6 +47,11 @@ describe('UnitVector basic operations', () => {
     expect(round(vec.z, precision)).toBe(round(15/7/l, precision));
   });
 
+  test('Get a String from a UnitVector', () => {
+    const v = UnitVector.fromValues(10, 20, 15);
+    expect(v.toString()).toEqual('UnitVector(0.3713906705379486, 0.7427813410758972, 0.5570859909057617)');
+  });
+
   test('crossProduct of UnitVectors returns a UnitVector perpendicular to both', () => {
     const v1 = UnitVector.fromValues(1,0,0);
     const v2 = UnitVector.fromValues(0,1,0);

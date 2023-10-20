@@ -9,18 +9,18 @@ export class Vector {
   private _coord: vec4;
 
   private constructor() {
-    this._coord = vec4.fromValues(0,0,0,0);
+    this._coord = vec4.fromValues(0, 0, 0, 0);
   }
 
   static fromValues(x: number, y: number, z: number): Vector {
     const v = new Vector();
-    v._coord = vec4.fromValues(x,y,z,0);
+    v._coord = vec4.fromValues(x, y, z, 0);
     return v;
   }
 
   static fromVec4(v: vec4) {
     const p = new Vector();
-    const w = v[3] !==0 ? v[3] : 1.0;
+    const w = v[3] !== 0 ? v[3] : 1.0;
     p._coord = vec4.fromValues(v[0] / w, v[1] / w, v[2] / w, 0.0);
     return p;
   }
@@ -43,11 +43,19 @@ export class Vector {
    * @param v1 - a first unit-vector
    * @param v2 - a second unit-vector
    */
-    static crossProduct = (v1: Vector, v2: Vector) => {
-      const res = vec3.create();
-      vec3.cross(res, v1.vec3() , v2.vec3());
-      return Vector.fromVec3(res);
-    };
+  static crossProduct = (v1: Vector, v2: Vector): Vector => {
+    const res = vec3.create();
+    vec3.cross(res, v1.vec3(), v2.vec3());
+    return Vector.fromVec3(res);
+  };
+
+  static dot = (v1: Vector, v2: Vector): number => {
+    return vec3.dot(v1.vec3(), v2.vec3());
+  };
+
+  toString() {
+    return `Vector(${this.x}, ${this.y}, ${this.z})`;
+  }
 
   map(t: Transform | Frame): Vector {
     const p = new Vector();
@@ -81,19 +89,15 @@ export class Vector {
    * Return a new vector by multiplying this one by a scalar
    * @param s - the multiplier
    */
-  multiplyBy = (s: number) => {
+  scale = (s: number) => {
     const v = new Vector();
     vec4.scale(v._coord, this._coord, s);
     return v;
   };
 
-  relativeTo(f: Frame): Vector {
-    return this.map(f.invert());
-  }
-
-  absoluteFrom(f: Frame): Vector {
-    return this.map(f);
-  }
+  dot = (v: Vector): number => {
+    return vec3.dot(this.vec3(), v.vec3());
+  };
 
   isUnitVector() {
     return false;
@@ -120,8 +124,8 @@ export class Vector {
     return this._coord[2];
   }
 
-  get coordinates():  VecEntries {
-    return [ ...this._coord.values()] as VecEntries;
+  get coordinates(): VecEntries {
+    return [...this._coord.values()] as VecEntries;
   }
 
   get length() {
@@ -131,7 +135,6 @@ export class Vector {
     return Math.sqrt(x * x + y * y + z * z);
   }
 
-
   vec3(): Readonly<vec3> {
     return vec3.fromValues(this.x, this.y, this.z);
   }
@@ -139,5 +142,4 @@ export class Vector {
   vec4(): Readonly<vec4> {
     return vec4.fromValues(this.x, this.y, this.z, 0.0);
   }
-
 }
