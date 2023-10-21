@@ -1,4 +1,43 @@
-import { GPUConnection } from './types';
+import { Point, Transform, UnitVector, deg2rad } from '@shaders-mono/geopro';
+
+import { PredefinedShaders, GPUConnection, GPUPipeline, GpuTransformations, Shaders, TransGen } from './types';
+import { setupShaderModule } from './internal/setup-shaders';
+import { createPipeline } from './internal/setup-pipline';
+
+import shader3D from './shader3d.wgsl?raw';
+import shader2D from './shader2d.wgsl?raw';
+
+const isPredefinedShader = (shader: Shaders): shader is PredefinedShaders => {
+  return typeof shader === 'string';
+};
+
+/**
+ * Set the Transformation for the scene.
+ * @param t - The Transformations for the scene
+ * @param param1 - dimension of the viewport
+ * @param transGen - optional generator of view transformation
+ */
+const getTransformations = (
+  currTrans: GpuTransformations,
+  [w, h]: [number, number],
+  transGen: TransGen
+): GpuTransformations => {
+  return {
+    view: transGen.view
+      ? transGen.view(currTrans.view)
+      : Transform.lookAt(
+          Point.fromValues(-1.0, -1.0, 0.0), // eye
+          Point.fromValues(0, 0, 0), // target
+          UnitVector.fromValues(0, 0, 1) // vup
+        ),
+    model: transGen.model
+      ? transGen.model(currTrans.model) // Compose the current model with the new one from transGen
+      : currTrans.model.composeWith(Transform.rotationZ(deg2rad(1.0))),
+    projection: transGen.projection
+      ? transGen.projection(currTrans.projection) // Compose the current projection with the new one from transGen
+      : Transform.perspective(Math.PI / 5, w / h, 0.1, 100.0),
+  };
+};
 
 /**
  * Connect WebGPU to the canvas
@@ -40,6 +79,13 @@ export class Gpu implements GPUConnection {
   readonly device: GPUDevice;
   readonly format: GPUTextureFormat;
 
+  private _pipeline: GPUPipeline | undefined;
+  private _transformations: GpuTransformations = {
+    projection: Transform.identity(),
+    view: Transform.identity(),
+    model: Transform.identity(),
+  };
+
   private constructor(canvas: HTMLCanvasElement, context: GPUCanvasContext, device: GPUDevice, format: GPUTextureFormat) {
     this.canvas = canvas;
     this.context = context;
@@ -51,5 +97,80 @@ export class Gpu implements GPUConnection {
     return getGPU(canvas).then(({ canvas, context, device, format }) => {
       return new Gpu(canvas, context, device, format);
     });
+  }
+
+  get pipeline(): GPUPipeline | undefined {
+    return this._pipeline;
+  }
+
+  async setupShaders(shaders: Shaders): Promise<void> {
+    let shaderSource: string;
+    if (isPredefinedShader(shaders)) {
+      switch (shaders) {
+        case 'standard-3d':
+          shaderSource = shader3D;
+          break;
+        case 'standard-2d':
+        default:
+          shaderSource = shader2D;
+          break;
+      }
+    } else {
+      shaderSource = shaders.source;
+    }
+    const shaderModule = await setupShaderModule(this, shaderSource);
+
+    // Setup the GPU pipeline with the compiled shaders
+    this._pipeline = await createPipeline(tmGen, this, shaderModule);
+  }
+
+  /**
+   * render the scene
+   * @param transf
+   * @returns none
+   * @private
+   */
+  private render = () => {
+    const { device, context } = this;
+    const { pipeline, uniformBuffer, renderPassDescription, bindGroup, triangleMesh } = this._pipeline!;
+    const { projection, view, model } = this._transformations;
+
+    // Writes the 3 matrixes into the uniformBuffer ...
+    device.queue.writeBuffer(uniformBuffer, 0, model.buffer());
+    device.queue.writeBuffer(uniformBuffer, 16 * 4, view.buffer());
+    device.queue.writeBuffer(uniformBuffer, 2 * 16 * 4, projection.buffer());
+
+    const commandEncoder = device.createCommandEncoder();
+
+    const textureView = context.getCurrentTexture().createView();
+
+    const colors = renderPassDescription.colorAttachments! as GPURenderPassColorAttachment[];
+    colors[0]!.view = textureView;
+
+    const renderPass = commandEncoder.beginRenderPass(renderPassDescription);
+    renderPass.setPipeline(pipeline);
+    renderPass.setBindGroup(0, bindGroup);
+    renderPass.setVertexBuffer(0, triangleMesh.buffer);
+    // renderPass.draw(6, 1, 0, 0);
+    renderPass.draw(triangleMesh.vertexCount);
+    renderPass.end();
+
+    device.queue.submit([commandEncoder.finish()]);
+  };
+
+  private renderLoop() {
+    const { width, height } = this.canvas;
+    if (!this._pipeline) {
+      return;
+    }
+    // Get transformation from the outside to allow camera and model movements.
+    this._transformations = getTransformations(this._transformations, [width, height]);
+
+    this.render();
+    requestAnimationFrame(this.renderLoop.bind(this));
+  }
+
+  beginRenderLoop() {
+    this.renderLoop();
   }
 }

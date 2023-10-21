@@ -20,6 +20,9 @@ if (!supportEl || !canvasEl) {
 }
 
 WebGPU.initialize(canvasEl!)
+  .then((gpu) => {
+    gpu.setupShaders('standard-3d');
+  })
   .then(() => {
     supportEl!.innerText = 'All set!';
   })

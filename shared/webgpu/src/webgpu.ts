@@ -1,6 +1,7 @@
 import { Gpu } from './gpu-connection';
 import { GPUConnection } from './types';
 
+
 export namespace WebGPU {
   export const initialize = async (canvas: HTMLCanvasElement): Promise<GPUConnection> => {
     if (!navigator.gpu) {

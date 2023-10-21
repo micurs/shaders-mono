@@ -1,6 +1,6 @@
 {
   "vitest.debugExclude": ["<node_internals>/**", "**/node_modules/**"],
-  "cSpell.words": ["geopro", "webgpu"],
+  "cSpell.words": ["fovy", "geopro", "webgpu"],
   "workbench.colorCustomizations": {
     "activityBar.background": "#190743",
     "titleBar.activeBackground": "#140631",

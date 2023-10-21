@@ -85,6 +85,10 @@ importers:
         version: 0.34.6
 
   shared/webgpu:
+    dependencies:
+      '@shaders-mono/geopro':
+        specifier: workspace:^
+        version: link:../geopro
     devDependencies:
       '@webgpu/types':
         specifier: ^0.1.38

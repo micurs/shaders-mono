@@ -2,6 +2,7 @@ import { mat4, quat } from "gl-matrix";
 import { GeoMap } from "./operations";
 import { Ray } from "./ray";
 import { Point } from './point';
+import { UnitVector } from '.';
 
 export class Transform {
   _direct: mat4;
@@ -24,6 +25,20 @@ export class Transform {
     mat4.invert(inverse, direct);
     t._direct = mat4.clone(direct);
     t._inverse = mat4.clone(inverse);
+    return t;
+  }
+
+  static lookAt(eye: Point, target: Point, up: UnitVector) {
+    const t = new Transform();
+    mat4.lookAt(t._direct, eye.vec3(), target.vec3(), up.vec3());
+    mat4.invert(t._inverse, t._direct);
+    return t;
+  }
+
+  static perspective(fovy: number, aspect: number, near: number, far: number) {
+    const t = new Transform();
+    mat4.perspective(t._direct, fovy, aspect, near, far);
+    mat4.invert(t._inverse, t._direct);
     return t;
   }
 
@@ -93,6 +108,10 @@ export class Transform {
 
   isFrame() {
     return false;
+  }
+
+  buffer(): ArrayBuffer {
+    return new Float32Array(this._direct);
   }
 
   mapPoint(p: Point): Point {
