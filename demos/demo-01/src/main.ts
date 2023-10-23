@@ -1,6 +1,8 @@
 import { Frame } from '@shaders-mono/geopro';
-import { WebGPU } from '@shaders-mono/webgpu';
+import * as WebGPU from '@shaders-mono/webgpu';
 import './style.css';
+import { geoBuilder } from './model-builder';
+import { buildCube } from './geos';
 
 const f = Frame.world();
 
@@ -19,13 +21,26 @@ if (!supportEl || !canvasEl) {
   alert('The app is broken! No canvas was found!');
 }
 
-WebGPU.initialize(canvasEl!)
-  .then((gpu) => {
-    gpu.setupShaders('standard-3d');
-  })
+async function init() {
+  const gpu = await WebGPU.initialize(canvasEl!);
+
+  const trimesh = buildCube();
+
+  const geo = await geoBuilder(trimesh, 'teapot');
+
+  await gpu.setupShaders('standard-3d');
+
+  await gpu.setupGeoBuilder(geo);
+
+  gpu.beginRenderLoop();
+}
+
+init()
   .then(() => {
     supportEl!.innerText = 'All set!';
   })
-  .catch((e: Error) => {
-    supportEl!.innerText = e.message;
+  .catch((err) => {
+    supportEl!.innerText = 'Error: ' + err.message;
   });
+
+

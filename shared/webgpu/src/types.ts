@@ -1,4 +1,7 @@
 import { Transform } from '@shaders-mono/geopro';
+import { Gpu } from './gpu-connection';
+
+export type GeoBuilder = (gpu: Gpu) => [TriangleMesh, Material];
 
 export interface GPUConnection {
   readonly canvas: HTMLCanvasElement;
@@ -11,10 +14,10 @@ export interface TriangleMesh {
   buffer: GPUBuffer;
   bufferLayout: GPUVertexBufferLayout;
   vertexCount: number;
+  size: number;
 }
 
 export interface Material {
-  gpu: GPUConnection;
   texture: GPUTexture | undefined;
   view: GPUTextureView | undefined;
   sampler: GPUSampler | undefined;
@@ -24,7 +27,6 @@ export type PredefinedShaders = 'standard-3d' | 'standard-2d';
 
 export type Shaders = PredefinedShaders | { source: string };
 
-export type DataGen = (device: GPUConnection) => Promise<[TriangleMesh, Material]>;
 
 export interface GPUPipeline {
   pipeline: GPURenderPipeline;

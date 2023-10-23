@@ -26,10 +26,10 @@
     "typescript": "^5.0.2",
     "vite": "^4.4.5",
     "vite-plugin-dts": "^3.6.0",
-    "vitest": "^0.34.6"
+    "vitest": "^0.34.6",
+    "rimraf": "^5.0.5"
   },
   "dependencies": {
-    "gl-matrix": "^3.4.3",
-    "rimraf": "^5.0.5"
+    "gl-matrix": "^3.4.3"
   }
 }

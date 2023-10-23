@@ -4,14 +4,27 @@ import { defineConfig } from 'vite';
 import dts from 'vite-plugin-dts';
 // https://vitejs.dev/guide/build.html#library-mode
 
+const entryRoot = resolve(__dirname, 'src/index.ts');
+
 export default defineConfig({
   build: {
     sourcemap: true,
+    rollupOptions: {
+      external: ['@shaders-mono/geopro'],
+    },
     lib: {
-      entry: resolve(__dirname, 'src/index.ts'),
-      name: 'webgpu',
-      fileName: 'webgpu',
+      entry: entryRoot,
+      name: 'index',
+      formats: ['es', 'umd'],
+      fileName: 'index',
     },
   },
-  plugins: [dts({ rollupTypes: true })],
+  plugins: [
+    dts({
+      // outDir: ['dist'],
+      // staticImport: true,
+      rollupTypes: true,
+      //declarationOnly: true,
+    }),
+  ],
 });

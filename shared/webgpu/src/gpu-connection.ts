@@ -1,11 +1,21 @@
 import { Point, Transform, UnitVector, deg2rad } from '@shaders-mono/geopro';
 
-import { PredefinedShaders, GPUConnection, GPUPipeline, GpuTransformations, Shaders, TransGen } from './types';
+import {
+  PredefinedShaders,
+  GPUConnection,
+  GPUPipeline,
+  GpuTransformations,
+  Shaders,
+  TransGen,
+  GeoBuilder,
+  TriangleMesh,
+  Material,
+} from './types';
 import { setupShaderModule } from './internal/setup-shaders';
 import { createPipeline } from './internal/setup-pipline';
 
-import shader3D from './shader3d.wgsl?raw';
-import shader2D from './shader2d.wgsl?raw';
+import shader3D from './internal/shader3d.wgsl?raw';
+import shader2D from './internal/shader2d.wgsl?raw';
 
 const isPredefinedShader = (shader: Shaders): shader is PredefinedShaders => {
   return typeof shader === 'string';
@@ -20,22 +30,25 @@ const isPredefinedShader = (shader: Shaders): shader is PredefinedShaders => {
 const getTransformations = (
   currTrans: GpuTransformations,
   [w, h]: [number, number],
-  transGen: TransGen
+  transGen?: TransGen
 ): GpuTransformations => {
   return {
-    view: transGen.view
-      ? transGen.view(currTrans.view)
-      : Transform.lookAt(
-          Point.fromValues(-1.0, -1.0, 0.0), // eye
-          Point.fromValues(0, 0, 0), // target
-          UnitVector.fromValues(0, 0, 1) // vup
-        ),
-    model: transGen.model
-      ? transGen.model(currTrans.model) // Compose the current model with the new one from transGen
-      : currTrans.model.composeWith(Transform.rotationZ(deg2rad(1.0))),
-    projection: transGen.projection
-      ? transGen.projection(currTrans.projection) // Compose the current projection with the new one from transGen
-      : Transform.perspective(Math.PI / 5, w / h, 0.1, 100.0),
+    view:
+      transGen && transGen.view
+        ? transGen.view(currTrans.view)
+        : Transform.lookAt(
+            Point.fromValues(-1.0, -1.0, 0.0), // eye
+            Point.fromValues(0, 0, 0), // target
+            UnitVector.fromValues(0, 0, 1) // vup
+          ),
+    model:
+      transGen && transGen.model
+        ? transGen.model(currTrans.model) // Compose the current model with the new one from transGen
+        : currTrans.model.composeWith(Transform.rotationZ(deg2rad(1.0))),
+    projection:
+      transGen && transGen.projection
+        ? transGen.projection(currTrans.projection) // Compose the current projection with the new one from transGen
+        : Transform.perspective(Math.PI / 5, w / h, 0.1, 100.0),
   };
 };
 
@@ -79,6 +92,7 @@ export class Gpu implements GPUConnection {
   readonly device: GPUDevice;
   readonly format: GPUTextureFormat;
 
+  private _shaderModule: GPUShaderModule | undefined;
   private _pipeline: GPUPipeline | undefined;
   private _transformations: GpuTransformations = {
     projection: Transform.identity(),
@@ -118,10 +132,20 @@ export class Gpu implements GPUConnection {
     } else {
       shaderSource = shaders.source;
     }
-    const shaderModule = await setupShaderModule(this, shaderSource);
+    this._shaderModule = await setupShaderModule(this, shaderSource);
+  }
 
+  /**
+   * Setup the GeoBuilder
+   * @param geoBuilder
+   * @returns
+   */
+  async setupGeoBuilder(geoBuilder: GeoBuilder): Promise<void> {
+    if (!this._shaderModule) {
+      throw new Error('WebGPU:shader module is NOT available!');
+    }
     // Setup the GPU pipeline with the compiled shaders
-    this._pipeline = await createPipeline(tmGen, this, shaderModule);
+    this._pipeline = await createPipeline(this, this._shaderModule, geoBuilder);
   }
 
   /**

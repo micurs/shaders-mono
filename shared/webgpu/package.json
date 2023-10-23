@@ -3,18 +3,18 @@
   "private": true,
   "version": "0.0.1",
   "type": "module",
-  "main": "./dist/webgpu.umd.cjs",
-  "module": "./dist/webgpu.js",
-  "types": "./dist/webgpu.d.ts",
+  "main": "./dist/index.umd.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/webgpu.js",
-      "require": "./dist/webgpu.umd.cjs"
+      "import": "./dist/index.js",
+      "require": "./dist/index.umd.cjs"
     }
   },
   "scripts": {
     "dev": "vite",
-    "build": "rimraf dist && tsc && vite build",
+    "build": "rimraf dist && vite build",
     "preview": "vite preview",
     "test": "vitest run --coverage",
     "watch:test": "vitest watch",
@@ -27,6 +27,9 @@
     "vite-plugin-dts": "^3.6.0"
   },
   "dependencies": {
+    "@shaders-mono/geopro": "workspace:^"
+  },
+  "peerDependencies": {
     "@shaders-mono/geopro": "workspace:^"
   }
 }

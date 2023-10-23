@@ -1,16 +1,13 @@
-import { DataGen, GPUConnection, GPUPipeline } from '../types';
+import { Gpu } from '../gpu-connection';
+import { GeoBuilder, GPUPipeline } from '../types';
 
-export const createPipeline = async (
-  tmGen: DataGen,
-  gpu: GPUConnection,
-  shaderModule: GPUShaderModule
-): Promise<GPUPipeline> => {
-  const [triangleMesh, material] = await tmGen(gpu);
+export const createPipeline = async (gpu: Gpu, shaderModule: GPUShaderModule, geoBuilder: GeoBuilder): Promise<GPUPipeline> => {
+  const [triangleMesh, material] = geoBuilder(gpu);
   const { device, format } = gpu;
 
   // Set the vertices
   const uniformBuffer = device.createBuffer({
-    size: 4 * 16 * 3,
+    size: triangleMesh.size, //  4 * 16 * 3,
     usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
   });
 
