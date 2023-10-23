@@ -1,8 +1,7 @@
-import { Frame } from '@shaders-mono/geopro';
-import * as WebGPU from '@shaders-mono/webgpu';
 import './style.css';
+import { Frame, Point, Transform, UnitVector } from '@shaders-mono/geopro';
+import * as WebGPU from '@shaders-mono/webgpu';
 import { geoBuilder } from './model-builder';
-import { buildCube } from './geos';
 
 const f = Frame.world();
 
@@ -24,13 +23,23 @@ if (!supportEl || !canvasEl) {
 async function init() {
   const gpu = await WebGPU.initialize(canvasEl!);
 
-  const geo = await geoBuilder(buildCube(), 'teapot');
-
   await gpu.setupShaders('standard-3d');
 
+  const geo = await geoBuilder(WebGPU.cubeTriMesh(), 'teapot');
   await gpu.setupGeoBuilder(geo);
 
-  gpu.beginRenderLoop();
+  gpu.beginRenderLoop({
+    view: (t: Transform) => {
+      if (!t.isIdentity) {
+        return t;
+      }
+      return Transform.lookAt(
+        Point.fromValues(-2.0, -4.0, 2.5), // eye
+        Point.fromValues(0, 0, 0), // target
+        UnitVector.fromValues(0, 0, 1) // vup
+      );
+    },
+  });
 }
 
 init()
@@ -40,5 +49,3 @@ init()
   .catch((err) => {
     supportEl!.innerText = 'Error: ' + err.message;
   });
-
-

@@ -43,7 +43,7 @@ export interface GpuTransformations {
 }
 
 export interface TransGen {
-  view?: (prev: Transform) => Transform;
+  view?: (prev?: Transform) => Transform;
   model?: (prev: Transform) => Transform;
   projection?: (prev: Transform) => Transform;
 }

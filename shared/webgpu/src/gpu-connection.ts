@@ -1,4 +1,4 @@
-import { Point, Transform, UnitVector, deg2rad } from '@shaders-mono/geopro';
+import { Point, Transform, UnitVector } from '@shaders-mono/geopro';
 
 import { PredefinedShaders, GPUConnection, GPUPipeline, GpuTransformations, Shaders, TransGen, GeoBuilder } from './types';
 import { setupShaderModule } from './internal/setup-shaders';
@@ -27,14 +27,14 @@ const getTransformations = (
       transGen && transGen.view
         ? transGen.view(currTrans.view)
         : Transform.lookAt(
-            Point.fromValues(-10.0, -10.0, 0.0), // eye
+            Point.fromValues(-5.0, -5.0, -5.0), // eye
             Point.fromValues(0, 0, 0), // target
             UnitVector.fromValues(0, 0, 1) // vup
           ),
     model:
       transGen && transGen.model
         ? transGen.model(currTrans.model) // Compose the current model with the new one from transGen
-        : currTrans.model.composeWith(Transform.rotationY(deg2rad(1.0))),
+        : currTrans.model, // .composeWith(Transform.rotationY(deg2rad(1.0))),
     projection:
       transGen && transGen.projection
         ? transGen.projection(currTrans.projection) // Compose the current projection with the new one from transGen
@@ -91,6 +91,8 @@ export class Gpu implements GPUConnection {
     view: Transform.identity(),
     model: Transform.identity(),
   };
+
+  private _transGen: TransGen | undefined;
 
   private constructor(canvas: HTMLCanvasElement, context: GPUCanvasContext, device: GPUDevice, format: GPUTextureFormat) {
     this.canvas = canvas;
@@ -180,13 +182,14 @@ export class Gpu implements GPUConnection {
       return;
     }
     // Get transformation from the outside to allow camera and model movements.
-    this._transformations = getTransformations(this._transformations, [width, height]);
+    this._transformations = getTransformations(this._transformations, [width, height], this._transGen);
 
     this.render();
     requestAnimationFrame(this.renderLoop.bind(this));
   }
 
-  beginRenderLoop() {
+  beginRenderLoop(transGen?: TransGen) {
+    this._transGen = transGen;
     this.renderLoop();
   }
 }

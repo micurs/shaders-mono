@@ -7,6 +7,7 @@ import { UnitVector } from '.';
 export class Transform {
   _direct: mat4;
   _inverse: mat4;
+  _isIdentity: boolean = true;
 
   private constructor() {
     this._direct = mat4.create();
@@ -25,6 +26,7 @@ export class Transform {
     mat4.invert(inverse, direct);
     t._direct = mat4.clone(direct);
     t._inverse = mat4.clone(inverse);
+    t._isIdentity = false;
     return t;
   }
 
@@ -32,6 +34,7 @@ export class Transform {
     const t = new Transform();
     mat4.lookAt(t._direct, eye.vec3(), target.vec3(), up.vec3());
     mat4.invert(t._inverse, t._direct);
+    t._isIdentity = false;
     return t;
   }
 
@@ -39,6 +42,7 @@ export class Transform {
     const t = new Transform();
     mat4.perspective(t._direct, fovy, aspect, near, far);
     mat4.invert(t._inverse, t._direct);
+    t._isIdentity = false;
     return t;
   }
 
@@ -46,6 +50,7 @@ export class Transform {
     const t = new Transform();
     t._direct = mat4.clone(s._inverse);
     t._inverse = mat4.clone(s._direct);
+    t._isIdentity = false;
     return t;
   }
 
@@ -53,6 +58,7 @@ export class Transform {
     const t = new Transform();
     mat4.translate(t._direct, t._direct, [tx, ty, tz]);
     mat4.invert(t._inverse, t._direct);
+    t._isIdentity = false;
     return t;
   }
 
@@ -60,6 +66,7 @@ export class Transform {
     const t = new Transform();
     mat4.rotateX(t._direct, t._direct, a);
     mat4.invert(t._inverse, t._direct);
+    t._isIdentity = false;
     return t;
   }
 
@@ -67,6 +74,7 @@ export class Transform {
     const t = new Transform();
     mat4.rotateY(t._direct, t._direct, a);
     mat4.invert(t._inverse, t._direct);
+    t._isIdentity = false;
     return t;
   }
 
@@ -74,6 +82,7 @@ export class Transform {
     const t = new Transform();
     mat4.rotateZ(t._direct, t._direct, a);
     mat4.invert(t._inverse, t._direct);
+    t._isIdentity = false;
     return t;
   }
 
@@ -81,6 +90,7 @@ export class Transform {
     const t = new Transform();
     mat4.scale(t._direct, t._direct, [tx, ty, tz]);
     mat4.invert(t._inverse, t._direct);
+    t._isIdentity = false;
     return t;
   }
 
@@ -103,6 +113,7 @@ export class Transform {
     mat4.multiply(t._direct, t._direct, transToOrigin);
 
     mat4.invert(t._inverse, t._direct);
+    t._isIdentity = false;
     return t;
   }
 
@@ -129,6 +140,7 @@ export class Transform {
     const { _direct: dm2, _inverse: im2 } = trans;
     mat4.multiply(t._direct, dm2, dm1);
     mat4.multiply(t._inverse, im1, im2);
+    t._isIdentity = false;
     return t;
   }
 
@@ -136,6 +148,7 @@ export class Transform {
     const t = new Transform();
     t._direct = mat4.clone(this._inverse);
     t._inverse = mat4.clone(this._direct);
+    t._isIdentity = this._isIdentity;
     return t;
   }
 
@@ -144,5 +157,9 @@ export class Transform {
   }
   get inverseMatrix() {
     return this._inverse;
+  }
+
+  get isIdentity() {
+    return this._isIdentity;
   }
 }
