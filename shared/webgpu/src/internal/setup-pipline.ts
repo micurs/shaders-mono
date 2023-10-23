@@ -1,13 +1,14 @@
 import { Gpu } from '../gpu-connection';
 import { GeoBuilder, GPUPipeline } from '../types';
+import { styleColorToGpu } from './utils';
 
 export const createPipeline = async (gpu: Gpu, shaderModule: GPUShaderModule, geoBuilder: GeoBuilder): Promise<GPUPipeline> => {
   const [triangleMesh, material] = geoBuilder(gpu);
   const { device, format } = gpu;
 
-  // Set the vertices
+  // Create the uniform buffer to hold the transformation matrix.
   const uniformBuffer = device.createBuffer({
-    size: triangleMesh.size, //  4 * 16 * 3,
+    size: 4 * 16 * 3, // 3 matrices of 4x4 floats of 4 bytes each
     usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
   });
 
@@ -85,11 +86,12 @@ export const createPipeline = async (gpu: Gpu, shaderModule: GPUShaderModule, ge
     usage: GPUTextureUsage.RENDER_ATTACHMENT,
   });
 
-  const renderPassDescription = {
+  const clearColor = styleColorToGpu(window.getComputedStyle(gpu.canvas).backgroundColor);
+  const renderPassDescription: GPURenderPassDescriptor = {
     colorAttachments: [
       {
         view: textureView,
-        clearValue: { r: 0.2, g: 0.247, b: 0.314, a: 0.0 }, //background color
+        clearValue: clearColor, //background color
         //loadValue: { r: 0.2, g: 0.247, b: 0.314, a: 1.0 },
         loadOp: 'clear',
         storeOp: 'store',
@@ -98,7 +100,7 @@ export const createPipeline = async (gpu: Gpu, shaderModule: GPUShaderModule, ge
     depthStencilAttachment: {
       view: depthTexture.createView(),
       depthClearValue: 1.0,
-      depthLoadValue: 1.0,
+      // depthLoadValue: 1.0,
       depthStoreOp: 'store',
       depthLoadOp: 'clear',
       /*stencilClearValue: 0,

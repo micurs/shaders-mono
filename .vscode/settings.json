@@ -1,13 +1,13 @@
 {
   "vitest.debugExclude": ["<node_internals>/**", "**/node_modules/**"],
-  "cSpell.words": ["fovy", "geopro", "trimesh", "unmap", "webgpu"],
+  "cSpell.words": ["fovy", "geopro", "trimesh", "unmap", "unorm", "webgpu"],
   "workbench.colorCustomizations": {
-    "titleBar.activeBackground": "#390606",
+    "titleBar.activeBackground": "#580c0c",
+    "titleBar.border": "#9fb716",
+    "activityBar.background": "#580c0c",
     "activityBar.activeFocusBorder": "#9fb716",
     "activityBar.activeBorder": "#4f0707",
     "activityBar.border": "#bdd40e",
-    "activityBar.activeBackground": "#4d0808",
-    "activityBar.background": "#4d0808",
     "statusBar.focusBorder": "#cbed0d",
     "tab.activeBackground": "#602020",
     "tab.activeForeground": "#fff",

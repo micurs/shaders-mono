@@ -19,7 +19,7 @@ struct Fragment {
 fn vs_main(@location(0) vertexPosition: vec3<f32>, @location(1) vertexTexCoord: vec2<f32>) -> Fragment {
   var output: Fragment;
   output.position = transformData.projection * transformData.view * transformData.model * vec4<f32>(vertexPosition, 1.0);
-  output.texCoord = vertexTexCoord;
+  output.texCoord = vec2<f32>(vertexTexCoord);
   return output;
 }
 

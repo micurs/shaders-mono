@@ -9,7 +9,8 @@ export class TriangleData {
   private _normals: Float32Array | null = null; // 3 coordinates per vertex - 3 points for a triangle
   private _textures: Float32Array | null = null; // 2 coordinates per vertex - 3 points for a triangle
 
-  private _vertexSize: number = 0;
+  private _vertexCount = 0;
+  private _vertexByteSize: number = 0;
 
   get vertexCount() {
     if (this._vertices === null) {
@@ -18,8 +19,9 @@ export class TriangleData {
     return this._vertices.length / 3;
   }
 
-  get vertexSize() {
-    return this._vertexSize;
+  // The size of each vertex in the buffer as number of bytes!
+  get vertexByteSize() {
+    return this._vertexByteSize;
   }
 
   get byteSize() {
@@ -108,32 +110,36 @@ export class TriangleData {
     return layouts;
   }
 
-  constructor(vertices: Float32Array, vertexSize: number) {
-    if (vertices.length !== vertexSize * 3) {
-      throw new Error('Invalid vertex data!');
+  constructor(vertices: Float32Array, vertexCount: number) {
+    if (vertices.length !== vertexCount * 3) {
+      throw new Error('TriangleData: Invalid vertex data!');
     }
+    this._vertexCount = vertexCount;
     this._vertices = vertices;
-    this._vertexSize = vertexSize;
+    this._vertexByteSize = 3 * 4;
   }
 
   addColors(colors: Float32Array) {
-    if (colors.length !== this._vertexSize * 4) {
-      throw new Error('Invalid color data!');
+    if (colors.length !== this._vertexCount * 4) {
+      throw new Error('TriangleData: Invalid color data!');
     }
     this._colors = colors;
+    this._vertexByteSize += 4 * 4;
   }
 
   addNormals(normals: Float32Array) {
-    if (normals.length !== this._vertexSize * 3) {
-      throw new Error('Invalid normal data!');
+    if (normals.length !== this._vertexCount * 3) {
+      throw new Error('TriangleData: Invalid normal data!');
     }
     this._normals = normals;
+    this._vertexByteSize += 3 * 4;
   }
 
   addTextures(textures: Float32Array) {
-    if (textures.length !== this._vertexSize * 2) {
-      throw new Error('Invalid texture data!');
+    if (textures.length !== this._vertexCount * 2) {
+      throw new Error('TriangleData: Invalid texture data!');
     }
     this._textures = textures;
+    this._vertexByteSize += 2 * 4;
   }
 }

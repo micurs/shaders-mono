@@ -45,6 +45,6 @@ h1 {
 }
 
 #gfx-canvas {
-  background-color: transparent;
-  border: solid 1px darkred;
+  background-color: #24242490;
+    border: none;
 }

@@ -38,9 +38,17 @@ export const createTexture = (gpu: Gpu, image: ImageBitmap): Material => {
     usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST | GPUTextureUsage.RENDER_ATTACHMENT,
   };
   const texture = device.createTexture(textureDesc);
+
+  // No that we have a texture in the gpu, we can copy the image to it
+  device.queue.copyExternalImageToTexture(
+    { source: image }, // the data
+    { texture: texture }, // the texture in the gpu receiving the data
+    [image.width, image.height] // The image resolution
+  );
+
   const view = texture.createView(); // TODO: add texture view options
 
-  // Sampler
+  // Next, create the Sampler to get the image from the texture using u,v coordinates
   const samplerDescriptor: GPUSamplerDescriptor = {
     addressModeU: 'repeat',
     addressModeV: 'repeat',
@@ -69,13 +77,14 @@ export const createTriangleMesh = (gpu: Gpu, trimesh: TriangleData): TriangleMes
   const buffer = createGPUBuffer(gpu.device, trimesh.vertices);
 
   const bufferLayout: GPUVertexBufferLayout = {
-    arrayStride: trimesh.byteSize, // vertexSize * float32Size, // 5 x 32 bit numbers (i.e 4 byte each!)
+    arrayStride: trimesh.vertexByteSize, // vertexSize * float32Size, // 5 x 32 bit numbers (i.e 4 byte each!)
     attributes: trimesh.layouts,
   };
   return {
     vertexCount,
     buffer,
     bufferLayout,
+    size: trimesh.byteSize,
   };
 };
 // }

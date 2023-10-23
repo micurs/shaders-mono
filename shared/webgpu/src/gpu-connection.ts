@@ -1,16 +1,6 @@
 import { Point, Transform, UnitVector, deg2rad } from '@shaders-mono/geopro';
 
-import {
-  PredefinedShaders,
-  GPUConnection,
-  GPUPipeline,
-  GpuTransformations,
-  Shaders,
-  TransGen,
-  GeoBuilder,
-  TriangleMesh,
-  Material,
-} from './types';
+import { PredefinedShaders, GPUConnection, GPUPipeline, GpuTransformations, Shaders, TransGen, GeoBuilder } from './types';
 import { setupShaderModule } from './internal/setup-shaders';
 import { createPipeline } from './internal/setup-pipline';
 
@@ -37,14 +27,14 @@ const getTransformations = (
       transGen && transGen.view
         ? transGen.view(currTrans.view)
         : Transform.lookAt(
-            Point.fromValues(-1.0, -1.0, 0.0), // eye
+            Point.fromValues(-10.0, -10.0, 0.0), // eye
             Point.fromValues(0, 0, 0), // target
             UnitVector.fromValues(0, 0, 1) // vup
           ),
     model:
       transGen && transGen.model
         ? transGen.model(currTrans.model) // Compose the current model with the new one from transGen
-        : currTrans.model.composeWith(Transform.rotationZ(deg2rad(1.0))),
+        : currTrans.model.composeWith(Transform.rotationY(deg2rad(1.0))),
     projection:
       transGen && transGen.projection
         ? transGen.projection(currTrans.projection) // Compose the current projection with the new one from transGen
@@ -76,13 +66,15 @@ const getGPU = async (canvas: HTMLCanvasElement): Promise<GPUConnection> => {
   if (!context) {
     throw new Error('WebGPU:context from instantiated Canvas not available!');
   }
+
   const format = navigator.gpu.getPreferredCanvasFormat();
   context.configure({
-    device: device,
-    format: format,
-    //size: size
-    alphaMode: 'opaque',
+    device,
+    format,
+    usage: GPUTextureUsage.RENDER_ATTACHMENT,
+    alphaMode: 'opaque', // 'premultiplied' should allow transparency, but it does not work?.
   });
+
   return { context, device, canvas, format };
 };
 
@@ -175,7 +167,7 @@ export class Gpu implements GPUConnection {
     renderPass.setPipeline(pipeline);
     renderPass.setBindGroup(0, bindGroup);
     renderPass.setVertexBuffer(0, triangleMesh.buffer);
-    // renderPass.draw(6, 1, 0, 0);
+    // renderPass.draw(3, 1, 0, 0);
     renderPass.draw(triangleMesh.vertexCount);
     renderPass.end();
 

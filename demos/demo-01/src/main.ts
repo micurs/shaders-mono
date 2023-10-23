@@ -24,9 +24,7 @@ if (!supportEl || !canvasEl) {
 async function init() {
   const gpu = await WebGPU.initialize(canvasEl!);
 
-  const trimesh = buildCube();
-
-  const geo = await geoBuilder(trimesh, 'teapot');
+  const geo = await geoBuilder(buildCube(), 'teapot');
 
   await gpu.setupShaders('standard-3d');
 
