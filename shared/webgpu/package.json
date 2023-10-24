@@ -27,9 +27,9 @@
     "vite-plugin-dts": "^3.6.0"
   },
   "dependencies": {
-    "@shaders-mono/geopro": "workspace:^"
+    "@shaders-mono/geopro": "workspace:*"
   },
   "peerDependencies": {
-    "@shaders-mono/geopro": "workspace:^"
+    "@shaders-mono/geopro": "workspace:*"
   }
 }

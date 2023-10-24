@@ -29,8 +29,8 @@ async function init() {
   await gpu.setupGeoBuilder(geo);
 
   gpu.beginRenderLoop({
-    view: (t: Transform) => {
-      if (!t.isIdentity) {
+    view: (t?: Transform) => {
+      if (t && !t.isIdentity) {
         return t;
       }
       return Transform.lookAt(

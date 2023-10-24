@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "all:build": "pnpm run -r build",
     "sh:watch": "pnpm --filter geopro watch:code",
     "sh:build": "pnpm --filter geopro build && pnpm --filter webgpu build",
     "demo:build": "pnpm --filter \"demo-*\" build",
