@@ -4,3 +4,5 @@ lib
 temp
 coverage
 build
+.nx
+

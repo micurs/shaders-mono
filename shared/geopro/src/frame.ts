@@ -82,17 +82,16 @@ export class Frame {
     const j = UnitVector.crossProduct(k, isUnitVector(v2) ? v2 : UnitVector.fromVector(v2));
     const i = UnitVector.crossProduct(j, k);
 
-    const matValues: MatEntries = [
-      ...i.coordinates,
-      ...j.coordinates,
-      ...k.coordinates,
-      ...o.coordinates,
-    ] as MatEntries;
+    const matValues: MatEntries = [...i.coordinates, ...j.coordinates, ...k.coordinates, ...o.coordinates] as MatEntries;
 
     f._inverse = mat4.fromValues(...matValues);
     mat4.invert(f._direct, f._inverse);
 
     return f;
+  };
+
+  toString() {
+    return `Frame(${this.origin}, ${this.i}, ${this.j}, ${this.k})`;
   }
 
   map(t: GeoMap): Frame {
@@ -122,7 +121,7 @@ export class Frame {
 
   /**
    * Invert the transformation defined for this frame.
-  */
+   */
   invert(): Frame {
     const t = new Frame();
     t._direct = mat4.clone(this._inverse);
@@ -150,60 +149,36 @@ export class Frame {
    * The i vector for this frame
    */
   get i(): UnitVector {
-    return UnitVector.fromValues(
-      this._inverse[0],
-      this._inverse[1],
-      this._inverse[2],
-    );
+    return UnitVector.fromValues(this._inverse[0], this._inverse[1], this._inverse[2]);
   }
 
   /**
    * The j vector for this frame
    */
   get j(): UnitVector {
-    return UnitVector.fromValues(
-      this._inverse[4],
-      this._inverse[5],
-      this._inverse[6],
-    );
+    return UnitVector.fromValues(this._inverse[4], this._inverse[5], this._inverse[6]);
   }
 
   /**
    * The k vector for this frame
    */
   get k(): UnitVector {
-    return UnitVector.fromValues(
-      this._inverse[8],
-      this._inverse[9],
-      this._inverse[10],
-    );
+    return UnitVector.fromValues(this._inverse[8], this._inverse[9], this._inverse[10]);
   }
 
   /**
    * The origin of this frame
    */
   get o(): Point {
-    return Point.fromValues(
-      this._inverse[12],
-      this._inverse[13],
-      this._inverse[14],
-      this._inverse[15],
-    );
+    return Point.fromValues(this._inverse[12], this._inverse[13], this._inverse[14], this._inverse[15]);
   }
 
   /**
    * The origin of this frame
    */
   get origin(): Point {
-    return Point.fromValues(
-      this._inverse[12],
-      this._inverse[13],
-      this._inverse[14],
-      this._inverse[15],
-    );
+    return Point.fromValues(this._inverse[12], this._inverse[13], this._inverse[14], this._inverse[15]);
   }
-
-
 }
 
 

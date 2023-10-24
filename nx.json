@@ -1,0 +1,30 @@
+{
+  "tasksRunnerOptions": {
+    "default": {
+      "runner": "nx/tasks-runners/default",
+      "options": {
+        "cacheableOperations": ["build", "dev", "lint", "test"]
+      }
+    }
+  },
+  "namedInput": {
+    "noMd": ["!{projectRoot}/**/*.md"],
+    "noTests": ["!{projectRoot}/**/*.test.ts"]
+  },
+  "targetDefaults": {
+    "build": {
+      "input": ["noMd", "~noMd", "noTests"],
+      "dependsOn": ["^build"]
+    },
+    "dev": {
+      "input": ["noMd", "~noMd", "noTests"],
+      "dependsOn": ["^build"]
+    },
+    "test": {
+      "input": ["noMd", "~noMd"]
+    },
+    "lint": {
+      "input": ["noMd", "~noMd"]
+    }
+  }
+}

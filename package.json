@@ -4,12 +4,13 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "all:build": "pnpm run -r build",
-    "sh:watch": "pnpm --filter geopro watch:code",
-    "sh:build": "pnpm --filter geopro build && pnpm --filter webgpu build",
-    "demo:build": "pnpm --filter \"demo-*\" build",
-    "demo:dev": "pnpm --filter \"demo-01\" dev",
-    "sh:test": "pnpm --filter geopro test",
+    "build": "nx affected --target=build",
+    "build:all": "nx run-many --all --target=build",
+    "build:shared": "nx build --verbose @shaders-mono/webgpu",
+    "build:demo": "nx build demo-01",
+    "dev:shared": "nx watch:code @shaders-mono/geopro",
+    "dev:demo": "nx dev demo-01",
+    "test:shared": "nx test @shaders-mono/geopro",
     "start:cli": "node demos/cli/dist/geopro.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -17,6 +18,7 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "nx": "^17.0.1",
     "rimraf": "^5.0.5",
     "vitest": "^0.34.6"
   }
