@@ -6,9 +6,9 @@
   "scripts": {
     "all:build": "pnpm run -r build",
     "sh:watch": "pnpm --filter geopro watch:code",
-    "sh:build": "pnpm --filter geopro build && pnpm --filter webgpu build",
-    "demo:build": "pnpm --filter \"demo-*\" build",
-    "demo:dev": "pnpm --filter \"demo-01\" dev",
+    "sh:build": "nx build --verbose @shaders-mono/webgpu",
+    "demo:build": "nx build demo-01",
+    "demo:dev": "nx dev demo-01",
     "sh:test": "pnpm --filter geopro test",
     "start:cli": "node demos/cli/dist/geopro.js",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -17,6 +17,7 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "nx": "^17.0.1",
     "rimraf": "^5.0.5",
     "vitest": "^0.34.6"
   }
