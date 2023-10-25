@@ -18,7 +18,7 @@ export class Ray {
   static fromPoints(o: Point, d: Point): Ray {
     const r = new Ray();
     r._origin = o;
-    r._direction = UnitVector.fromVector(Vector.fromPoints(o, d));
+    r._direction = UnitVector.fromVector(Vector.fromPoints(d, o));
     return r;
   }
 

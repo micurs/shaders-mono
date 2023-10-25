@@ -1,7 +1,7 @@
 import { describe, test, expect } from 'vitest';
 import { mat4, vec4 } from 'gl-matrix';
 
-import { Point, Transform, deg2rad } from '../src';
+import { Point, Transform, Vector, deg2rad } from '../src';
 
 describe('Transform basic operations', () => {
   test('Create a transformation from a Mat4', () => {
@@ -15,8 +15,11 @@ describe('Transform basic operations', () => {
     const tv = vec4.create();
     vec4.transformMat4(tv, p1.vec4(), m1);
 
-    const tp = t1.mapPoint(p1);
+    const tp = t1.apply(p1);
     expect(tp.vec4()).toEqual(tv);
+
+    expect(t1.buffer().byteLength).toBe(16 * 4);
+    expect(t1.isIdentity).toBe(false);
   });
 
   test('Create a transformation and make sure the invert works as expected', () => {
@@ -45,7 +48,7 @@ describe('Transform basic operations', () => {
 
     const t1 = Transform.fromMat4(m1);
     const t2 = Transform.fromMat4(m2);
-    const t3 = t1.composeWith(t2);
+    const t3 = t1.compose(t2);
 
     const p1 = Point.fromValues(10, 10, 10);
     const p2 = p1.map(t1);
@@ -53,5 +56,12 @@ describe('Transform basic operations', () => {
     const p4 = p1.map(t3);
 
     expect(p3.vec3()).toEqual(p4.vec3());
+  });
+
+  test('Create a transformation with a move vector', () => {
+    const t1 = Transform.move(Vector.fromValues(10, 10, 10));
+    const p1 = Point.fromValues(10, 10, 10);
+    const p2 = p1.map(t1);
+    expect(p2.coordinates).toEqual([20, 20, 20, 1]);
   });
 });

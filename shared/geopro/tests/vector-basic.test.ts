@@ -40,7 +40,9 @@ describe('Vector basic operations', () => {
 
   test('Get the vector length', () => {
     const v = Vector.fromVec3([10, 20, 15]);
-    expect(v.length).toBe(Math.sqrt(10 * 10 + 20 * 20 + 15 * 15));
+    const lsq = 10 * 10 + 20 * 20 + 15 * 15;
+    expect(v.length).toBe(Math.sqrt(lsq));
+    expect(v.lengthSquare).toBe(lsq);
   });
 
   test('crossProduct of Vectors returns a Vector perpendicular to both', () => {

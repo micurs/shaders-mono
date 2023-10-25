@@ -41,8 +41,8 @@ export class Frame {
     mat4.translate(m, m, o.vec3());
     mat4.rotateX(m, m, angle);
 
-    f._inverse = m;
-    mat4.invert(f._direct, f._inverse);
+    f._direct = m;
+    mat4.invert(f._inverse, f._direct);
     return f;
   }
 
@@ -52,8 +52,8 @@ export class Frame {
     mat4.translate(m, m, o.vec3());
     mat4.rotateY(m, m, angle);
 
-    f._inverse = m;
-    mat4.invert(f._direct, f._inverse);
+    f._direct = m;
+    mat4.invert(f._inverse, f._direct);
     return f;
   }
 
@@ -63,8 +63,8 @@ export class Frame {
     mat4.translate(m, m, o.vec3());
     mat4.rotateZ(m, m, angle);
 
-    f._inverse = m;
-    mat4.invert(f._direct, f._inverse);
+    f._direct = m;
+    mat4.invert(f._inverse, f._direct);
     return f;
   }
 
@@ -87,7 +87,7 @@ export class Frame {
     const f = new Frame();
     const k = isUnitVector(v1) ? v1 : UnitVector.fromVector(v1);
     const j = UnitVector.crossProduct(k, isUnitVector(v2) ? v2 : UnitVector.fromVector(v2));
-    const i = UnitVector.crossProduct(k, j);
+    const i = UnitVector.crossProduct(j, k);
 
     const matValues: MatEntries = [...i.coordinates, ...j.coordinates, ...k.coordinates, ...o.coordinates] as MatEntries;
 
@@ -107,7 +107,7 @@ export class Frame {
   }
 
   unMap(t: GeoMap): Frame {
-    return this.compose(t.invert());
+    return this.invert().compose(t);
   }
 
   /**
@@ -161,28 +161,28 @@ export class Frame {
    * The i vector for this frame
    */
   get i(): UnitVector {
-    return UnitVector.fromValues(this._inverse[0], this._inverse[1], this._inverse[2]);
+    return UnitVector.fromValues(this._direct[0], this._direct[1], this._direct[2]);
   }
 
   /**
    * The j vector for this frame
    */
   get j(): UnitVector {
-    return UnitVector.fromValues(this._inverse[4], this._inverse[5], this._inverse[6]);
+    return UnitVector.fromValues(this._direct[4], this._direct[5], this._direct[6]);
   }
 
   /**
    * The k vector for this frame
    */
   get k(): UnitVector {
-    return UnitVector.fromValues(this._inverse[8], this._inverse[9], this._inverse[10]);
+    return UnitVector.fromValues(this._direct[8], this._direct[9], this._direct[10]);
   }
 
   /**
    * The origin of this frame
    */
   get o(): Point {
-    return Point.fromValues(this._inverse[12], this._inverse[13], this._inverse[14], this._inverse[15]);
+    return Point.fromValues(this._direct[12], this._direct[13], this._direct[14], this._direct[15]);
   }
 
   /**

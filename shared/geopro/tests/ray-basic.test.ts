@@ -9,7 +9,7 @@ describe('Ray basic operations', () =>{
     const d = Point.fromValues(15, 15, 15);
     const uv = UnitVector.fromValues(5, 5, 5);
 
-    const r = Ray.fromPoints(d, o);
+    const r = Ray.fromPoints(o, d);
     expect(r.o.x).toBeCloseTo(10);
     expect(r.o.y).toBeCloseTo(10);
     expect(r.o.z).toBeCloseTo(10);
