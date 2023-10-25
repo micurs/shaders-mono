@@ -4,7 +4,7 @@ import { MatEntries } from "./types";
 import { Vector } from "./vector";
 import { Point } from "./point";
 import { GeoMap } from "./operations";
-
+import { Transform } from './transform';
 
 export class Frame {
   _direct: mat4;
@@ -68,24 +68,32 @@ export class Frame {
     return f;
   }
 
+  static lookAt(eye: Point, target: Point, up: UnitVector) {
+    const t = new Frame();
+    mat4.lookAt(t._inverse, eye.vec3(), target.vec3(), up.vec3());
+    mat4.invert(t._direct, t._inverse);
+    return t;
+  }
+
   /**
    * Build a Frame through an origin and 2 independent vector.
    * The first vector will be considered the Z direction
    * The second vector will point in the semi-space of x
    * @param o - origin point
    * @param v1 - a vector indicating the Z of the new frame
-   * @param v2 - a vector in the XY plane of the new frame
+   * @param v2 - a vector in the XY plane of the new frame (if you pass the correct x axis it will be preserved)
    */
   static from2Vectors = (o: Point, v1: Vector | UnitVector, v2: Vector | UnitVector) => {
     const f = new Frame();
     const k = isUnitVector(v1) ? v1 : UnitVector.fromVector(v1);
     const j = UnitVector.crossProduct(k, isUnitVector(v2) ? v2 : UnitVector.fromVector(v2));
-    const i = UnitVector.crossProduct(j, k);
+    const i = UnitVector.crossProduct(k, j);
 
     const matValues: MatEntries = [...i.coordinates, ...j.coordinates, ...k.coordinates, ...o.coordinates] as MatEntries;
 
-    f._inverse = mat4.fromValues(...matValues);
-    mat4.invert(f._direct, f._inverse);
+    f._direct = mat4.fromValues(...matValues);
+    // mat4.transpose(f._direct, f._direct);
+    mat4.invert(f._inverse, f._direct);
 
     return f;
   };
@@ -95,11 +103,11 @@ export class Frame {
   }
 
   map(t: GeoMap): Frame {
-    return this.composeWith(t);
+    return this.compose(t);
   }
 
   unMap(t: GeoMap): Frame {
-    return this.composeWith(t.invert());
+    return this.compose(t.invert());
   }
 
   /**
@@ -110,13 +118,17 @@ export class Frame {
    * That is: resM = t.M · this.M
    * @param t - the transformation to compose with
    */
-  composeWith(t: GeoMap): Frame {
+  compose(t: GeoMap): Frame {
     const frame = new Frame();
     const { _direct: dm1 } = this;
     const { _direct: dm2 } = t;
     mat4.multiply(frame._direct, dm2, dm1);
     mat4.invert(frame._inverse, frame._direct);
     return frame;
+  }
+
+  toTransform(): Transform {
+    return Transform.fromMat4(this._inverse);
   }
 
   /**
@@ -134,7 +146,7 @@ export class Frame {
    * the global frame.
    */
   get directMatrix() {
-    return this._direct;
+    return mat4.clone(this._direct);
   }
 
   /**
@@ -142,7 +154,7 @@ export class Frame {
    * to this frame
    */
   get inverseMatrix() {
-    return this._inverse;
+    return mat4.clone(this._inverse);
   }
 
   /**
@@ -178,6 +190,10 @@ export class Frame {
    */
   get origin(): Point {
     return Point.fromValues(this._inverse[12], this._inverse[13], this._inverse[14], this._inverse[15]);
+  }
+
+  relative<T extends { relative: (f: Frame) => T }>(x: T) {
+    return x.relative(this);
   }
 }
 

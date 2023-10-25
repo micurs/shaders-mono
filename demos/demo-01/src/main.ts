@@ -2,6 +2,8 @@ import './style.css';
 import { Frame, Point, Transform, UnitVector } from '@shaders-mono/geopro';
 import * as WebGPU from '@shaders-mono/webgpu';
 import { geoBuilder } from './model-builder';
+import { MouseLocation } from '@shaders-mono/webgpu';
+import { getOrbitHandlers } from '@shaders-mono/webgpu';
 
 const f = Frame.world();
 
@@ -28,17 +30,18 @@ async function init() {
   const geo = await geoBuilder(WebGPU.cubeTriMesh(), 'teapot');
   await gpu.setupGeoBuilder(geo);
 
-  gpu.beginRenderLoop({
-    view: (t?: Transform) => {
-      if (t && !t.isIdentity) {
-        return t;
-      }
-      return Transform.lookAt(
-        Point.fromValues(-2.0, -4.0, 2.5), // eye
-        Point.fromValues(0, 0, 0), // target
-        UnitVector.fromValues(0, 0, 1) // vup
-      );
+  const [mouseHandler, zoomHandler, viewHandler] = getOrbitHandlers(gpu);
+
+  gpu.captureMouseMotion({
+    click: (bt: number, p: MouseLocation) => {
+      supportEl!.innerText = `DEMO Mouse click: ${bt},  ${p} `;
     },
+    move: mouseHandler,
+    zoom: zoomHandler,
+  });
+
+  gpu.beginRenderLoop({
+    view: viewHandler,
   });
 }
 

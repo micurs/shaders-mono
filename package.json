@@ -8,7 +8,7 @@
     "build:all": "nx run-many --all --target=build",
     "build:shared": "nx build --verbose @shaders-mono/webgpu",
     "build:demo": "nx build demo-01",
-    "dev:shared": "nx watch:code @shaders-mono/geopro",
+    "dev:shared": "nx run-many --projects=@shaders-mono/geopro,@shaders-mono/webgpu --target=dev",
     "dev:demo": "nx dev demo-01",
     "test:shared": "nx test @shaders-mono/geopro",
     "start:cli": "node demos/cli/dist/geopro.js",

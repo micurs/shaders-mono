@@ -2,7 +2,7 @@ import { mat4, quat } from "gl-matrix";
 import { GeoMap } from "./operations";
 import { Ray } from "./ray";
 import { Point } from './point';
-import { UnitVector } from '.';
+import { Frame, UnitVector, Vector } from '.';
 
 export class Transform {
   _direct: mat4;
@@ -57,6 +57,14 @@ export class Transform {
   static translation(tx: number, ty: number, tz: number) {
     const t = new Transform();
     mat4.translate(t._direct, t._direct, [tx, ty, tz]);
+    mat4.invert(t._inverse, t._direct);
+    t._isIdentity = false;
+    return t;
+  }
+
+  static move(mv: Vector) {
+    const t = new Transform();
+    mat4.translate(t._direct, t._direct, mv.vec3());
     mat4.invert(t._inverse, t._direct);
     t._isIdentity = false;
     return t;
@@ -125,8 +133,20 @@ export class Transform {
     return new Float32Array(this._direct);
   }
 
-  mapPoint(p: Point): Point {
-    return p.map(this);
+  // mapPoint(p: Point): Point {
+  //   return p.map(this);
+  // }
+
+  // mapFrame(f: Frame): Frame {
+  //   return f.map(this);
+  // }
+
+  // mapVector<T extends { map: (t: Transform) => T }>(v: T): T {
+  //   return v.map(this);
+  // }
+
+  map<T extends { map: (t: Transform) => T }>(v: T): T {
+    return v.map(this);
   }
 
   /**
@@ -134,7 +154,7 @@ export class Transform {
    * That is: resM = t.M · this.M
    * @param t - the transformation to compose with
    */
-  composeWith(trans: GeoMap): Transform {
+  compose(trans: GeoMap): Transform {
     const t = new Transform();
     const { _direct: dm1, _inverse: im1 } = this;
     const { _direct: dm2, _inverse: im2 } = trans;

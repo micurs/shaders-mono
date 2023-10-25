@@ -31,9 +31,15 @@ export class Vector {
     return p;
   }
 
+  /**
+   * Compute a vector as a difference between two points p1 - p2
+   * @param p1
+   * @param p2
+   * @returns
+   */
   static fromPoints(p1: Point, p2: Point) {
     const v = new Vector();
-    vec4.subtract(v._coord, p2.vec4(), p1.vec4());
+    vec4.subtract(v._coord, p1.vec4(), p2.vec4());
     return v;
   }
 
@@ -133,6 +139,13 @@ export class Vector {
     const y = this._coord[1];
     const z = this._coord[2];
     return Math.sqrt(x * x + y * y + z * z);
+  }
+
+  get lengthSquare() {
+    const x = this._coord[0];
+    const y = this._coord[1];
+    const z = this._coord[2];
+    return x * x + y * y + z * z;
   }
 
   vec3(): Readonly<vec3> {

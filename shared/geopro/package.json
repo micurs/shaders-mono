@@ -3,22 +3,21 @@
   "private": true,
   "version": "0.0.1",
   "type": "module",
-  "main": "./dist/geopro.umd.cjs",
-  "module": "./dist/geopro.js",
-  "types": "./dist/geopro.d.ts",
+  "main": "./dist/index.umd.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/geopro.js",
-      "require": "./dist/geopro.umd.cjs"
+      "import": "./dist/index.js",
+      "require": "./dist/index.umd.cjs"
     }
   },
   "scripts": {
-    "dev": "vite",
+    "dev": "vite build --watch",
     "build": "rimraf dist && vite build",
     "preview": "vite preview",
     "test": "vitest run --coverage",
-    "watch:test": "vitest watch",
-    "watch:code": "vite watch"
+    "watch:test": "vitest watch"
   },
   "devDependencies": {
     "@types/node": "^20.8.6",

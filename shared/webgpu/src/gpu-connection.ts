@@ -1,11 +1,21 @@
 import { Point, Transform, UnitVector } from '@shaders-mono/geopro';
 
-import { PredefinedShaders, GPUConnection, GPUPipeline, GpuTransformations, Shaders, TransGen, GeoBuilder } from './types';
+import {
+  PredefinedShaders,
+  GPUConnection,
+  GPUPipeline,
+  GpuTransformations,
+  Shaders,
+  TransGen,
+  GeoBuilder,
+  MouseCbs,
+} from './types';
 import { setupShaderModule } from './internal/setup-shaders';
 import { createPipeline } from './internal/setup-pipline';
 
 import shader3D from './internal/shader3d.wgsl?raw';
 import shader2D from './internal/shader2d.wgsl?raw';
+import { initMouseHandler } from './internal/mouse-capture';
 
 const isPredefinedShader = (shader: Shaders): shader is PredefinedShaders => {
   return typeof shader === 'string';
@@ -140,6 +150,31 @@ export class Gpu implements GPUConnection {
     }
     // Setup the GPU pipeline with the compiled shaders
     this._pipeline = await createPipeline(this, this._shaderModule, geoBuilder);
+  }
+
+  /**
+   * Enable mouse motion capture
+   * @param cb - callback for mouse motion
+   * @returns none
+   */
+  captureMouseMotion(cb?: MouseCbs) {
+    initMouseHandler(this.canvas, {
+      move:
+        cb?.move ??
+        ((bt, r, p) => {
+          console.log('Mouse move:', bt, r, p);
+        }),
+      click:
+        cb?.click ??
+        ((bt, p) => {
+          console.log('Mouse click:', bt, p);
+        }),
+      zoom:
+        cb?.zoom ??
+        ((delta) => {
+          console.log('Mouse zoom:', delta);
+        }),
+    });
   }
 
   /**

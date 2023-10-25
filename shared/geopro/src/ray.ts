@@ -11,8 +11,8 @@ export class Ray {
   private _direction: UnitVector;
 
   private constructor() {
-    this._origin = Point.fromValues(0,0,0);
-    this._direction = UnitVector.fromValues(1,0,0);
+    this._origin = Point.fromValues(0, 0, 0);
+    this._direction = UnitVector.fromValues(1, 0, 0);
   }
 
   static fromPoints(o: Point, d: Point): Ray {
@@ -57,5 +57,15 @@ export class Ray {
     rw._origin = this._origin.absolute(f);
     rw._direction = this._direction.absolute(f);
     return rw;
+  }
+
+  /**
+   * rotate a frame around this ray
+   * @param f
+   * @param a
+   */
+  rotateFrame(f: Frame, a: number) {
+    const t = Transform.fromRotation(a, this);
+    return f.map(t);
   }
 }

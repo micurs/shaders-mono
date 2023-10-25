@@ -13,12 +13,11 @@
     }
   },
   "scripts": {
-    "dev": "vite",
+    "dev": "vite build --watch",
     "build": "tsc && rimraf dist && vite build",
     "preview": "vite preview",
     "test": "vitest run --coverage",
-    "watch:test": "vitest watch",
-    "watch:code": "vite watch"
+    "watch:test": "vitest watch"
   },
   "devDependencies": {
     "@webgpu/types": "^0.1.38",
