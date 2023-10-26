@@ -69,7 +69,7 @@ export const createPipeline = async (gpu: Gpu, shaderModule: GPUShaderModule, ge
     },
     primitive: {
       topology: 'triangle-list',
-      cullMode: 'none',
+      cullMode: 'back',
     },
     depthStencil: {
       depthWriteEnabled: true,
