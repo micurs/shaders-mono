@@ -191,7 +191,8 @@ export class Gpu implements GPUConnection {
     // Writes the 3 matrixes into the uniformBuffer ...
     device.queue.writeBuffer(uniformBuffer, 0, model.buffer());
     device.queue.writeBuffer(uniformBuffer, 16 * 4, view.buffer());
-    device.queue.writeBuffer(uniformBuffer, 2 * 16 * 4, projection.buffer());
+    device.queue.writeBuffer(uniformBuffer, 2 * 16 * 4, view.invert().buffer());
+    device.queue.writeBuffer(uniformBuffer, 3 * 16 * 4, projection.buffer());
 
     const commandEncoder = device.createCommandEncoder();
 

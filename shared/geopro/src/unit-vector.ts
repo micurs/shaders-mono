@@ -32,7 +32,7 @@ export class UnitVector {
    * @param v1 - a first unit-vector
    * @param v2 - a second unit-vector
    */
-  static crossProduct = (v1: UnitVector, v2: UnitVector) => {
+  static crossProduct = (v1: UnitVector | Vector, v2: UnitVector | Vector) => {
     const res = vec3.create();
     vec3.cross(res, v1.vec3(), v2.vec3());
     return UnitVector.fromVec3(res);
@@ -121,6 +121,10 @@ export class UnitVector {
 
   get coordinates(): VecEntries {
     return [...this._coord.values()] as VecEntries;
+  }
+
+  get triplet(): [number, number, number] {
+    return [this.x, this.y, this.z];
   }
 
   vec3(): Readonly<vec3> {
