@@ -47,7 +47,7 @@ export type MouseClickHandler = (bt: number, p: MouseLocation) => void;
 export type MouseZoomHandler = (delta: number) => void;
 export type TransformHandler = (prev?: Transform) => Transform;
 
-export interface TransGen {
+export interface TransCbs {
   view?: TransformHandler;
   model?: TransformHandler;
   projection?: TransformHandler;

@@ -1,5 +1,5 @@
 import './style.css';
-import { Frame, Point, Transform, UnitVector } from '@shaders-mono/geopro';
+import { Frame } from '@shaders-mono/geopro';
 import * as WebGPU from '@shaders-mono/webgpu';
 import { geoBuilder } from './model-builder';
 import { MouseLocation } from '@shaders-mono/webgpu';
@@ -9,10 +9,22 @@ const f = Frame.world();
 
 document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
   <div>
-    <h2>Hello Vite! We have a ${f.o}</h2>
-    <canvas id="gfx-canvas" width="800" height="600"></canvas>
+    <h2>Hello WebGPU!</h2>
+    <div class="main">
+      <div class="left">
+        <h3>Controls</h3>
+        <ul>
+          <li>Left mouse button: rotate</li>
+          <li>Center mouse button: pan</li>
+          <li>Right mouse button: zoom</li>
+          <li>Mouse wheel: dolly</li>
+        </ul>
+      </div>
+      <div class="right">
+        <canvas id="gfx-canvas" width="800" height="600"></canvas>
+      </div>
+    </div>
     <p id="support">Initializing...</p>
-  </div>
 `;
 
 const supportEl = document.getElementById('support') as HTMLParagraphElement | null;
@@ -30,18 +42,17 @@ async function init() {
   const geo = await geoBuilder(WebGPU.cubeTriMesh(), 'teapot');
   await gpu.setupGeoBuilder(geo);
 
-  const [mouseHandler, zoomHandler, viewHandler] = getOrbitHandlers(gpu);
+  const [mouseHandlers, viewHandlers] = getOrbitHandlers(gpu);
 
   gpu.captureMouseMotion({
     click: (bt: number, p: MouseLocation) => {
       supportEl!.innerText = `DEMO Mouse click: ${bt},  ${p} `;
     },
-    move: mouseHandler,
-    zoom: zoomHandler,
+    ...mouseHandlers,
   });
 
   gpu.beginRenderLoop({
-    view: viewHandler,
+    ...viewHandlers,
   });
 }
 

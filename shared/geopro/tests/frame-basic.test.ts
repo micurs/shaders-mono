@@ -273,9 +273,9 @@ describe('Frame basic operations', () => {
     const f2 = f1.invert();
     const f1f2 = f1.map(f2);
 
-    expect(round(f1f2.o.x, prec)).toBe(0);
-    expect(round(f1f2.o.y, prec)).toBe(0);
-    expect(round(f1f2.o.z, prec)).toBe(0);
+    expect(f1f2.o.x).toBeCloseTo(0);
+    expect(f1f2.o.y).toBeCloseTo(0);
+    expect(f1f2.o.z).toBeCloseTo(0);
   });
 
   test('Compute 2 frames - rotY - and compose them into a third one', () => {
@@ -298,5 +298,15 @@ describe('Frame basic operations', () => {
     expect(round(f1f2.o.x, prec)).toBe(0);
     expect(round(f1f2.o.y, prec)).toBe(0);
     expect(round(f1f2.o.z, prec)).toBe(0);
+  });
+
+  test('Create 2 frames and get one as relative to the other', () => {
+    const f1 = Frame.from2Vectors(Point.fromValues(10, 10, 10), Vector.fromValues(0, 0, 1), Vector.fromValues(1, 0, 0));
+    const f2 = Frame.lookAt(Point.fromValues(10, 10, 10), Point.fromValues(20, 20, 0), UnitVector.fromValues(0, 1, 0));
+
+    const f1f2 = f2.relative(f1);
+    expect(f1f2.o.x).toBe(0);
+    expect(f1f2.o.y).toBe(0);
+    expect(f1f2.o.z).toBe(0);
   });
 });

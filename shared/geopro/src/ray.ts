@@ -59,13 +59,4 @@ export class Ray {
     return rw;
   }
 
-  /**
-   * rotate a frame around this ray
-   * @param f
-   * @param a
-   */
-  rotateFrame(f: Frame, a: number) {
-    const t = Transform.fromRotation(a, this);
-    return f.map(t);
-  }
 }

@@ -192,12 +192,18 @@ export class Frame {
     return Point.fromValues(this._inverse[12], this._inverse[13], this._inverse[14], this._inverse[15]);
   }
 
-  relative<T extends { relative: (f: Frame) => T }>(x: T) {
+  relative<T extends { relative: (f: Frame) => T }>(x: T): T {
+    if (x && isFrame(x)) {
+      const ro = this.origin.relative(x);
+      const rz = this.k.relative(x);
+      const rx = this.i.relative(x);
+      const rf = Frame.from2Vectors(ro, rz, rx);
+      return rf as any as T;
+    }
     return x.relative(this);
   }
 }
 
-
-export const isFrame = (d: GeoMap): d is Frame => {
-  return d.isFrame()
-}
+export const isFrame = (d: unknown): d is Frame => {
+  return d && (d as Frame).isFrame !== undefined ? (d as Frame).isFrame() : false;
+};

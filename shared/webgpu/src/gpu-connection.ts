@@ -6,7 +6,7 @@ import {
   GPUPipeline,
   GpuTransformations,
   Shaders,
-  TransGen,
+  TransCbs,
   GeoBuilder,
   MouseCbs,
 } from './types';
@@ -30,7 +30,7 @@ const isPredefinedShader = (shader: Shaders): shader is PredefinedShaders => {
 const getTransformations = (
   currTrans: GpuTransformations,
   [w, h]: [number, number],
-  transGen?: TransGen
+  transGen?: TransCbs
 ): GpuTransformations => {
   return {
     view:
@@ -102,7 +102,7 @@ export class Gpu implements GPUConnection {
     model: Transform.identity(),
   };
 
-  private _transGen: TransGen | undefined;
+  private _transGen: TransCbs | undefined;
 
   private constructor(canvas: HTMLCanvasElement, context: GPUCanvasContext, device: GPUDevice, format: GPUTextureFormat) {
     this.canvas = canvas;
@@ -223,7 +223,7 @@ export class Gpu implements GPUConnection {
     requestAnimationFrame(this.renderLoop.bind(this));
   }
 
-  beginRenderLoop(transGen?: TransGen) {
+  beginRenderLoop(transGen?: TransCbs) {
     this._transGen = transGen;
     this.renderLoop();
   }

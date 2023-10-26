@@ -117,6 +117,7 @@ export class Point {
   isPoint() {
     return true;
   }
+
   get x() {
     return this._coord[0];
   }
