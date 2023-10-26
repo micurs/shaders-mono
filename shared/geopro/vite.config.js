@@ -11,10 +11,10 @@ export default defineConfig({
     sourcemap: true,
     lib: {
       entry: entryRoot,
-      name: 'geopro',
-      formats: ['es'],
-      fileName: 'geopro',
+      name: 'index',
+      formats: ['es', 'umd'],
+      fileName: 'index',
     },
   },
-  plugins: [dts({ rollupTypes: true, entryRoot: 'src' })],
+  plugins: [dts({ rollupTypes: true })],
 });

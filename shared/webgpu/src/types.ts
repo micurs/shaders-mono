@@ -42,8 +42,27 @@ export interface GpuTransformations {
   model: Transform;
 }
 
-export interface TransGen {
-  view?: (prev?: Transform) => Transform;
-  model?: (prev: Transform) => Transform;
-  projection?: (prev: Transform) => Transform;
+export type MouseMoveHandler = (bt: number, r: MouseMovement, p: MouseLocation) => void;
+export type MouseClickHandler = (bt: number, p: MouseLocation) => void;
+export type MouseZoomHandler = (delta: number) => void;
+export type TransformHandler = (prev?: Transform) => Transform;
+
+export interface TransCbs {
+  view?: TransformHandler;
+  model?: TransformHandler;
+  projection?: TransformHandler;
+}
+
+export type MouseLocation = [number, number];
+export type MouseDirection = [number, number];
+
+export type MouseMovement = {
+  origin: MouseLocation;
+  direction: MouseDirection;
+};
+
+export interface MouseCbs {
+  move?: MouseMoveHandler;
+  click?: MouseClickHandler;
+  zoom?: MouseZoomHandler;
 }

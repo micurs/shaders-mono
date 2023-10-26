@@ -76,19 +76,24 @@ export class Point {
   }
 
   relative(f: Frame): Point {
-    return this.unMap(f);
-  }
-
-  absolute(f: Frame): Point {
     return this.map(f);
   }
 
+  /**
+   * Assume this point is relative to the given frame and return the absolute point in world coordinate
+   * @param f - the reference frame
+   * @returns a new Point in world coordinate
+   */
+  absolute(f: Frame): Point {
+    return this.unMap(f);
+  }
+
   static relative(p: Point, f: Frame): Point {
-    return p.unMap(f);
+    return p.map(f);
   }
 
   static absolute(p: Point, f: Frame): Point {
-    return p.map(f);
+    return p.unMap(f);
   }
 
   subtract(p: Point): Vector {
@@ -103,9 +108,16 @@ export class Point {
     return Point.fromVec3(v);
   }
 
+  add(v: Vector): Point {
+    const p = new Point();
+    vec4.add(p._coord, this._coord, v.vec4());
+    return p;
+  }
+
   isPoint() {
     return true;
   }
+
   get x() {
     return this._coord[0];
   }

@@ -1,19 +1,27 @@
 import { describe, test, expect } from 'vitest';
 import { vec4, vec3 } from 'gl-matrix';
 
-import { Point } from '../src';
+import { Point, Vector } from '../src';
 
 describe('Point basic operations', () => {
+  test('Create a point', () => {
+    const p = Point.origin();
+    expect(p.x).toBe(0);
+    expect(p.y).toBe(0);
+    expect(p.z).toBe(0);
+    expect(p.coordinates).toEqual([0, 0, 0, 1]);
+    expect(p.isPoint()).toBe(true);
+  });
 
   test('Set a point with coordinates', () => {
     const v3 = vec3.fromValues(10, 20, 15);
     const v4 = vec4.fromValues(10, 20, 15, 1);
 
-    const p = Point.fromValues( 10, 20, 15);
+    const p = Point.fromValues(10, 20, 15);
     expect(p.x).toBe(10);
     expect(p.y).toBe(20);
     expect(p.z).toBe(15);
-    expect(p.coordinates).toEqual([10,20,15,1]);
+    expect(p.coordinates).toEqual([10, 20, 15, 1]);
     expect(p.vec3()).toEqual(v3);
     expect(p.vec4()).toEqual(v4);
     expect(p.isPoint()).toBe(true);
@@ -62,4 +70,12 @@ describe('Point basic operations', () => {
     expect(p2.z).toBe(30);
   });
 
+  test('add a vector to a point gets a new point', () => {
+    const p1 = Point.fromValues(10, 20, 15);
+    const v = Vector.fromValues(10, 20, 15);
+    const p2 = p1.add(v);
+    expect(p2.x).toBe(20);
+    expect(p2.y).toBe(40);
+    expect(p2.z).toBe(30);
+  });
 });

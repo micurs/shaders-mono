@@ -1,8 +1,7 @@
-import { mat4, quat } from "gl-matrix";
-import { GeoMap } from "./operations";
-import { Ray } from "./ray";
+import { mat4 } from 'gl-matrix';
+import { GeoMap } from './operations';
 import { Point } from './point';
-import { UnitVector } from '.';
+import { UnitVector, Vector } from '.';
 
 export class Transform {
   _direct: mat4;
@@ -30,6 +29,7 @@ export class Transform {
     return t;
   }
 
+  /* c8 ignore start */
   static lookAt(eye: Point, target: Point, up: UnitVector) {
     const t = new Transform();
     mat4.lookAt(t._direct, eye.vec3(), target.vec3(), up.vec3());
@@ -37,7 +37,9 @@ export class Transform {
     t._isIdentity = false;
     return t;
   }
+  /* c8 ignore stop */
 
+  /* c8 ignore start */
   static perspective(fovy: number, aspect: number, near: number, far: number) {
     const t = new Transform();
     mat4.perspective(t._direct, fovy, aspect, near, far);
@@ -45,6 +47,7 @@ export class Transform {
     t._isIdentity = false;
     return t;
   }
+  /* c8 ignore stop */
 
   static invert(s: Transform): Transform {
     const t = new Transform();
@@ -57,6 +60,14 @@ export class Transform {
   static translation(tx: number, ty: number, tz: number) {
     const t = new Transform();
     mat4.translate(t._direct, t._direct, [tx, ty, tz]);
+    mat4.invert(t._inverse, t._direct);
+    t._isIdentity = false;
+    return t;
+  }
+
+  static move(mv: Vector) {
+    const t = new Transform();
+    mat4.translate(t._direct, t._direct, mv.vec3());
     mat4.invert(t._inverse, t._direct);
     t._isIdentity = false;
     return t;
@@ -94,6 +105,10 @@ export class Transform {
     return t;
   }
 
+  /**
+   * Need to work on this
+   */
+  /*
   static fromRotation(angle: number, axes: Ray): Transform {
     const t = new Transform();
 
@@ -116,6 +131,7 @@ export class Transform {
     t._isIdentity = false;
     return t;
   }
+  */
 
   isFrame() {
     return false;
@@ -125,8 +141,12 @@ export class Transform {
     return new Float32Array(this._direct);
   }
 
-  mapPoint(p: Point): Point {
-    return p.map(this);
+  /**
+   * Applies the transformation to a point
+   * @param p - the point to transform
+   */
+  apply<T extends { map: (t: Transform) => T }>(v: T): T {
+    return v.map(this);
   }
 
   /**
@@ -134,7 +154,7 @@ export class Transform {
    * That is: resM = t.M · this.M
    * @param t - the transformation to compose with
    */
-  composeWith(trans: GeoMap): Transform {
+  compose(trans: GeoMap): Transform {
     const t = new Transform();
     const { _direct: dm1, _inverse: im1 } = this;
     const { _direct: dm2, _inverse: im2 } = trans;

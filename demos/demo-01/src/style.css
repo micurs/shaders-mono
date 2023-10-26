@@ -30,6 +30,7 @@ body {
   place-items: center;
   min-width: 320px;
   min-height: 100vh;
+  overflow: hidden;
 }
 
 h1 {
@@ -45,6 +46,25 @@ h1 {
 }
 
 #gfx-canvas {
+  margin: 6px 6px 0 6px;
   background-color: #24242490;
-    border: none;
+  border: none;
+}
+div.main {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  box-shadow: 6px 6px 12px 2px #111;
+}
+
+div.main>div.right {
+  background-color: #161616;
+  padding: 0;
+}
+
+div.main>div.left {
+  padding: 0 2rem;
+  text-align: left;
+  background-color: #161616;
+  min-width: 400px;
 }

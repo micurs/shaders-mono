@@ -11,14 +11,14 @@ export class Ray {
   private _direction: UnitVector;
 
   private constructor() {
-    this._origin = Point.fromValues(0,0,0);
-    this._direction = UnitVector.fromValues(1,0,0);
+    this._origin = Point.fromValues(0, 0, 0);
+    this._direction = UnitVector.fromValues(1, 0, 0);
   }
 
   static fromPoints(o: Point, d: Point): Ray {
     const r = new Ray();
     r._origin = o;
-    r._direction = UnitVector.fromVector(Vector.fromPoints(o, d));
+    r._direction = UnitVector.fromVector(Vector.fromPoints(d, o));
     return r;
   }
 
@@ -58,4 +58,5 @@ export class Ray {
     rw._direction = this._direction.absolute(f);
     return rw;
   }
+
 }

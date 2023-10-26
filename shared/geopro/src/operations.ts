@@ -14,10 +14,7 @@ export const map = (t: GeoMap) => (o: Mappable) => {
 
 export const compose = (...t: GeoMap[]) => {
   const [h, ...rest] = t;
-  return rest.reduce<GeoMap>(
-    (accTrans, trans) => accTrans.composeWith(trans),
-    h
-  );
+  return rest.reduce<GeoMap>((accTrans, trans) => accTrans.compose(trans), h);
 }
 
 

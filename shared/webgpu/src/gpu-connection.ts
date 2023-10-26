@@ -1,11 +1,21 @@
 import { Point, Transform, UnitVector } from '@shaders-mono/geopro';
 
-import { PredefinedShaders, GPUConnection, GPUPipeline, GpuTransformations, Shaders, TransGen, GeoBuilder } from './types';
+import {
+  PredefinedShaders,
+  GPUConnection,
+  GPUPipeline,
+  GpuTransformations,
+  Shaders,
+  TransCbs,
+  GeoBuilder,
+  MouseCbs,
+} from './types';
 import { setupShaderModule } from './internal/setup-shaders';
 import { createPipeline } from './internal/setup-pipline';
 
 import shader3D from './internal/shader3d.wgsl?raw';
 import shader2D from './internal/shader2d.wgsl?raw';
+import { initMouseHandler } from './internal/mouse-capture';
 
 const isPredefinedShader = (shader: Shaders): shader is PredefinedShaders => {
   return typeof shader === 'string';
@@ -20,7 +30,7 @@ const isPredefinedShader = (shader: Shaders): shader is PredefinedShaders => {
 const getTransformations = (
   currTrans: GpuTransformations,
   [w, h]: [number, number],
-  transGen?: TransGen
+  transGen?: TransCbs
 ): GpuTransformations => {
   return {
     view:
@@ -92,7 +102,7 @@ export class Gpu implements GPUConnection {
     model: Transform.identity(),
   };
 
-  private _transGen: TransGen | undefined;
+  private _transGen: TransCbs | undefined;
 
   private constructor(canvas: HTMLCanvasElement, context: GPUCanvasContext, device: GPUDevice, format: GPUTextureFormat) {
     this.canvas = canvas;
@@ -143,6 +153,31 @@ export class Gpu implements GPUConnection {
   }
 
   /**
+   * Enable mouse motion capture
+   * @param cb - callback for mouse motion
+   * @returns none
+   */
+  captureMouseMotion(cb?: MouseCbs) {
+    initMouseHandler(this.canvas, {
+      move:
+        cb?.move ??
+        ((bt, r, p) => {
+          console.log('Mouse move:', bt, r, p);
+        }),
+      click:
+        cb?.click ??
+        ((bt, p) => {
+          console.log('Mouse click:', bt, p);
+        }),
+      zoom:
+        cb?.zoom ??
+        ((delta) => {
+          console.log('Mouse zoom:', delta);
+        }),
+    });
+  }
+
+  /**
    * render the scene
    * @param transf
    * @returns none
@@ -188,7 +223,7 @@ export class Gpu implements GPUConnection {
     requestAnimationFrame(this.renderLoop.bind(this));
   }
 
-  beginRenderLoop(transGen?: TransGen) {
+  beginRenderLoop(transGen?: TransCbs) {
     this._transGen = transGen;
     this.renderLoop();
   }
