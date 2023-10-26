@@ -1,5 +1,8 @@
 # shaders-mono
 
+## Demo 01
+
+![Alt text](assets/demo-01.png)
 
 ## Development
 

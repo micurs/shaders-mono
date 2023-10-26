@@ -42,7 +42,7 @@ export const getOrbitHandlers = (gpu: Gpu): [MouseCbs, TransCbs] => {
     zoom = delta * 0.001;
   };
 
-  const projectionHandler = (t: Transform): Transform => {
+  const projectionHandler = (_t?: Transform): Transform => {
     return Transform.perspective(fov, aspectRatio, 0.1, 100.0);
   };
 

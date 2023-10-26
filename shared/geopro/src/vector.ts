@@ -31,6 +31,7 @@ export class Vector {
     return p;
   }
 
+
   /**
    * Compute a vector as a difference between two points p1 - p2
    * @param p1

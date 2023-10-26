@@ -8,7 +8,7 @@ export const createPipeline = async (gpu: Gpu, shaderModule: GPUShaderModule, ge
 
   // Create the uniform buffer to hold the transformation matrix.
   const uniformBuffer = device.createBuffer({
-    size: 4 * 16 * 3, // 3 matrices of 4x4 floats of 4 bytes each
+    size: 4 * 16 * 4, // 4 matrices of 4x4 floats of 4 bytes each
     usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
   });
 

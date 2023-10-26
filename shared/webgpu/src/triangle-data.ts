@@ -49,14 +49,14 @@ export class TriangleData {
         fragment.push(this._colors[ci + 2]);
         fragment.push(this._colors[ci + 3]);
       }
+      if (this._textures !== null) {
+        fragment.push(this._textures[ti + 0]);
+        fragment.push(this._textures[ti + 1]);
+      }
       if (this._normals !== null) {
         fragment.push(this._normals[ni + 0]);
         fragment.push(this._normals[ni + 1]);
         fragment.push(this._normals[ni + 2]);
-      }
-      if (this._textures !== null) {
-        fragment.push(this._textures[ti + 0]);
-        fragment.push(this._textures[ti + 1]);
       }
       fragments.push(...fragment);
     }
@@ -77,15 +77,15 @@ export class TriangleData {
     ];
     shaderLocation += 1;
     offset += 3 * float32Size; // skip 3 elements for the coordinates.
-    if (this._colors !== null) {
+    if (this._textures !== null) {
       layouts.push({
-        // Color
+        // UV
         shaderLocation,
-        offset,
-        format: 'float32x4',
+        offset, // skip 3 elements for the coordinates.
+        format: 'float32x2',
       });
       shaderLocation += 1;
-      offset += 4 * float32Size; // skip 4 elements for the color.
+      offset += 2 * float32Size; // skip 2 elements for the texture coordinates.
     }
     if (this._normals !== null) {
       layouts.push({
@@ -97,16 +97,17 @@ export class TriangleData {
       shaderLocation += 1;
       offset += 3 * float32Size; // skip 3 elements for the normal.
     }
-    if (this._textures !== null) {
+    if (this._colors !== null) {
       layouts.push({
-        // UV
+        // Color
         shaderLocation,
-        offset, // skip 3 elements for the coordinates.
-        format: 'float32x2',
+        offset,
+        format: 'float32x4',
       });
       shaderLocation += 1;
-      offset += 2 * float32Size; // skip 2 elements for the texture coordinates.
+      offset += 4 * float32Size; // skip 4 elements for the color.
     }
+
     return layouts;
   }
 
