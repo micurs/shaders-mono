@@ -185,7 +185,13 @@ export class Gpu implements GPUConnection {
    */
   private render = () => {
     const { device, context } = this;
-    const { pipeline, uniformBuffer, renderPassDescription, bindGroup, triangleMesh } = this._pipeline!;
+    const {
+      pipeline,
+      uniformBuffer,
+      renderPassDescription,
+      bindGroup,
+      triangleMesh,
+    } = this._pipeline!;
     const { projection, view, model } = this._transformations;
 
     // Writes the 3 matrixes into the uniformBuffer ...
@@ -198,14 +204,19 @@ export class Gpu implements GPUConnection {
 
     const textureView = context.getCurrentTexture().createView();
 
-    const colors = renderPassDescription.colorAttachments! as GPURenderPassColorAttachment[];
+    const colors =
+      renderPassDescription.colorAttachments! as GPURenderPassColorAttachment[];
     colors[0]!.view = textureView;
 
     const renderPass = commandEncoder.beginRenderPass(renderPassDescription);
     renderPass.setPipeline(pipeline);
+
+    // TODO: For each object in the scene we set the uniform buffer with the color and (potentially) the model matrix
+    // const uniformBufferData = new Float32Array([triangleMesh.color); // Color for the current object
+    // device.queue.writeBuffer(uniformBuffer, 0, uniformBufferData);
+
     renderPass.setBindGroup(0, bindGroup);
     renderPass.setVertexBuffer(0, triangleMesh.buffer);
-    // renderPass.draw(3, 1, 0, 0);
     renderPass.draw(triangleMesh.vertexCount);
     renderPass.end();
 

@@ -12,15 +12,17 @@ export const createPipeline = async (gpu: Gpu, shaderModule: GPUShaderModule, ge
     usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
   });
 
-  const bindGroupLayout = device.createBindGroupLayout({
-    entries: [
-      {
-        binding: 0,
-        visibility: GPUShaderStage.VERTEX,
-        buffer: {
-          type: 'uniform',
-        },
+  const layoutEntries: GPUBindGroupLayoutEntry[] = [
+    {
+      binding: 0,
+      visibility: GPUShaderStage.VERTEX,
+      buffer: {
+        type: 'uniform',
       },
+    },
+  ];
+  if (material) {
+    layoutEntries.push(
       {
         binding: 1,
         visibility: GPUShaderStage.FRAGMENT,
@@ -30,16 +32,21 @@ export const createPipeline = async (gpu: Gpu, shaderModule: GPUShaderModule, ge
         binding: 2,
         visibility: GPUShaderStage.FRAGMENT,
         sampler: {},
-      },
-    ],
+      }
+    );
+  }
+  const bindGroupLayout = device.createBindGroupLayout({
+    entries: layoutEntries,
   });
-  const bindGroup = device.createBindGroup({
-    layout: bindGroupLayout,
-    entries: [
-      {
-        binding: 0,
-        resource: { buffer: uniformBuffer },
-      },
+
+  const bindings: GPUBindGroupEntry[] = [
+    {
+      binding: 0,
+      resource: { buffer: uniformBuffer },
+    },
+  ];
+  if (material) {
+    bindings.push(
       {
         binding: 1,
         resource: material.view!,
@@ -47,8 +54,12 @@ export const createPipeline = async (gpu: Gpu, shaderModule: GPUShaderModule, ge
       {
         binding: 2,
         resource: material.sampler!,
-      },
-    ],
+      }
+    );
+  }
+  const bindGroup = device.createBindGroup({
+    layout: bindGroupLayout,
+    entries: bindings,
   });
 
   const pipelineLayout = device.createPipelineLayout({
@@ -59,12 +70,12 @@ export const createPipeline = async (gpu: Gpu, shaderModule: GPUShaderModule, ge
     layout: pipelineLayout,
     vertex: {
       module: shaderModule,
-      entryPoint: 'vs_main',
+      entryPoint: material ? 'vertexTextureShader' : 'vertexColorShader',
       buffers: [triangleMesh.bufferLayout], // TODO: here add normals buffer layout: triangleMesh.
     },
     fragment: {
       module: shaderModule,
-      entryPoint: 'fs_main',
+      entryPoint: material ? 'fragmentTextureShader' : 'fragmentColorShader',
       targets: [{ format }],
     },
     primitive: {
@@ -79,14 +90,16 @@ export const createPipeline = async (gpu: Gpu, shaderModule: GPUShaderModule, ge
   });
 
   // Create the Z-buffer to hold depth values for each pixel and control the render pass.
-  let textureView = gpu.context.getCurrentTexture().createView();
   const depthTexture = device.createTexture({
     size: [gpu.canvas.width, gpu.canvas.height, 1],
     format: 'depth24plus',
     usage: GPUTextureUsage.RENDER_ATTACHMENT,
   });
 
-  const clearColor = styleColorToGpu(window.getComputedStyle(gpu.canvas).backgroundColor);
+  let textureView = gpu.context.getCurrentTexture().createView();
+  const clearColor = styleColorToGpu(
+    window.getComputedStyle(gpu.canvas).backgroundColor
+  );
   const renderPassDescription: GPURenderPassDescriptor = {
     colorAttachments: [
       {

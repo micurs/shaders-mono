@@ -1,7 +1,7 @@
 import { Transform } from '@shaders-mono/geopro';
 import { Gpu } from './gpu-connection';
 
-export type GeoBuilder = (gpu: Gpu) => [TriangleMesh, Material];
+export type GeoBuilder = (gpu: Gpu) => [TriangleMesh, Material?];
 
 export interface GPUConnection {
   readonly canvas: HTMLCanvasElement;

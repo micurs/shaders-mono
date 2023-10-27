@@ -8,9 +8,13 @@ export class TriangleData {
   private _colors: Float32Array | null = null; // 4 color components per vertex - 3 points for a triangle
   private _normals: Float32Array | null = null; // 3 coordinates per vertex - 3 points for a triangle
   private _textures: Float32Array | null = null; // 2 coordinates per vertex - 3 points for a triangle
-
+  private _hasTextures = false;
   private _vertexCount = 0;
   private _vertexByteSize: number = 0;
+
+  get hasTextures() {
+    return this._hasTextures;
+  }
 
   get vertexCount() {
     if (this._vertices === null) {
@@ -41,8 +45,16 @@ export class TriangleData {
       return new Float32Array();
     }
     const fragments = [];
-    for (let vi = 0, ci = 0, ni = 0, ti = 0; vi < this._vertices.length; vi += 3, ci += 4, ni += 3, ti += 2) {
-      const fragment = [this._vertices[vi + 0], this._vertices[vi + 1], this._vertices[vi + 2]];
+    for (
+      let vi = 0, ci = 0, ni = 0, ti = 0;
+      vi < this._vertices.length;
+      vi += 3, ci += 4, ni += 3, ti += 2
+    ) {
+      const fragment = [
+        this._vertices[vi + 0],
+        this._vertices[vi + 1],
+        this._vertices[vi + 2],
+      ];
       if (this._colors !== null) {
         fragment.push(this._colors[ci + 0]);
         fragment.push(this._colors[ci + 1]);
@@ -60,7 +72,11 @@ export class TriangleData {
       }
       fragments.push(...fragment);
     }
-    console.log('fragments size', fragments.length, fragments.length * float32Size);
+    console.log(
+      'fragments size',
+      fragments.length,
+      fragments.length * float32Size
+    );
     return new Float32Array(fragments);
   }
 
@@ -142,5 +158,6 @@ export class TriangleData {
     }
     this._textures = textures;
     this._vertexByteSize += 2 * 4;
+    this._hasTextures = true;
   }
 }
