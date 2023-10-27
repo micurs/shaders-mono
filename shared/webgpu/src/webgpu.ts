@@ -85,6 +85,7 @@ export const createTriangleMesh = (gpu: Gpu, trimesh: TriangleData): TriangleMes
     buffer,
     bufferLayout,
     size: trimesh.byteSize,
+    color: [1.0, 1.0, 1.0, 1.0],
   };
 };
-// }
+

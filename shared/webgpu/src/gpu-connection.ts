@@ -185,37 +185,34 @@ export class Gpu implements GPUConnection {
    */
   private render = () => {
     const { device, context } = this;
-    const {
-      pipeline,
-      uniformBuffer,
-      renderPassDescription,
-      bindGroup,
-      triangleMesh,
-    } = this._pipeline!;
+    const { pipeline, uniformBuffers, renderPassDescription, bindGroups, triangleMesh } = this._pipeline!;
     const { projection, view, model } = this._transformations;
 
-    // Writes the 3 matrixes into the uniformBuffer ...
-    device.queue.writeBuffer(uniformBuffer, 0, model.buffer());
-    device.queue.writeBuffer(uniformBuffer, 16 * 4, view.buffer());
-    device.queue.writeBuffer(uniformBuffer, 2 * 16 * 4, view.invert().buffer());
-    device.queue.writeBuffer(uniformBuffer, 3 * 16 * 4, projection.buffer());
-
     const commandEncoder = device.createCommandEncoder();
-
     const textureView = context.getCurrentTexture().createView();
 
-    const colors =
-      renderPassDescription.colorAttachments! as GPURenderPassColorAttachment[];
+    const colors = renderPassDescription.colorAttachments! as GPURenderPassColorAttachment[];
     colors[0]!.view = textureView;
 
     const renderPass = commandEncoder.beginRenderPass(renderPassDescription);
     renderPass.setPipeline(pipeline);
 
-    // TODO: For each object in the scene we set the uniform buffer with the color and (potentially) the model matrix
-    // const uniformBufferData = new Float32Array([triangleMesh.color); // Color for the current object
-    // device.queue.writeBuffer(uniformBuffer, 0, uniformBufferData);
+    // Writes the 3 matrixes into the uniformBuffer ...
+    device.queue.writeBuffer(uniformBuffers[0], 0, model.buffer());
+    device.queue.writeBuffer(uniformBuffers[0], 16 * 4, view.buffer());
+    device.queue.writeBuffer(uniformBuffers[0], 2 * 16 * 4, view.invert().buffer());
+    device.queue.writeBuffer(uniformBuffers[0], 3 * 16 * 4, projection.buffer());
 
-    renderPass.setBindGroup(0, bindGroup);
+    // For each object in the scene we set the uniform buffer with the color and (potentially) the model matrix
+    const uniformColorData = new Float32Array(triangleMesh.color); // Color for the current object
+    device.queue.writeBuffer(uniformBuffers[1], 0, uniformColorData);
+
+    renderPass.setBindGroup(0, bindGroups[0]!); // Transformation binding groups
+    renderPass.setBindGroup(1, bindGroups[1]!); // Color
+    if (bindGroups[2]) {
+      renderPass.setBindGroup(2, bindGroups[2]); // Texture data
+    }
+
     renderPass.setVertexBuffer(0, triangleMesh.buffer);
     renderPass.draw(triangleMesh.vertexCount);
     renderPass.end();

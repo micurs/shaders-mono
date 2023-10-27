@@ -18,10 +18,15 @@ struct ColorFragment {
   @location(1) light: vec4<f32>,
 };
 
+struct ColorData {
+    color: vec4<f32>,
+};
+
 
 @binding(0) @group(0) var<uniform> transformData: TransfornData;
-@binding(1) @group(0) var myTexture: texture_2d<f32>;
-@binding(2) @group(0) var mySampler: sampler;
+@binding(0) @group(1) var<uniform> myColor: ColorData;
+@binding(0) @group(2) var myTexture: texture_2d<f32>;
+@binding(1) @group(2) var mySampler: sampler;
 
 // ----------------------------------------------------------------------------------------------- Texture Shaders
 
@@ -88,7 +93,7 @@ fn fragmentColorShader(in: ColorFragment) -> @location(0) vec4<f32> {
   var NdotL: f32 = pow(max(dot(in.normal, lightDir), 0), 2);
   let diffuse: vec3<f32> = (NdotL * lightColor);
 
-  let texColor: vec4<f32> = vec4<f32>(0.4, 0.8, 1.0, 1.0);
+  // let texColor: vec4<f32> = vec4<f32>(0.4, 0.8, 1.0, 1.0);
 
-  return vec4<f32>(texColor.rgb * (diffuse + ambientColor), 1.0);
+  return vec4<f32>(myColor.color.rgb * (diffuse + ambientColor), 1.0);
 }

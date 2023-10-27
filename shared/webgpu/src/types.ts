@@ -15,6 +15,7 @@ export interface TriangleMesh {
   bufferLayout: GPUVertexBufferLayout;
   vertexCount: number;
   size: number;
+  color: [number, number, number, number];
 }
 
 export interface Material {
@@ -27,12 +28,11 @@ export type PredefinedShaders = 'standard-3d' | 'standard-2d';
 
 export type Shaders = PredefinedShaders | { source: string };
 
-
 export interface GPUPipeline {
   pipeline: GPURenderPipeline;
   triangleMesh: TriangleMesh; // To be replaced with a more generic triangle mesh structure!
-  uniformBuffer: GPUBuffer;
-  bindGroup: GPUBindGroup;
+  uniformBuffers: Array<GPUBuffer>;
+  bindGroups: Array<GPUBindGroup | undefined>;
   renderPassDescription: GPURenderPassDescriptor;
 }
 

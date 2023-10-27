@@ -1,6 +1,14 @@
 {
   "vitest.debugExclude": ["<node_internals>/**", "**/node_modules/**"],
-  "cSpell.words": ["fovy", "geopro", "geos", "trimesh", "unmap", "unorm", "webgpu"],
+  "cSpell.words": [
+    "fovy",
+    "geopro",
+    "geos",
+    "trimesh",
+    "unmap",
+    "unorm",
+    "webgpu"
+  ],
   "workbench.colorCustomizations": {
     "titleBar.activeBackground": "#580c0c",
     "titleBar.border": "#9fb716",

@@ -8,6 +8,7 @@ import type {
 const geoBuilder = async (trimesh: TriangleData) => {
   return (gpu: WebGPU.Gpu): [TriangleMesh, Material?] => {
     const triangleMesh = WebGPU.createTriangleMesh(gpu, trimesh);
+    triangleMesh.color = [1.0, 0.2, 0.2, 1.0];
     return [triangleMesh];
   };
 };
