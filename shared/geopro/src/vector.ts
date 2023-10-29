@@ -31,7 +31,6 @@ export class Vector {
     return p;
   }
 
-
   /**
    * Compute a vector as a difference between two points p1 - p2
    * @param p1
@@ -106,6 +105,12 @@ export class Vector {
     return vec3.dot(this.vec3(), v.vec3());
   };
 
+  add = (v: Vector): Vector => {
+    const res = new Vector();
+    vec4.add(res._coord, this._coord, v._coord);
+    return res;
+  };
+
   isUnitVector() {
     return false;
   }
@@ -129,6 +134,10 @@ export class Vector {
    */
   get z() {
     return this._coord[2];
+  }
+
+  get triplet(): [number, number, number] {
+    return [this.x, this.y, this.z];
   }
 
   get coordinates(): VecEntries {

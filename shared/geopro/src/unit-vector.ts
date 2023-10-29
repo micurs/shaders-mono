@@ -87,6 +87,12 @@ export class UnitVector {
     return this.unMap(f);
   }
 
+  invert(): UnitVector {
+    const p = new UnitVector();
+    vec4.negate(p._coord, this._coord);
+    return p;
+  }
+
   /**
    * return tru if the object is a UnitVector
    */
