@@ -132,6 +132,10 @@ export class Point {
     return [...this._coord.values()] as VecEntries;
   }
 
+  get triplet(): [number, number, number] {
+    return [this.x, this.y, this.z];
+  }
+
   vec3(): Readonly<vec3> {
     return vec3.fromValues(this.x, this.y, this.z);
   }

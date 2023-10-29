@@ -1,70 +1,38 @@
 import { Gpu } from '../gpu-connection';
 import { GeoBuilder, GPUPipeline } from '../types';
+import { createColorsBindingGroup, createTextureBindingGroup, createTransformationsBindingGroup } from './binding';
 import { styleColorToGpu } from './utils';
 
 export const createPipeline = async (gpu: Gpu, shaderModule: GPUShaderModule, geoBuilder: GeoBuilder): Promise<GPUPipeline> => {
   const [triangleMesh, material] = geoBuilder(gpu);
   const { device, format } = gpu;
 
-  // Create the uniform buffer to hold the transformation matrix.
-  const uniformBuffer = device.createBuffer({
-    size: 4 * 16 * 4, // 4 matrices of 4x4 floats of 4 bytes each
-    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-  });
+  // Group 0: Transformations
+  const [layout0, group0, buffer0] = createTransformationsBindingGroup(gpu);
+  // Group 1: colors
+  const [layout1, group1, buffer1] = createColorsBindingGroup(gpu);
+  // Group 2: texture, and sampler
+  const [layout2, group2] = material ? createTextureBindingGroup(gpu, material) : [undefined, undefined];
 
-  const bindGroupLayout = device.createBindGroupLayout({
-    entries: [
-      {
-        binding: 0,
-        visibility: GPUShaderStage.VERTEX,
-        buffer: {
-          type: 'uniform',
-        },
-      },
-      {
-        binding: 1,
-        visibility: GPUShaderStage.FRAGMENT,
-        texture: {},
-      },
-      {
-        binding: 2,
-        visibility: GPUShaderStage.FRAGMENT,
-        sampler: {},
-      },
-    ],
-  });
-  const bindGroup = device.createBindGroup({
-    layout: bindGroupLayout,
-    entries: [
-      {
-        binding: 0,
-        resource: { buffer: uniformBuffer },
-      },
-      {
-        binding: 1,
-        resource: material.view!,
-      },
-      {
-        binding: 2,
-        resource: material.sampler!,
-      },
-    ],
-  });
+  const pipelineLayout = layout2
+    ? device.createPipelineLayout({
+        bindGroupLayouts: [layout0, layout1, layout2],
+      })
+    : device.createPipelineLayout({
+        bindGroupLayouts: [layout0, layout1],
+      });
 
-  const pipelineLayout = device.createPipelineLayout({
-    bindGroupLayouts: [bindGroupLayout],
-  });
-
+  // Create the render pipeline and decide which shaders to use.
   const pipeline = device.createRenderPipeline({
     layout: pipelineLayout,
     vertex: {
       module: shaderModule,
-      entryPoint: 'vs_main',
+      entryPoint: material ? 'vertexTextureShader' : 'vertexColorShader',
       buffers: [triangleMesh.bufferLayout], // TODO: here add normals buffer layout: triangleMesh.
     },
     fragment: {
       module: shaderModule,
-      entryPoint: 'fs_main',
+      entryPoint: material ? 'fragmentTextureShader' : 'fragmentColorShader',
       targets: [{ format }],
     },
     primitive: {
@@ -79,13 +47,13 @@ export const createPipeline = async (gpu: Gpu, shaderModule: GPUShaderModule, ge
   });
 
   // Create the Z-buffer to hold depth values for each pixel and control the render pass.
-  let textureView = gpu.context.getCurrentTexture().createView();
   const depthTexture = device.createTexture({
     size: [gpu.canvas.width, gpu.canvas.height, 1],
     format: 'depth24plus',
     usage: GPUTextureUsage.RENDER_ATTACHMENT,
   });
 
+  let textureView = gpu.context.getCurrentTexture().createView();
   const clearColor = styleColorToGpu(window.getComputedStyle(gpu.canvas).backgroundColor);
   const renderPassDescription: GPURenderPassDescriptor = {
     colorAttachments: [
@@ -113,8 +81,8 @@ export const createPipeline = async (gpu: Gpu, shaderModule: GPUShaderModule, ge
   return {
     pipeline,
     triangleMesh,
-    uniformBuffer,
-    bindGroup,
+    uniformBuffers: [buffer0, buffer1],
+    bindGroups: [group0, group1, group2],
     renderPassDescription: renderPassDescription as GPURenderPassDescriptor,
   };
 };

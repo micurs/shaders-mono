@@ -1,3 +1,8 @@
 {
-  "compilerOptions": {}
+  "compilerOptions": {
+    "paths": {
+      "@shaders-mono/webgpu": ["./shared/webgpu/src/index.ts"],
+      "@shaders-mono/geopro": ["./shared/geopro/src/index.ts"]
+    }
+  }
 }
