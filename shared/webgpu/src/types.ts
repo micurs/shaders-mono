@@ -1,6 +1,9 @@
 import { Transform } from '@shaders-mono/geopro';
 import { Gpu } from './gpu-connection';
 
+
+export type RGBAColor = [number, number, number, number];
+
 export type GeoBuilder = (gpu: Gpu) => [TriangleMesh, Material?];
 
 export interface GPUConnection {

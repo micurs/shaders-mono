@@ -17,7 +17,8 @@ export const init = async (canvas: HTMLCanvasElement) => {
   const gpu = await WebGPU.initialize(canvas);
   await gpu.setupShaders('standard-3d');
 
-  const geo = await geoBuilder(WebGPU.cylinderTriMesh());
+  const color = WebGPU.styleColorToVec(window.getComputedStyle(gpu.canvas).color);
+  const geo = await geoBuilder(WebGPU.cylinderTriMesh(16, color));
   await gpu.setupGeoBuilder(geo);
 
   const [mouseHandlers, viewHandlers] = WebGPU.getOrbitHandlers(gpu);
