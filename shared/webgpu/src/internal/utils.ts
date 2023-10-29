@@ -1,3 +1,6 @@
+import { Gpu } from '../gpu-connection';
+import { styleColorToGpu } from '../webgpu';
+
 export const createGPUBufferUint = (
   device: GPUDevice,
   data: Uint32Array,
@@ -35,31 +38,37 @@ export const createGPUBuffer = (
   return buffer;
 };
 
+export const buildRenderPassDescriptor = (gpu: Gpu): GPURenderPassDescriptor => {
+  const { device, canvas } = gpu;
+  // Create the Z-buffer to hold depth values for each pixel and control the render pass.
+  const depthTexture = device.createTexture({
+    size: [canvas.width, canvas.height, 1],
+    format: 'depth24plus',
+    usage: GPUTextureUsage.RENDER_ATTACHMENT,
+  });
+  const textureView = gpu.context.getCurrentTexture().createView();
+  const clearColor = styleColorToGpu(window.getComputedStyle(canvas).backgroundColor);
 
-/**
- * Parse a style color in the forma rgb(r,g,b) or rgba(r,g,b,a) to a GPUColor object
- * @param styleColor
- * @returns
- */
-export const styleColorToGpu = (styleColor: string): GPUColor => {
-  let values: number[] = [];
-
-  // Extract numbers from the rgb/rgba string
-  const regex = /rgba?\(([^)]+)\)/;
-  const matches = regex.exec(styleColor);
-
-  if (matches && matches[1]) {
-      values = matches[1].split(",").map(num => parseFloat(num.trim()));
-  }
-
-  if (values.length < 3) {
-      throw new Error("Invalid RGB/RGBA format");
-  }
-
-  const r = values[0] / 255;
-  const g = values[1] / 255;
-  const b = values[2] / 255;
-  const a = (values.length === 4) ? values[3] : 1; // default to 1 if alpha is not provided
-
-  return { r, g, b, a };
+  return {
+    colorAttachments: [
+      {
+        view: textureView,
+        clearValue: clearColor, //background color
+        //loadValue: { r: 0.2, g: 0.247, b: 0.314, a: 1.0 },
+        loadOp: 'clear',
+        storeOp: 'store',
+      },
+    ],
+    depthStencilAttachment: {
+      view: depthTexture.createView(),
+      depthClearValue: 1.0,
+      // depthLoadValue: 1.0,
+      depthStoreOp: 'store',
+      depthLoadOp: 'clear',
+      /*stencilClearValue: 0,
+          stencilLoadValue: 0,
+          stencilStoreOp: "store",
+          stencilLoadOp: 'clear'*/
+    },
+  };
 };

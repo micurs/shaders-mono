@@ -1,6 +1,5 @@
 import { Frame } from "./frame";
-import { Point } from "./point";
-import { Transform } from "./transform";
+import { Point } from './point';
 import { UnitVector, isUnitVector } from "./unit-vector";
 import { Vector } from "./vector";
 

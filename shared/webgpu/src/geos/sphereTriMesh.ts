@@ -1,9 +1,8 @@
 // Constants for the icosahedron generation
 
-import { Point, UnitVector, Vector } from '@shaders-mono/geopro';
+import { UnitVector, Vector } from '@shaders-mono/geopro';
 import { TriangleData } from '../triangle-data';
 import { RGBAColor } from '../types';
-import { computeNormals } from './utils';
 
 type TriangleIndexes = [number, number, number];
 

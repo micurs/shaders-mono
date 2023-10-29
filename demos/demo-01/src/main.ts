@@ -1,9 +1,6 @@
+import { init } from './model-builder';
 import './style.css';
 import { Frame } from '@shaders-mono/geopro';
-import * as WebGPU from '@shaders-mono/webgpu';
-import { geoBuilder } from './model-builder';
-import { MouseLocation } from '@shaders-mono/webgpu';
-import { getOrbitHandlers } from '@shaders-mono/webgpu';
 
 const f = Frame.world();
 
@@ -32,34 +29,12 @@ const canvasEl = document.getElementById('gfx-canvas') as HTMLCanvasElement | nu
 
 if (!supportEl || !canvasEl) {
   alert('The app is broken! No canvas was found!');
+} else {
+  init(canvasEl, supportEl)
+    .then(() => {
+      supportEl!.innerText = 'All set!';
+    })
+    .catch((err) => {
+      supportEl!.innerText = 'Error: ' + err.message;
+    });
 }
-
-async function init() {
-  const gpu = await WebGPU.initialize(canvasEl!);
-
-  await gpu.setupShaders('standard-3d');
-
-  const geo = await geoBuilder(WebGPU.cubeTriMesh(), 'teapot');
-  await gpu.setupGeoBuilder(geo);
-
-  const [mouseHandlers, viewHandlers] = getOrbitHandlers(gpu);
-
-  gpu.captureMouseMotion({
-    click: (bt: number, p: MouseLocation) => {
-      supportEl!.innerText = `DEMO Mouse click: ${bt},  ${p} `;
-    },
-    ...mouseHandlers,
-  });
-
-  gpu.beginRenderLoop({
-    ...viewHandlers,
-  });
-}
-
-init()
-  .then(() => {
-    supportEl!.innerText = 'All set!';
-  })
-  .catch((err) => {
-    supportEl!.innerText = 'Error: ' + err.message;
-  });

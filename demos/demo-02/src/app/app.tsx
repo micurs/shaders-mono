@@ -26,7 +26,7 @@ export function App() {
       <h1 className="font-bold text-xl my-2 mx-1">Demo 02</h1>
       <div>
         <canvas
-          className="bg-black border-2 rounded-lg border-blue-600 mx-auto"
+          className="bg-blue-700 border-2 rounded-lg border-blue-600 mx-auto text-yellow-400"
           ref={canvasRef}
           width={800}
           height={600}

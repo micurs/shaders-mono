@@ -1,16 +1,10 @@
 import * as WebGPU from '@shaders-mono/webgpu';
-import type {
-  Material,
-  TriangleData,
-  TriangleMesh,
-} from '@shaders-mono/webgpu';
+import type { Gpu, TriangleData, Scene } from '@shaders-mono/webgpu';
 
-const geoBuilder = async (trimesh: TriangleData) => {
-  return (gpu: WebGPU.Gpu): [TriangleMesh, Material?] => {
-    const triangleMesh = WebGPU.createTriangleMesh(gpu, trimesh);
-    triangleMesh.color = [1.0, 0.2, 0.2, 1.0];
-    return [triangleMesh];
-  };
+const buldScene = async (gpu: Gpu, trimesh: TriangleData): Promise<Scene> => {
+  trimesh.buildGpuBuffer(gpu);
+  // trimesh.color = WebGPU.styleColorToVec(window.getComputedStyle(gpu.canvas).color);
+  return [[trimesh]];
 };
 
 export const init = async (canvas: HTMLCanvasElement) => {
@@ -18,8 +12,8 @@ export const init = async (canvas: HTMLCanvasElement) => {
   await gpu.setupShaders('standard-3d');
 
   const color = WebGPU.styleColorToVec(window.getComputedStyle(gpu.canvas).color);
-  const geo = await geoBuilder(WebGPU.cylinderTriMesh(16, color));
-  await gpu.setupGeoBuilder(geo);
+  const scene = await buldScene(gpu, WebGPU.sphereTriMesh(3, color));
+  await gpu.setupGeoBuilder(scene);
 
   const [mouseHandlers, viewHandlers] = WebGPU.getOrbitHandlers(gpu);
   gpu.captureMouseMotion(mouseHandlers);

@@ -43,6 +43,12 @@ export class Vector {
     return v;
   }
 
+  static fromPoint(p: Point) {
+    const v = new Vector();
+    v._coord = [...p.triplet, 0.0];
+    return v;
+  }
+
   /**
    * Returns a new Vector computed as the cross-product
    * of the two vector passed as parameter: u' = u1 x u2
