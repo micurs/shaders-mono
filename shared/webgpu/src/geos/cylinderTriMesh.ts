@@ -77,6 +77,5 @@ export const cylinderTriMesh = (steps: number, color: RGBAColor, t: Transform) =
 
   const triangleData = new TriangleData(new Float32Array(coordinates), coordinates.length / 3, color);
   triangleData.addNormals(new Float32Array(normals));
-
   return triangleData;
 };

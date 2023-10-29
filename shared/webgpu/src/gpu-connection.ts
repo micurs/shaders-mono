@@ -76,12 +76,14 @@ const getGPU = async (canvas: HTMLCanvasElement): Promise<GPUConnection> => {
   return { context, device, canvas, format };
 };
 
+type PipelineMode = 'default' | 'alternative';
 export class Gpu implements GPUConnection {
   readonly canvas: HTMLCanvasElement;
   readonly context: GPUCanvasContext;
   readonly device: GPUDevice;
   readonly format: GPUTextureFormat;
 
+  private _pipelineMode: PipelineMode = 'default';
   private _shaderModule: GPUShaderModule | undefined;
   private _pipelines: Array<GPUPipeline> = [];
   private _transformations: GpuTransformations = {
@@ -113,6 +115,10 @@ export class Gpu implements GPUConnection {
     return getGPU(canvas).then(({ canvas, context, device, format }) => {
       return new Gpu(canvas, context, device, format);
     });
+  }
+
+  setPipelineMode(mode: PipelineMode) {
+    this._pipelineMode = mode;
   }
 
   get pipelines(): Array<GPUPipeline> {
@@ -201,8 +207,10 @@ export class Gpu implements GPUConnection {
     const renderPass = commandEncoder.beginRenderPass(_renderPassDescription);
 
     this._pipelines.forEach((gpuPipeLine) => {
-      const { pipeline, uniformBuffers, bindGroups, triangleMesh } = gpuPipeLine;
-      renderPass.setPipeline(pipeline);
+      const { pipeline, altPipeline, uniformBuffers, bindGroups, triangleMesh } = gpuPipeLine;
+
+      const activePipeline = this._pipelineMode === 'default' ? pipeline : altPipeline;
+      renderPass.setPipeline(activePipeline);
 
       // Writes the 3 matrixes into the uniformBuffer ...
       device.queue.writeBuffer(uniformBuffers[0], 0, model.buffer());

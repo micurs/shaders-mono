@@ -35,6 +35,7 @@ export type Shaders = PredefinedShaders | { source: string };
 export interface GPUPipeline {
   type: 'colorPipeline' | 'texturePipeline';
   pipeline: GPURenderPipeline;
+  altPipeline: GPURenderPipeline;
   triangleMesh: TriangleMesh; // To be replaced with a more generic triangle mesh structure!
   uniformBuffers: Array<GPUBuffer>;
   bindGroups: Array<GPUBindGroup | undefined>;
