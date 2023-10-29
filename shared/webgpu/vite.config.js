@@ -2,6 +2,8 @@
 import { resolve } from 'path';
 import { defineConfig } from 'vite';
 import dts from 'vite-plugin-dts';
+import checker from 'vite-plugin-checker';
+
 // https://vitejs.dev/guide/build.html#library-mode
 
 const entryRoot = resolve(__dirname, 'src/index.ts');
@@ -19,12 +21,5 @@ export default defineConfig({
       fileName: 'index',
     },
   },
-  plugins: [
-    dts({
-      // outDir: ['dist'],
-      // staticImport: true,
-      rollupTypes: true,
-      //declarationOnly: true,
-    }),
-  ],
+  plugins: [checker({ typescript: true }), dts({ rollupTypes: true })],
 });

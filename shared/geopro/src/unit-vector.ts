@@ -3,8 +3,7 @@ import { Vector } from "./vector";
 import { VecEntries } from "./types";
 import { Transform } from "./transform";
 import { Frame } from "./frame";
-
-
+import { Point } from './point';
 
 export class UnitVector {
   private _coord: vec4;
@@ -17,6 +16,11 @@ export class UnitVector {
     const uv = new UnitVector();
     uv._coord = vec4.fromValues(v.x, v.y, v.z, 0);
     vec4.normalize(uv._coord, uv._coord);
+    return uv;
+  }
+
+  fromPoint(p: Point) {
+    const uv = UnitVector.fromValues(...p.triplet);
     return uv;
   }
 
@@ -91,6 +95,10 @@ export class UnitVector {
     const p = new UnitVector();
     vec4.negate(p._coord, this._coord);
     return p;
+  }
+
+  scale(s: number): Vector {
+    return Vector.fromValues(this.x * s, this.y * s, this.z * s);
   }
 
   /**

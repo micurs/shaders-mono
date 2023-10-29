@@ -24,6 +24,12 @@ export class Point {
     return p;
   }
 
+  static fromVector(v: Vector) {
+    const p = new Point();
+    p._coord = vec4.fromValues(v.x, v.y, v.z, 1.0);
+    return p;
+  }
+
   static fromVec4(v: vec4) {
     const p = new Point();
     const w = v[3] !== 0 ? v[3] : 1.0;

@@ -1,21 +1,13 @@
 import { Point, Transform, UnitVector } from '@shaders-mono/geopro';
 
-import {
-  PredefinedShaders,
-  GPUConnection,
-  GPUPipeline,
-  GpuTransformations,
-  Shaders,
-  TransCbs,
-  GeoBuilder,
-  MouseCbs,
-} from './types';
+import { PredefinedShaders, GPUConnection, GPUPipeline, GpuTransformations, Shaders, TransCbs, MouseCbs, Scene } from './types';
 import { setupShaderModule } from './internal/setup-shaders';
-import { createPipeline } from './internal/setup-pipline';
+import { createPipelines } from './internal/setup-pipline';
 
 import shader3D from './internal/shader3d.wgsl?raw';
 import shader2D from './internal/shader2d.wgsl?raw';
 import { initMouseHandler } from './internal/mouse-capture';
+import { buildRenderPassDescriptor } from './internal/utils';
 
 const isPredefinedShader = (shader: Shaders): shader is PredefinedShaders => {
   return typeof shader === 'string';
@@ -27,11 +19,7 @@ const isPredefinedShader = (shader: Shaders): shader is PredefinedShaders => {
  * @param param1 - dimension of the viewport
  * @param transGen - optional generator of view transformation
  */
-const getTransformations = (
-  currTrans: GpuTransformations,
-  [w, h]: [number, number],
-  transGen?: TransCbs
-): GpuTransformations => {
+const getTransformations = (currTrans: GpuTransformations, [w, h]: [number, number], transGen?: TransCbs): GpuTransformations => {
   return {
     view:
       transGen && transGen.view
@@ -88,20 +76,22 @@ const getGPU = async (canvas: HTMLCanvasElement): Promise<GPUConnection> => {
   return { context, device, canvas, format };
 };
 
+type PipelineMode = 'default' | 'alternative';
 export class Gpu implements GPUConnection {
   readonly canvas: HTMLCanvasElement;
   readonly context: GPUCanvasContext;
   readonly device: GPUDevice;
   readonly format: GPUTextureFormat;
 
+  private _pipelineMode: PipelineMode = 'default';
   private _shaderModule: GPUShaderModule | undefined;
-  private _pipeline: GPUPipeline | undefined;
+  private _pipelines: Array<GPUPipeline> = [];
   private _transformations: GpuTransformations = {
     projection: Transform.identity(),
     view: Transform.identity(),
     model: Transform.identity(),
   };
-
+  private _renderPassDescription: GPURenderPassDescriptor | undefined = undefined;
   private _transGen: TransCbs | undefined;
 
   private constructor(canvas: HTMLCanvasElement, context: GPUCanvasContext, device: GPUDevice, format: GPUTextureFormat) {
@@ -109,16 +99,30 @@ export class Gpu implements GPUConnection {
     this.context = context;
     this.device = device;
     this.format = format;
+
+    this.device.lost.then(() => {
+      // TODO: handle loosing the device and recreate it
+      console.log('WebGPU:device lost');
+    });
   }
 
+  /**
+   * Create a GPU connection
+   * @param canvas - target canvas for the target texture for rendering
+   * @returns
+   */
   static async build(canvas: HTMLCanvasElement): Promise<Gpu> {
     return getGPU(canvas).then(({ canvas, context, device, format }) => {
       return new Gpu(canvas, context, device, format);
     });
   }
 
-  get pipeline(): GPUPipeline | undefined {
-    return this._pipeline;
+  setPipelineMode(mode: PipelineMode) {
+    this._pipelineMode = mode;
+  }
+
+  get pipelines(): Array<GPUPipeline> {
+    return this._pipelines;
   }
 
   async setupShaders(shaders: Shaders): Promise<void> {
@@ -144,12 +148,14 @@ export class Gpu implements GPUConnection {
    * @param geoBuilder
    * @returns
    */
-  async setupGeoBuilder(geoBuilder: GeoBuilder): Promise<void> {
+  async setupGeoBuilder(scene: Scene): Promise<void> {
     if (!this._shaderModule) {
       throw new Error('WebGPU:shader module is NOT available!');
     }
     // Setup the GPU pipeline with the compiled shaders
-    this._pipeline = await createPipeline(this, this._shaderModule, geoBuilder);
+    this._pipelines = createPipelines(this, this._shaderModule, scene);
+
+    this._renderPassDescription = buildRenderPassDescriptor(this);
   }
 
   /**
@@ -184,47 +190,53 @@ export class Gpu implements GPUConnection {
    * @private
    */
   private render = () => {
-    const { device, context } = this;
-    const { pipeline, uniformBuffers, renderPassDescription, bindGroups, triangleMesh } = this._pipeline!;
+    const { device, context, _renderPassDescription } = this;
+
     const { projection, view, model } = this._transformations;
+
+    if (!_renderPassDescription) {
+      console.error('WebGPU:renderPassDescription is NOT available!');
+      return;
+    }
 
     const commandEncoder = device.createCommandEncoder();
     const textureView = context.getCurrentTexture().createView();
 
-    const colors = renderPassDescription.colorAttachments! as GPURenderPassColorAttachment[];
+    const colors = _renderPassDescription.colorAttachments! as GPURenderPassColorAttachment[];
     colors[0]!.view = textureView;
+    const renderPass = commandEncoder.beginRenderPass(_renderPassDescription);
 
-    const renderPass = commandEncoder.beginRenderPass(renderPassDescription);
-    renderPass.setPipeline(pipeline);
+    this._pipelines.forEach((gpuPipeLine) => {
+      const { pipeline, altPipeline, uniformBuffers, bindGroups, triangleMesh } = gpuPipeLine;
 
-    // Writes the 3 matrixes into the uniformBuffer ...
-    device.queue.writeBuffer(uniformBuffers[0], 0, model.buffer());
-    device.queue.writeBuffer(uniformBuffers[0], 16 * 4, view.buffer());
-    device.queue.writeBuffer(uniformBuffers[0], 2 * 16 * 4, view.invert().buffer());
-    device.queue.writeBuffer(uniformBuffers[0], 3 * 16 * 4, projection.buffer());
+      const activePipeline = this._pipelineMode === 'default' ? pipeline : altPipeline;
+      renderPass.setPipeline(activePipeline);
 
-    // For each object in the scene we set the uniform buffer with the color and (potentially) the model matrix
-    const uniformColorData = new Float32Array(triangleMesh.color); // Color for the current object
-    device.queue.writeBuffer(uniformBuffers[1], 0, uniformColorData);
+      // Writes the 3 matrixes into the uniformBuffer ...
+      device.queue.writeBuffer(uniformBuffers[0], 0, model.buffer());
+      device.queue.writeBuffer(uniformBuffers[0], 16 * 4, view.buffer());
+      device.queue.writeBuffer(uniformBuffers[0], 2 * 16 * 4, view.invert().buffer());
+      device.queue.writeBuffer(uniformBuffers[0], 3 * 16 * 4, projection.buffer());
+      renderPass.setBindGroup(0, bindGroups[0]!); // Transformation binding groups
 
-    renderPass.setBindGroup(0, bindGroups[0]!); // Transformation binding groups
-    renderPass.setBindGroup(1, bindGroups[1]!); // Color
-    if (bindGroups[2]) {
-      renderPass.setBindGroup(2, bindGroups[2]); // Texture data
-    }
+      // For each object in the scene we set the uniform buffer with the color and (potentially) the model matrix
+      const uniformColorData = new Float32Array(triangleMesh.color); // Color for the current object
+      device.queue.writeBuffer(uniformBuffers[1], 0, uniformColorData);
+      renderPass.setBindGroup(1, bindGroups[1]!); // Color
 
-    renderPass.setVertexBuffer(0, triangleMesh.buffer);
-    renderPass.draw(triangleMesh.vertexCount);
+      if (bindGroups[2]) {
+        renderPass.setBindGroup(2, bindGroups[2]); // Texture data
+      }
+
+      renderPass.setVertexBuffer(0, triangleMesh.buffer);
+      renderPass.draw(triangleMesh.vertexCount);
+    });
     renderPass.end();
-
     device.queue.submit([commandEncoder.finish()]);
   };
 
   private renderLoop() {
     const { width, height } = this.canvas;
-    if (!this._pipeline) {
-      return;
-    }
     // Get transformation from the outside to allow camera and model movements.
     this._transformations = getTransformations(this._transformations, [width, height], this._transGen);
 

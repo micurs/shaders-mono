@@ -1,9 +1,10 @@
 // Constants for the icosahedron generation
 
-import { Point, UnitVector, Vector } from '@shaders-mono/geopro';
+import { UnitVector, Vector } from '@shaders-mono/geopro';
 import { TriangleData } from '../triangle-data';
 import { RGBAColor } from '../types';
-import { computeNormals } from './utils';
+import { Transform } from '@shaders-mono/geopro';
+import { Point } from '@shaders-mono/geopro';
 
 type TriangleIndexes = [number, number, number];
 
@@ -103,22 +104,27 @@ function subdivide(vertices: UnitVector[], triangles: TriangleIndexes[], depth: 
   }
 }
 
-export const sphereTriMesh = (steps: number, color: RGBAColor) => {
+export const sphereTriMesh = (steps: number, color: RGBAColor, t: Transform = Transform.world()) => {
   const [sphVertices, sphIndexes] = subdivide(vertices, indices, steps);
 
   console.log(' Number of vertices', vertices.length);
 
   const coordinates: number[] = [];
   const normals: number[] = [];
+  const center = Point.fromValues(0, 0, 0).map(t);
   sphIndexes.forEach((triangle) => {
-    console.log(triangle);
-    console.log(sphVertices[triangle[0]]);
-    coordinates.push(...sphVertices[triangle[2]].triplet);
-    coordinates.push(...sphVertices[triangle[1]].triplet);
-    coordinates.push(...sphVertices[triangle[0]].triplet);
-    normals.push(...sphVertices[triangle[2]].invert().triplet);
-    normals.push(...sphVertices[triangle[1]].invert().triplet);
-    normals.push(...sphVertices[triangle[0]].invert().triplet);
+    const pt0 = sphVertices[triangle[2]].scale(0.5).map(t);
+    const pt1 = sphVertices[triangle[1]].scale(0.5).map(t);
+    const pt2 = sphVertices[triangle[0]].scale(0.5).map(t);
+    const n0 = UnitVector.fromVector(Vector.fromPoints(center, Point.fromVector(pt0)));
+    const n1 = UnitVector.fromVector(Vector.fromPoints(center, Point.fromVector(pt1)));
+    const n2 = UnitVector.fromVector(Vector.fromPoints(center, Point.fromVector(pt2)));
+    coordinates.push(...pt0.triplet);
+    coordinates.push(...pt1.triplet);
+    coordinates.push(...pt2.triplet);
+    normals.push(...n0.triplet);
+    normals.push(...n1.triplet);
+    normals.push(...n2.triplet);
   });
   const triangleData = new TriangleData(new Float32Array(coordinates), coordinates.length / 3, color);
   triangleData.addNormals(new Float32Array(normals));

@@ -1,10 +1,10 @@
 import { Transform } from '@shaders-mono/geopro';
-import { Gpu } from './gpu-connection';
+import { TriangleData } from '.';
 
 
 export type RGBAColor = [number, number, number, number];
 
-export type GeoBuilder = (gpu: Gpu) => [TriangleMesh, Material?];
+// export type GeoBuilder = (gpu: Gpu) => [TriangleMesh, Material?];
 
 export interface GPUConnection {
   readonly canvas: HTMLCanvasElement;
@@ -14,11 +14,12 @@ export interface GPUConnection {
 }
 
 export interface TriangleMesh {
-  buffer: GPUBuffer;
-  bufferLayout: GPUVertexBufferLayout;
+  buffer: GPUBuffer | null;
+  bufferLayout: GPUVertexBufferLayout | null;
   vertexCount: number;
-  size: number;
-  color: [number, number, number, number];
+  byteSize: number;
+  color: RGBAColor;
+  primitives: GPUPrimitiveTopology;
 }
 
 export interface Material {
@@ -32,11 +33,12 @@ export type PredefinedShaders = 'standard-3d' | 'standard-2d';
 export type Shaders = PredefinedShaders | { source: string };
 
 export interface GPUPipeline {
+  type: 'colorPipeline' | 'texturePipeline';
   pipeline: GPURenderPipeline;
+  altPipeline: GPURenderPipeline;
   triangleMesh: TriangleMesh; // To be replaced with a more generic triangle mesh structure!
   uniformBuffers: Array<GPUBuffer>;
   bindGroups: Array<GPUBindGroup | undefined>;
-  renderPassDescription: GPURenderPassDescriptor;
 }
 
 export interface GpuTransformations {
@@ -69,3 +71,5 @@ export interface MouseCbs {
   click?: MouseClickHandler;
   zoom?: MouseZoomHandler;
 }
+
+export type Scene = Array<[TriangleData, Material?]>;

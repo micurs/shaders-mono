@@ -14,6 +14,11 @@ export class Transform {
     mat4.invert(this._inverse, this._direct);
   }
 
+  static world() {
+    const t = new Transform();
+    return t;
+  }
+
   static identity() {
     const t = new Transform();
     return t;
@@ -162,6 +167,31 @@ export class Transform {
     mat4.multiply(t._inverse, im1, im2);
     t._isIdentity = false;
     return t;
+  }
+
+  translation(x: number, y: number, z: number) {
+    const t = Transform.translation(x, y, z);
+    return this.compose(t);
+  }
+
+  scale(x: number, y: number, z: number) {
+    const t = Transform.scale(x, y, z);
+    return this.compose(t);
+  }
+
+  rotationX(a: number) {
+    const t = Transform.rotationX(a);
+    return this.compose(t);
+  }
+
+  rotationY(a: number) {
+    const t = Transform.rotationY(a);
+    return this.compose(t);
+  }
+
+  rotationZ(a: number) {
+    const t = Transform.rotationZ(a);
+    return this.compose(t);
   }
 
   invert() {

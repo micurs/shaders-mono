@@ -1,7 +1,5 @@
 import { Gpu } from './gpu-connection';
-import { createGPUBuffer } from './internal/utils';
-import { TriangleData } from './triangle-data';
-import { Material, RGBAColor, TriangleMesh } from './types';
+import { Material, RGBAColor } from './types';
 
 // export namespace WebGPU {
 
@@ -66,27 +64,31 @@ export const createTexture = (gpu: Gpu, image: ImageBitmap): Material => {
 };
 
 /**
- * Create a triangle mesh from a given triangle data, that is GPUBuffer and GPUVertexBufferLayout for WebGpu
- * @param gpu - The current GPU connection
- * @param trimesh - The triangle data as a TriangleData object
- * @returns a TriangleMesh object with the WebGPU buffer and layout
+ * Parse a style color in the forma rgb(r,g,b) or rgba(r,g,b,a) to a GPUColor object
+ * @param styleColor
+ * @returns
  */
-export const createTriangleMesh = (gpu: Gpu, trimesh: TriangleData): TriangleMesh => {
-  const vertexCount = trimesh.vertexCount; // vertices.length / vertexSize;
+export const styleColorToGpu = (styleColor: string): GPUColor => {
+  let values: number[] = [];
 
-  const buffer = createGPUBuffer(gpu.device, trimesh.vertices);
+  // Extract numbers from the rgb/rgba string
+  const regex = /rgba?\(([^)]+)\)/;
+  const matches = regex.exec(styleColor);
 
-  const bufferLayout: GPUVertexBufferLayout = {
-    arrayStride: trimesh.vertexByteSize, // vertexSize * float32Size, // 5 x 32 bit numbers (i.e 4 byte each!)
-    attributes: trimesh.layouts,
-  };
-  return {
-    vertexCount,
-    buffer,
-    bufferLayout,
-    size: trimesh.byteSize,
-    color: [1.0, 1.0, 1.0, 1.0],
-  };
+  if (matches && matches[1]) {
+    values = matches[1].split(',').map((num) => parseFloat(num.trim()));
+  }
+
+  if (values.length < 3) {
+    throw new Error('Invalid RGB/RGBA format');
+  }
+
+  const r = values[0] / 255;
+  const g = values[1] / 255;
+  const b = values[2] / 255;
+  const a = values.length === 4 ? values[3] : 1; // default to 1 if alpha is not provided
+
+  return { r, g, b, a };
 };
 
 /**
@@ -116,4 +118,6 @@ export const styleColorToVec = (styleColor: string): RGBAColor => {
 
   return [r, g, b, a];
 };
+
+
 

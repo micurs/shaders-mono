@@ -2,6 +2,7 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
+import checker from 'vite-plugin-checker';
 
 export default defineConfig({
   cacheDir: '../../node_modules/.vite/demo-02',
@@ -16,7 +17,7 @@ export default defineConfig({
     host: 'localhost',
   },
 
-  plugins: [react(), nxViteTsPaths()],
+  plugins: [checker({ typescript: true }), react(), nxViteTsPaths()],
 
   // Uncomment this if you are using workers.
   // worker: {
