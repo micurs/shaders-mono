@@ -91,7 +91,7 @@ fn fragmentColorShader(in: ColorFragment) -> @location(0) vec4<f32> {
   let ambientColor: vec3<f32> = vec3<f32>(0.6, 0.6, 1.0) * 0.2; // White light
 
   // Compute Lambertian reflection
-  var NdotL: f32 = pow(max(dot(in.normal, lightDir), 0), 2);
+  var NdotL: f32 = pow(max(dot(in.normal, lightDir), 0), 1);
   // var NdotL: f32 = dot(in.normal, lightDir); // No pow anad max version
 
   let diffuse: vec3<f32> = (NdotL * lightColor);

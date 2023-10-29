@@ -46,8 +46,8 @@ export const buildRenderPassDescriptor = (gpu: Gpu): GPURenderPassDescriptor => 
     format: 'depth24plus',
     usage: GPUTextureUsage.RENDER_ATTACHMENT,
   });
-  const textureView = gpu.context.getCurrentTexture().createView();
   const clearColor = styleColorToGpu(window.getComputedStyle(canvas).backgroundColor);
+  const textureView = gpu.context.getCurrentTexture().createView();
 
   return {
     colorAttachments: [

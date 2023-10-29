@@ -33,6 +33,7 @@ export type PredefinedShaders = 'standard-3d' | 'standard-2d';
 export type Shaders = PredefinedShaders | { source: string };
 
 export interface GPUPipeline {
+  type: 'colorPipeline' | 'texturePipeline';
   pipeline: GPURenderPipeline;
   triangleMesh: TriangleMesh; // To be replaced with a more generic triangle mesh structure!
   uniformBuffers: Array<GPUBuffer>;

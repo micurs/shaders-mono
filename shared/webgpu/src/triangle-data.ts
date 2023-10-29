@@ -80,7 +80,7 @@ export class TriangleData implements TriangleMesh {
       }
       fragments.push(...fragment);
     }
-    console.log('fragments size', fragments.length, fragments.length * float32Size);
+    // console.log('fragments size', fragments.length, fragments.length * float32Size);
     return new Float32Array(fragments);
   }
 
@@ -135,7 +135,10 @@ export class TriangleData implements TriangleMesh {
     return this._buffer;
   }
 
-  get bufferLayout(): GPUVertexBufferLayout | null {
+  get bufferLayout(): GPUVertexBufferLayout {
+    if (this._bufferLayout === null) {
+      throw new Error('TriangleData: Buffer layout is not available! - Did you call buildGpuBuffer() ?');
+    }
     return this._bufferLayout;
   }
 

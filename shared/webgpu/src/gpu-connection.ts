@@ -147,7 +147,7 @@ export class Gpu implements GPUConnection {
       throw new Error('WebGPU:shader module is NOT available!');
     }
     // Setup the GPU pipeline with the compiled shaders
-    this._pipelines = await createPipelines(this, this._shaderModule, scene);
+    this._pipelines = createPipelines(this, this._shaderModule, scene);
 
     this._renderPassDescription = buildRenderPassDescriptor(this);
   }
@@ -198,7 +198,6 @@ export class Gpu implements GPUConnection {
 
     const colors = _renderPassDescription.colorAttachments! as GPURenderPassColorAttachment[];
     colors[0]!.view = textureView;
-
     const renderPass = commandEncoder.beginRenderPass(_renderPassDescription);
 
     this._pipelines.forEach((gpuPipeLine) => {
@@ -223,8 +222,8 @@ export class Gpu implements GPUConnection {
 
       renderPass.setVertexBuffer(0, triangleMesh.buffer);
       renderPass.draw(triangleMesh.vertexCount);
-      renderPass.end();
     });
+    renderPass.end();
     device.queue.submit([commandEncoder.finish()]);
   };
 

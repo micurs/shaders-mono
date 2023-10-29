@@ -97,6 +97,10 @@ export class UnitVector {
     return p;
   }
 
+  scale(s: number): Vector {
+    return Vector.fromValues(this.x * s, this.y * s, this.z * s);
+  }
+
   /**
    * return tru if the object is a UnitVector
    */

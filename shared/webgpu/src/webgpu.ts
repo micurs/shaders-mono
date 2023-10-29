@@ -64,30 +64,6 @@ export const createTexture = (gpu: Gpu, image: ImageBitmap): Material => {
 };
 
 /**
- * Create a triangle mesh from a given triangle data, that is GPUBuffer and GPUVertexBufferLayout for WebGpu
- * @param gpu - The current GPU connection
- * @param trimesh - The triangle data as a TriangleData object
- * @returns a TriangleMesh object with the WebGPU buffer and layout
- */
-// export const createTriangleMesh = (gpu: Gpu, trimesh: TriangleData): TriangleMesh => {
-//   const vertexCount = trimesh.vertexCount; // vertices.length / vertexSize;
-
-//   const buffer = createGPUBuffer(gpu.device, trimesh.vertices);
-
-//   const bufferLayout: GPUVertexBufferLayout = {
-//     arrayStride: trimesh.vertexByteSize, // vertexSize * float32Size, // 5 x 32 bit numbers (i.e 4 byte each!)
-//     attributes: trimesh.layouts,
-//   };
-//   return {
-//     vertexCount,
-//     buffer,
-//     bufferLayout,
-//     byteSize: trimesh.byteSize,
-//     color: [1.0, 1.0, 1.0, 1.0],
-//   };
-// };
-
-/**
  * Parse a style color in the forma rgb(r,g,b) or rgba(r,g,b,a) to a GPUColor object
  * @param styleColor
  * @returns
