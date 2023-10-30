@@ -1,6 +1,17 @@
 import { Point, Transform, UnitVector } from '@shaders-mono/geopro';
 
-import { PredefinedShaders, GPUConnection, GPUPipeline, GpuTransformations, Shaders, TransCbs, MouseCbs, Scene } from './types';
+import {
+  PredefinedShaders,
+  GPUConnection,
+  GPUPipeline,
+  GpuTransformations,
+  Shaders,
+  TransCbs,
+  MouseCbs,
+  Scene,
+  DirectionalLight,
+  PointLight,
+} from './types';
 import { setupShaderModule } from './internal/setup-shaders';
 import { createPipelines } from './internal/setup-pipline';
 
@@ -94,6 +105,17 @@ export class Gpu implements GPUConnection {
   private _renderPassDescription: GPURenderPassDescriptor | undefined = undefined;
   private _transGen: TransCbs | undefined;
 
+  private _dirLights: Array<DirectionalLight> = [
+    { dir: UnitVector.fromValues(0.0, 1.0, -1.0), col: [0.6, 0.6, 0.6, 1.0] },
+    { dir: UnitVector.fromValues(-0.0, -1.0, 0.2), col: [0.4, 0.4, 0.4, 0.0] },
+    { dir: UnitVector.fromValues(1.0, 0.0, 0.0), col: [0.5, 0.5, 0.5, 0.0] },
+    { dir: UnitVector.fromValues(-1.0, -1.0, -1.0), col: [0.3, 0.3, 0.3, 0.0] },
+  ];
+  private _pointLights: Array<PointLight> = [
+    { pos: Point.fromValues(5.0, 5.0, 5.0), col: [0.2, 0.2, 0.2, 1.0] },
+    { pos: Point.fromValues(1, 1, 1), col: [0.0, 0.0, 0.0, 1.0] },
+  ];
+
   private constructor(canvas: HTMLCanvasElement, context: GPUCanvasContext, device: GPUDevice, format: GPUTextureFormat) {
     this.canvas = canvas;
     this.context = context;
@@ -104,6 +126,10 @@ export class Gpu implements GPUConnection {
       // TODO: handle loosing the device and recreate it
       console.log('WebGPU:device lost');
     });
+  }
+
+  get dirLights(): Array<DirectionalLight> {
+    return this._dirLights;
   }
 
   /**
@@ -183,6 +209,28 @@ export class Gpu implements GPUConnection {
     });
   }
 
+  sceneIntoBuffer(buffer: GPUBuffer[]) {
+    const { device } = this;
+    const { projection, view } = this._transformations;
+    const viewInv = view.invert();
+    // Writes the 3 matrixes into the uniformBuffer ...
+    let transOffset = 0;
+    let lightOffset = 0;
+    device.queue.writeBuffer(buffer[0], transOffset, view.buffer());
+    transOffset += Transform.bufferSize;
+    device.queue.writeBuffer(buffer[0], transOffset, viewInv.buffer());
+    transOffset += Transform.bufferSize;
+    device.queue.writeBuffer(buffer[0], transOffset, projection.buffer());
+    transOffset += Transform.bufferSize;
+
+    const dirLightsBuffer = new Float32Array(this._dirLights.flatMap(({ dir, col }) => [...dir.coordinates, ...col]));
+    device.queue.writeBuffer(buffer[1], lightOffset, dirLightsBuffer);
+    lightOffset += dirLightsBuffer.byteLength;
+    const posLightBuffer = new Float32Array(this._pointLights.flatMap(({ pos, col }) => [...pos.coordinates, ...col]));
+    device.queue.writeBuffer(buffer[1], lightOffset, posLightBuffer);
+    lightOffset += posLightBuffer.byteLength;
+  }
+
   /**
    * render the scene
    * @param transf
@@ -191,8 +239,6 @@ export class Gpu implements GPUConnection {
    */
   private render = () => {
     const { device, context, _renderPassDescription } = this;
-
-    const { projection, view, model } = this._transformations;
 
     if (!_renderPassDescription) {
       console.error('WebGPU:renderPassDescription is NOT available!');
@@ -209,19 +255,16 @@ export class Gpu implements GPUConnection {
     this._pipelines.forEach((gpuPipeLine) => {
       const { pipeline, altPipeline, uniformBuffers, bindGroups, triangleMesh } = gpuPipeLine;
 
+      // Writes the Scene into the uniformBuffer ZERO...
+      this.sceneIntoBuffer(uniformBuffers[0]);
+      renderPass.setBindGroup(0, bindGroups[0]!); // Scene data binding groups
+
       const activePipeline = this._pipelineMode === 'default' ? pipeline : altPipeline;
       renderPass.setPipeline(activePipeline);
 
-      // Writes the 3 matrixes into the uniformBuffer ...
-      device.queue.writeBuffer(uniformBuffers[0], 0, model.buffer());
-      device.queue.writeBuffer(uniformBuffers[0], 16 * 4, view.buffer());
-      device.queue.writeBuffer(uniformBuffers[0], 2 * 16 * 4, view.invert().buffer());
-      device.queue.writeBuffer(uniformBuffers[0], 3 * 16 * 4, projection.buffer());
-      renderPass.setBindGroup(0, bindGroups[0]!); // Transformation binding groups
-
       // For each object in the scene we set the uniform buffer with the color and (potentially) the model matrix
       const uniformColorData = new Float32Array(triangleMesh.color); // Color for the current object
-      device.queue.writeBuffer(uniformBuffers[1], 0, uniformColorData);
+      device.queue.writeBuffer(uniformBuffers[1][0], 0, uniformColorData);
       renderPass.setBindGroup(1, bindGroups[1]!); // Color
 
       if (bindGroups[2]) {

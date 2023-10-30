@@ -13,6 +13,10 @@ export class Point {
     this._coord = vec4.fromValues(0, 0, 0, 1);
   }
 
+  static get bufferSize(): number {
+    return 4 * 4;
+  }
+
   static origin() {
     const p = new Point();
     return p;
@@ -140,6 +144,10 @@ export class Point {
 
   get triplet(): [number, number, number] {
     return [this.x, this.y, this.z];
+  }
+
+  buffer(): ArrayBuffer {
+    return new Float32Array(this.coordinates);
   }
 
   vec3(): Readonly<vec3> {

@@ -1,8 +1,8 @@
 import { Gpu } from '../gpu-connection';
 import { GPUPipeline, Material, Scene } from '../types';
-import { createColorsBindingGroup, createTextureBindingGroup, createTransformationsBindingGroup } from './binding';
+import { createColorsBindingGroup, createTextureBindingGroup, createSceneDataBindingGroup } from './binding';
 
-type PipelineLayoutData = [GPUPipelineLayout, GPUBindGroup[], GPUBuffer[]];
+type PipelineLayoutData = [GPUPipelineLayout, GPUBindGroup[], GPUBuffer[][]];
 
 /**
  * Create the pipeline layout for the a primitive object in the scene.
@@ -14,7 +14,7 @@ type PipelineLayoutData = [GPUPipelineLayout, GPUBindGroup[], GPUBuffer[]];
 const createPipelineLayout = (gpu: Gpu, material: Material | undefined): PipelineLayoutData => {
   const { device } = gpu;
   // Group 0: Transformations
-  const [layout0, group0, buffer0] = createTransformationsBindingGroup(gpu);
+  const [layout0, group0, buffer0] = createSceneDataBindingGroup(gpu);
   // Group 1: colors
   const [layout1, group1, buffer1] = createColorsBindingGroup(gpu);
   // Group 2: texture, and sampler

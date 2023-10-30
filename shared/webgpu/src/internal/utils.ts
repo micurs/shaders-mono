@@ -1,4 +1,5 @@
 import { Gpu } from '../gpu-connection';
+import { RGBAColor } from '../types';
 import { styleColorToGpu } from '../webgpu';
 
 export const createGPUBufferUint = (
@@ -71,4 +72,8 @@ export const buildRenderPassDescriptor = (gpu: Gpu): GPURenderPassDescriptor => 
           stencilLoadOp: 'clear'*/
     },
   };
+};
+
+export const colorBuffer = (c: RGBAColor): Float32Array => {
+  return new Float32Array(c);
 };

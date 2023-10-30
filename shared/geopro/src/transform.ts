@@ -14,6 +14,10 @@ export class Transform {
     mat4.invert(this._inverse, this._direct);
   }
 
+  static get bufferSize(): number {
+    return 16 * 4;
+  }
+
   static world() {
     const t = new Transform();
     return t;
@@ -143,7 +147,7 @@ export class Transform {
   }
 
   buffer(): ArrayBuffer {
-    return new Float32Array(this._direct);
+    return new Float32Array(this._direct.values());
   }
 
   /**

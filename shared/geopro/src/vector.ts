@@ -12,6 +12,10 @@ export class Vector {
     this._coord = vec4.fromValues(0, 0, 0, 0);
   }
 
+  static get bufferSize(): number {
+    return 4 * 4;
+  }
+
   static fromValues(x: number, y: number, z: number): Vector {
     const v = new Vector();
     v._coord = vec4.fromValues(x, y, z, 0);
@@ -148,6 +152,10 @@ export class Vector {
 
   get coordinates(): VecEntries {
     return [...this._coord.values()] as VecEntries;
+  }
+
+  buffer(): ArrayBuffer {
+    return new Float32Array(this.coordinates);
   }
 
   get length() {
