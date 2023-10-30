@@ -17,8 +17,8 @@ export class Frame {
     mat4.identity(this._inverse);
   }
 
-  isFrame() {
-    return true;
+  static bufferSize(): number {
+    return 16 * 4;
   }
 
   static world() {
@@ -97,6 +97,10 @@ export class Frame {
 
     return f;
   };
+
+  isFrame() {
+    return true;
+  }
 
   toString() {
     return `Frame(${this.origin}, ${this.i}, ${this.j}, ${this.k})`;

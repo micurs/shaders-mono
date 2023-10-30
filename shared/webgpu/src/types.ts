@@ -1,6 +1,5 @@
-import { Transform } from '@shaders-mono/geopro';
+import { Point, Transform, UnitVector } from '@shaders-mono/geopro';
 import { TriangleData } from '.';
-
 
 export type RGBAColor = [number, number, number, number];
 
@@ -37,7 +36,7 @@ export interface GPUPipeline {
   pipeline: GPURenderPipeline;
   altPipeline: GPURenderPipeline;
   triangleMesh: TriangleMesh; // To be replaced with a more generic triangle mesh structure!
-  uniformBuffers: Array<GPUBuffer>;
+  uniformBuffers: Array<Array<GPUBuffer>>;
   bindGroups: Array<GPUBindGroup | undefined>;
 }
 
@@ -73,3 +72,13 @@ export interface MouseCbs {
 }
 
 export type Scene = Array<[TriangleData, Material?]>;
+
+export interface DirectionalLight {
+  dir: UnitVector;
+  col: RGBAColor;
+}
+
+export interface PointLight {
+  pos: Point;
+  col: RGBAColor;
+}

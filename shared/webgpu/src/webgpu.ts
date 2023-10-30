@@ -63,6 +63,14 @@ export const createTexture = (gpu: Gpu, image: ImageBitmap): Material => {
   };
 };
 
+export const styleHexColorToRGBA = (styleColor: string): RGBAColor => {
+  const r = parseInt(styleColor.substr(1, 2), 16) / 255;
+  const g = parseInt(styleColor.substr(3, 2), 16) / 255;
+  const b = parseInt(styleColor.substr(5, 2), 16) / 255;
+  const a = 1;
+  return [r, g, b, a];
+};
+
 /**
  * Parse a style color in the forma rgb(r,g,b) or rgba(r,g,b,a) to a GPUColor object
  * @param styleColor
@@ -117,6 +125,11 @@ export const styleColorToVec = (styleColor: string): RGBAColor => {
   const a = values.length === 4 ? values[3] : 1; // default to 1 if alpha is not provided
 
   return [r, g, b, a];
+};
+
+export const RGBAColorToStyle = (color: RGBAColor): string => {
+  const [r, g, b, a] = color;
+  return `#${(r * 255).toString(16)}${(g * 255).toString(16)}${(b * 255).toString(16)}`;
 };
 
 

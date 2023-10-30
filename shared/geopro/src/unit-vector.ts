@@ -12,6 +12,10 @@ export class UnitVector {
     this._coord = vec4.fromValues(1.0, 1.0, 1.0, 0.0);
   }
 
+  static get bufferSize(): number {
+    return 4 * 4;
+  }
+
   static fromVector(v: Vector) {
     const uv = new UnitVector();
     uv._coord = vec4.fromValues(v.x, v.y, v.z, 0);
@@ -139,6 +143,10 @@ export class UnitVector {
 
   get triplet(): [number, number, number] {
     return [this.x, this.y, this.z];
+  }
+
+  buffer(): ArrayBuffer {
+    return new Float32Array(this.coordinates);
   }
 
   vec3(): Readonly<vec3> {
