@@ -70,19 +70,20 @@ fn computeDiffuseColor(
   for (var i: u32 = 0; i < MAX_POINT_LIGHTS; i = i + 1) {
     if (sceneLights.pointLights[i].col.a != 0.0) {
       let dir = sceneLights.pointLights[i].pos.xyz - pos; //  - pos.xyz;
-      let attenuation = 1.0 - clamp(pow( length(dir)/20.0, 1.0), 0.0, 1.0 );
+      let attenuation = 1.0 - clamp(pow( length(dir)/40.0, 2.0), 0.0, 1.0 );
+
       let lightDir: vec3<f32> = normalize(dir);
       let lightColor: vec3<f32> = sceneLights.pointLights[i].col.rgb;
       var NdotL: f32 = pow(max(dot(normal, lightDir), 0), 2);
-      let diffuseColor = vec3<f32>(0,0,0); // NdotL * lightColor;
+      let diffuseColor = NdotL * lightColor;
 
       // Specular
       let V = normalize(eye - pos);
-      let R = normalize(reflect(-lightDir, normal));
+      let R = normalize(reflect(lightDir, normal));
       let specularIntensity = pow(max(dot(V, R), 0.0), shininess);
       let specularColor = specularIntensity * lightColor;
 
-      diffuse = diffuse + (diffuseColor + specularColor) * attenuation;
+      diffuse = diffuse + (diffuseColor+ specularColor) * attenuation;
     }
   }
   return clamp(diffuse, vec3<f32>(0.0, 0.0, 0.0), vec3<f32>(1.0, 1.0, 1.0));

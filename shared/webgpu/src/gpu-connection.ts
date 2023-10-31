@@ -112,10 +112,10 @@ export class Gpu implements GPUConnection {
     { dir: UnitVector.fromValues(-1.0, -1.0, -1.0), col: [0.3, 0.3, 0.3, 0.0] },
   ];
   private _pointLights: Array<PointLight> = [
-    { pos: Point.fromValues(0.0, 0.0, 3.0), col: [0.5, 0.4, 0.4, 1.0] },
-    { pos: Point.fromValues(0.0, 5.0, 0.0), col: [0.4, 0.3, 1.0, 0.0] },
-    { pos: Point.fromValues(0.0, 5.0, -5.0), col: [0.2, 0.7, 0.7, 0.0] },
-    { pos: Point.fromValues(1.0, 1.0, -5.0), col: [0.6, 0.1, 0.1, 0.0] },
+    { pos: Point.fromValues(0.0, 1.0, 3.0), col: [0.6, 0.6, 0.6, 1.0] },
+    { pos: Point.fromValues(0.0, 5.0, 0.0), col: [0.4, 0.3, 0.6, 0.0] },
+    { pos: Point.fromValues(0.0, 5.0, -5.0), col: [0.2, 0.2, 0.7, 0.0] },
+    { pos: Point.fromValues(3.0, 2.0, -3.0), col: [0.6, 0.1, 0.1, 0.0] },
   ];
 
   private constructor(canvas: HTMLCanvasElement, context: GPUCanvasContext, device: GPUDevice, format: GPUTextureFormat) {
@@ -238,10 +238,10 @@ export class Gpu implements GPUConnection {
   }
 
   rotateLights() {
-    const rotX = Transform.rotationX(Math.PI / 360);
-    const rotY = Transform.rotationY(Math.PI / 180);
-    const rotZ = Transform.rotationZ(Math.PI / 90);
-    const trans = [rotX.compose(rotY), rotY.compose(rotZ), rotZ.compose(rotX).compose(rotY), rotZ.compose(rotY)];
+    const rotX = Transform.rotationX(-Math.PI / 640);
+    const rotY = Transform.rotationY(Math.PI / 240);
+    const rotZ = Transform.rotationZ(Math.PI / 190);
+    const trans = [rotX.compose(rotY), rotY.compose(rotZ), rotZ.compose(rotX).compose(rotY), rotZ];
     this._pointLights.forEach((light, idx) => {
       light.pos = light.pos.map(trans[idx]);
     });
