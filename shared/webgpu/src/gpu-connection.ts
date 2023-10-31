@@ -112,9 +112,9 @@ export class Gpu implements GPUConnection {
     { dir: UnitVector.fromValues(-1.0, -1.0, -1.0), col: [0.3, 0.3, 0.3, 0.0] },
   ];
   private _pointLights: Array<PointLight> = [
-    { pos: Point.fromValues(0.0, 1.0, 3.0), col: [0.6, 0.6, 0.6, 1.0] },
-    { pos: Point.fromValues(0.0, 5.0, 0.0), col: [0.4, 0.3, 0.6, 0.0] },
-    { pos: Point.fromValues(0.0, 5.0, -5.0), col: [0.2, 0.2, 0.7, 0.0] },
+    { pos: Point.fromValues(2.0, 4.0, 3.0), col: [0.6, 0.6, 0.6, 1.0] },
+    { pos: Point.fromValues(-3.0, 5.0, 2.0), col: [0.4, 0.3, 0.6, 0.0] },
+    { pos: Point.fromValues(3.0, -5.0, -5.0), col: [0.2, 0.2, 0.7, 0.0] },
     { pos: Point.fromValues(3.0, 2.0, -3.0), col: [0.6, 0.1, 0.1, 0.0] },
   ];
 
