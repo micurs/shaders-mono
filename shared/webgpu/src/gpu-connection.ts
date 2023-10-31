@@ -110,16 +110,16 @@ export class Gpu implements GPUConnection {
   private _lastFPSIdx = 0;
 
   private _dirLights: Array<DirectionalLight> = [
-    { dir: UnitVector.fromValues(0.0, 0.0, -1.3), col: [0.6, 0.6, 0.6, 0.0] },
+    { dir: UnitVector.fromValues(0.0, -1.5, -0.5), col: [0.3, 0.3, 0.3, 1.0] },
     { dir: UnitVector.fromValues(-1.0, -1.0, 1.0), col: [0.4, 0.4, 0.4, 0.0] },
     { dir: UnitVector.fromValues(1.0, 0.0, 0.0), col: [0.5, 0.5, 0.5, 0.0] },
     { dir: UnitVector.fromValues(-1.0, -1.0, -1.0), col: [0.3, 0.3, 0.3, 0.0] },
   ];
   private _pointLights: Array<PointLight> = [
-    { pos: Point.fromValues(2.0, 4.0, 3.0), col: [0.6, 0.6, 0.6, 1.0] },
-    { pos: Point.fromValues(-3.0, 5.0, 2.0), col: [0.4, 0.3, 0.6, 0.0] },
-    { pos: Point.fromValues(3.0, -5.0, -5.0), col: [0.2, 0.2, 0.7, 0.0] },
-    { pos: Point.fromValues(3.0, 2.0, -3.0), col: [0.6, 0.1, 0.1, 0.0] },
+    { pos: Point.fromValues(-4.0, -4.0, -10.0), col: [0.4, 0.4, 0.4, 1.0] },
+    { pos: Point.fromValues(-13.0, 5.0, 2.0), col: [0.4, 0.3, 0.6, 0.0] },
+    { pos: Point.fromValues(3.0, -15.0, -5.0), col: [0.2, 0.2, 0.7, 0.0] },
+    { pos: Point.fromValues(13.0, 12.0, -13.0), col: [0.6, 0.1, 0.1, 0.0] },
   ];
 
   private constructor(canvas: HTMLCanvasElement, context: GPUCanvasContext, device: GPUDevice, format: GPUTextureFormat) {
