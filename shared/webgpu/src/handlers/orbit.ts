@@ -6,7 +6,7 @@ export const getOrbitHandlers = (gpu: Gpu): [MouseCbs, TransCbs] => {
   const maxRes = Math.min(gpu.canvas.width, gpu.canvas.height);
   const aspectRatio = gpu.canvas.width / gpu.canvas.height;
   let target = Point.fromValues(0, 0, 0);
-  let eye = Point.fromValues(5.0, 5.0, 5.0);
+  let eye = Point.fromValues(0.0, 7.0, 1.0);
   let vuv = UnitVector.fromValues(0, 1, 0);
   let rot = [0.0, 0.0];
   let pan = [0.0, 0.0];

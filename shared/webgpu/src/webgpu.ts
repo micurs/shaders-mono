@@ -128,8 +128,8 @@ export const styleColorToVec = (styleColor: string): RGBAColor => {
 };
 
 export const RGBAColorToStyle = (color: RGBAColor): string => {
-  const [r, g, b, a] = color;
-  return `#${(r * 255).toString(16)}${(g * 255).toString(16)}${(b * 255).toString(16)}`;
+  const [r, g, b, _] = color;
+  return `#${Math.round(r * 255).toString(16)}${Math.round(g * 255).toString(16)}${Math.round(b * 255).toString(16)}`;
 };
 
 

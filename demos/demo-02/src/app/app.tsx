@@ -47,6 +47,15 @@ export function App() {
     [gpu, forceUpdate]
   );
 
+  const switchPointLight = React.useCallback(
+    (idx: number) => {
+      if (!gpu) return;
+      gpu.pontLights[idx].col[3] = gpu.pontLights[idx].col[3] === 0 ? 1 : 0;
+      forceUpdate();
+    },
+    [gpu, forceUpdate]
+  );
+
   const colorLight = React.useCallback(
     (idx: number, col: string) => {
       if (!gpu) return;
@@ -58,15 +67,25 @@ export function App() {
     [gpu, forceUpdate]
   );
 
+  const colorPosLight = React.useCallback(
+    (idx: number, col: string) => {
+      if (!gpu) return;
+      const rgba = WebGPU.styleHexColorToRGBA(col);
+      rgba[3] = gpu.pontLights[idx].col[3];
+      gpu.pontLights[idx].col = rgba;
+      forceUpdate();
+    },
+    [gpu, forceUpdate]
+  );
   return (
     <div className="flex flex-col">
       <div className="flex flex-row justify-between items-center mx-2">
         <h1 className="font-bold text-xl my-2 mx-1">Demo 02</h1>
         <div className="m-4">{status}</div>
       </div>
-      <div>
+      <div className="z-50">
         <canvas
-          className="bg-blue-900 border-2 rounded-lg border-blue-600 mx-auto text-yellow-400"
+          className="z-50 bg-black border-2 rounded-lg border-blue-600 mx-auto text-yellow-400"
           ref={canvasRef}
           width={800}
           height={600}
@@ -80,15 +99,31 @@ export function App() {
         <div className="flex">
           {gpu &&
             gpu.dirLights.map((l: DirectionalLight, idx) => (
-              <div key={`light-${idx}`} className="flex flex-col justify-center border-gray-500 border-2 mx-2 p-2 text-center">
-                <label htmlFor="light-1">Light {idx}</label>
+              <div key={`light-${idx}`} className="flex flex-col justify-center border-gray-500 border-2 mx-1 p-1 text-center">
+                <label htmlFor={`light-${idx}}`}>Dir {idx}</label>
                 <input id="light-1" type="checkbox" className="m-1" checked={l.col[3] !== 0} onChange={(e) => switchLight(idx)} />
                 <input
-                  id="light-1-color"
+                  id={`light-${idx}-color`}
                   type="color"
                   className="m-1"
                   value={RGBAColorToStyle(l.col)}
                   onChange={(e) => colorLight(idx, e.target.value)}
+                />
+              </div>
+            ))}
+        </div>
+        <div className="flex">
+          {gpu &&
+            gpu.pontLights.map((l: WebGPU.PointLight, idx) => (
+              <div key={`pos-light-${idx}`} className="flex flex-col justify-center border-gray-500 border-2 mx-1 p-1 text-center">
+                <label htmlFor={`pos-light-${idx}}`}>Pt {idx}</label>
+                <input id="light-1" type="checkbox" className="m-1" checked={l.col[3] !== 0} onChange={(e) => switchPointLight(idx)} />
+                <input
+                  id={`pos-light-${idx}-color`}
+                  type="color"
+                  className="m-1"
+                  value={RGBAColorToStyle(l.col)}
+                  onChange={(e) => colorPosLight(idx, e.target.value)}
                 />
               </div>
             ))}

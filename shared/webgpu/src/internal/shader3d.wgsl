@@ -9,7 +9,6 @@ struct DirectionalLight {
 struct PointLight {
   pos: vec4<f32>,  // Position of the light
   col: vec4<f32>,  // Color of the light
-  // Any other properties relevant for point lights, like attenuation factors
 };
 
 struct SceneData {
@@ -31,13 +30,15 @@ struct TextFragment {
   @builtin(position) position: vec4<f32>,
   @location(0) texCoord: vec2<f32>,
   @location(1) normal: vec3<f32>,
+  @location(2) pos: vec3<f32>,
+  @location(3) eye: vec3<f32>,
 };
 
 struct ColorFragment {
   @builtin(position) position: vec4<f32>,
   @location(0) normal: vec3<f32>,
-  @location(1) light: vec4<f32>,
-  @location(3) lightCol: vec4<f32>,
+  @location(1) pos: vec3<f32>,
+  @location(2) eye: vec3<f32>,
 };
 
 struct ColorData {
@@ -52,26 +53,39 @@ struct ColorData {
 @group(2) @binding(1) var mySampler: sampler;
 
 fn computeDiffuseColor(
+    eye: vec3<f32>,
+    pos: vec3<f32>,
     normal: vec3<f32>,
     sceneLights: SceneLights) -> vec3<f32> {
-
-  var diffuseColor: vec3<f32> = vec3<f32>(0.1, 0.1, 0.1);
+  let shininess: f32 = 10.0;
+  var diffuse: vec3<f32> = vec3<f32>(0.15, 0.15, 0.1);
   for (var i: u32 = 0; i < MAX_DIR_LIGHTS; i = i + 1) {
     if (sceneLights.dirLights[i].col.a != 0.0) {
       let lightDir: vec3<f32> = normalize(sceneLights.dirLights[i].dir.xyz); //
-      let lightColor: vec3<f32> = sceneLights.dirLights[i].col.rgb; // vec3<f32>(1.0, 0.2, 0.2); //
+      let lightColor: vec3<f32> = sceneLights.dirLights[i].col.rgb;
       var NdotL: f32 = pow(max(dot(normal, lightDir), 0), 2);
-      diffuseColor = diffuseColor + (NdotL * lightColor);
+      diffuse = diffuse + (NdotL * lightColor);
     }
   }
-  // for (var i: u32 = 0; i < MAX_POINT_LIGHTS; i = i + 1) {
-  //   let lightDir: vec3<f32> = normalize(pointLights[i].pos.xyz);
-  //   let lightColor: vec3<f32> = pointLights[i].col.rgb;
-  //   var NdotL: f32 = pow(max(dot(normal, lightDir), 0), 2);
-  //   // var NdotL: f32 = dot(normal, lightDir); // No pow and max version
-  //   diffuseColor = diffuseColor + (NdotL * lightColor);
-  // }
-  return clamp(diffuseColor, vec3<f32>(0.2, 0.2, 0.2), vec3<f32>(1.0, 1.0, 1.0));
+  for (var i: u32 = 0; i < MAX_POINT_LIGHTS; i = i + 1) {
+    if (sceneLights.pointLights[i].col.a != 0.0) {
+      let dir = sceneLights.pointLights[i].pos.xyz - pos; //  - pos.xyz;
+      let attenuation = 1.0 - clamp(pow( length(dir)/20.0, 1.0), 0.0, 1.0 );
+      let lightDir: vec3<f32> = normalize(dir);
+      let lightColor: vec3<f32> = sceneLights.pointLights[i].col.rgb;
+      var NdotL: f32 = pow(max(dot(normal, lightDir), 0), 2);
+      let diffuseColor = vec3<f32>(0,0,0); // NdotL * lightColor;
+
+      // Specular
+      let V = normalize(eye - pos);
+      let R = normalize(reflect(-lightDir, normal));
+      let specularIntensity = pow(max(dot(V, R), 0.0), shininess);
+      let specularColor = specularIntensity * lightColor;
+
+      diffuse = diffuse + (diffuseColor + specularColor) * attenuation;
+    }
+  }
+  return clamp(diffuse, vec3<f32>(0.0, 0.0, 0.0), vec3<f32>(1.0, 1.0, 1.0));
 }
 
 
@@ -90,13 +104,15 @@ fn vertexTextureShader(
   // (only needed if the model matrix is not identity?)
   //  normalize(mat3x3<f32>(transpose(inverse(sceneData.model))) * vertexNormal);
   output.normal = vertexNormal;
+  output.pos = vertexPosition;
+  output.eye = sceneData.invertView[3].xyz;
 
   return output;
 }
 
 @fragment
 fn fragmentTextureShader(in: TextFragment) -> @location(0) vec4<f32> {
-  let diffuse: vec3<f32> = computeDiffuseColor( in.normal, sceneLights );
+  let diffuse: vec3<f32> = computeDiffuseColor( in.eye, in.pos, in.normal, sceneLights );
 
   let texColor: vec4<f32> = textureSample(myTexture, mySampler, in.texCoord);
 
@@ -112,7 +128,8 @@ fn vertexColorShader(
   var output: ColorFragment;
   output.position = sceneData.projection * sceneData.view * vec4<f32>(vertexPosition, 1.0);
   output.normal = vertexNormal;
-
+  output.pos = vertexPosition;
+  output.eye = sceneData.invertView[3].xyz;
   // Transform the light direction in camera coordinat with the inverse of the view matrix to view space
   // output.light =  normalize(sceneData.invertView * sceneData.light.dir);
   // output.lightCol = sceneData.light.col;
@@ -121,7 +138,9 @@ fn vertexColorShader(
 
 @fragment
 fn fragmentColorShader(in: ColorFragment) -> @location(0) vec4<f32> {
-  let diffuse: vec3<f32> = computeDiffuseColor( in.normal, sceneLights );
+  let diffuse: vec3<f32> = computeDiffuseColor( in.eye, in.pos, in.normal, sceneLights );
+
+
 
   // return vec4<f32>(myColor.color.rgb * diffuse , 1.0);
   return vec4<f32>(myColor.color.rgb * diffuse.rgb , 1.0);

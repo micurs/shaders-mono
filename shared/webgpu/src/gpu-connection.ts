@@ -106,14 +106,16 @@ export class Gpu implements GPUConnection {
   private _transGen: TransCbs | undefined;
 
   private _dirLights: Array<DirectionalLight> = [
-    { dir: UnitVector.fromValues(0.0, 1.0, -1.0), col: [0.6, 0.6, 0.6, 1.0] },
-    { dir: UnitVector.fromValues(-0.0, -1.0, 0.2), col: [0.4, 0.4, 0.4, 0.0] },
+    { dir: UnitVector.fromValues(0.0, 0.0, -1.3), col: [0.6, 0.6, 0.6, 0.0] },
+    { dir: UnitVector.fromValues(-1.0, -1.0, 1.0), col: [0.4, 0.4, 0.4, 0.0] },
     { dir: UnitVector.fromValues(1.0, 0.0, 0.0), col: [0.5, 0.5, 0.5, 0.0] },
     { dir: UnitVector.fromValues(-1.0, -1.0, -1.0), col: [0.3, 0.3, 0.3, 0.0] },
   ];
   private _pointLights: Array<PointLight> = [
-    { pos: Point.fromValues(5.0, 5.0, 5.0), col: [0.2, 0.2, 0.2, 1.0] },
-    { pos: Point.fromValues(1, 1, 1), col: [0.0, 0.0, 0.0, 1.0] },
+    { pos: Point.fromValues(0.0, 0.0, 3.0), col: [0.5, 0.4, 0.4, 1.0] },
+    { pos: Point.fromValues(0.0, 5.0, 0.0), col: [0.4, 0.3, 1.0, 0.0] },
+    { pos: Point.fromValues(0.0, 5.0, -5.0), col: [0.2, 0.7, 0.7, 0.0] },
+    { pos: Point.fromValues(1.0, 1.0, -5.0), col: [0.6, 0.1, 0.1, 0.0] },
   ];
 
   private constructor(canvas: HTMLCanvasElement, context: GPUCanvasContext, device: GPUDevice, format: GPUTextureFormat) {
@@ -130,6 +132,10 @@ export class Gpu implements GPUConnection {
 
   get dirLights(): Array<DirectionalLight> {
     return this._dirLights;
+  }
+
+  get pontLights(): Array<PointLight> {
+    return this._pointLights;
   }
 
   /**
@@ -193,18 +199,18 @@ export class Gpu implements GPUConnection {
     initMouseHandler(this.canvas, {
       move:
         cb?.move ??
-        ((bt, r, p) => {
-          console.log('Mouse move:', bt, r, p);
+        ((_bt, _r, _p) => {
+          // console.log('Mouse move:', bt, r, p);
         }),
       click:
         cb?.click ??
-        ((bt, p) => {
-          console.log('Mouse click:', bt, p);
+        ((_bt, _p) => {
+          // console.log('Mouse click:', bt, p);
         }),
       zoom:
         cb?.zoom ??
-        ((delta) => {
-          console.log('Mouse zoom:', delta);
+        ((_delta) => {
+          // console.log('Mouse zoom:', delta);
         }),
     });
   }
@@ -231,6 +237,16 @@ export class Gpu implements GPUConnection {
     lightOffset += posLightBuffer.byteLength;
   }
 
+  rotateLights() {
+    const rotX = Transform.rotationX(Math.PI / 360);
+    const rotY = Transform.rotationY(Math.PI / 180);
+    const rotZ = Transform.rotationZ(Math.PI / 90);
+    const trans = [rotX.compose(rotY), rotY.compose(rotZ), rotZ.compose(rotX).compose(rotY), rotZ.compose(rotY)];
+    this._pointLights.forEach((light, idx) => {
+      light.pos = light.pos.map(trans[idx]);
+    });
+  }
+
   /**
    * render the scene
    * @param transf
@@ -239,6 +255,8 @@ export class Gpu implements GPUConnection {
    */
   private render = () => {
     const { device, context, _renderPassDescription } = this;
+
+    this.rotateLights();
 
     if (!_renderPassDescription) {
       console.error('WebGPU:renderPassDescription is NOT available!');
