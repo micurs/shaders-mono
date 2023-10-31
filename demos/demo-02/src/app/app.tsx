@@ -3,6 +3,7 @@ import React from 'react';
 import * as WebGPU from '@shaders-mono/webgpu';
 import { init } from '../gpu/init';
 import { DirectionalLight, RGBAColorToStyle } from '@shaders-mono/webgpu';
+import { kill } from 'process';
 
 export function App() {
   const canvasRef = React.useRef<HTMLCanvasElement>(null);
@@ -10,10 +11,16 @@ export function App() {
   const [status, setStatus] = React.useState<string>('initializing...');
   const [wireframe, setWireframe] = React.useState<boolean>(false);
   const [, updateState] = React.useState<any>();
+  const [fps, setFps] = React.useState<number>(0);
   const forceUpdate = React.useCallback(() => updateState({}), []);
 
   React.useEffect(() => {
-    if (canvasRef.current) {
+    const intId = setInterval(() => {
+      if (gpu) {
+        setFps(gpu.fps);
+      }
+    }, 1000);
+    if (!gpu && canvasRef.current) {
       init(canvasRef.current)
         .then((gpu) => {
           setGpu(gpu);
@@ -23,7 +30,12 @@ export function App() {
           setStatus(error.message);
         });
     }
-  }, []);
+    return () => {
+      if (intId) {
+        clearInterval(intId);
+      }
+    };
+  }, [gpu]);
 
   const onWireframe = React.useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -81,7 +93,10 @@ export function App() {
     <div className="flex flex-col">
       <div className="flex flex-row justify-between items-center mx-2">
         <h1 className="font-bold text-xl my-2 mx-1">Demo 02</h1>
-        <div className="m-4">{status}</div>
+        <div className="m-4">{status} </div>
+        <div className="m-4 w-20 text-center border-2 px-2">
+          <code>FPS:{fps.toFixed(0)}</code>
+        </div>
       </div>
       <div className="z-50">
         <canvas

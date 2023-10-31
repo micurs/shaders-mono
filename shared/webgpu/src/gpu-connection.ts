@@ -104,6 +104,10 @@ export class Gpu implements GPUConnection {
   };
   private _renderPassDescription: GPURenderPassDescriptor | undefined = undefined;
   private _transGen: TransCbs | undefined;
+  private _lastTimeSpan = 0;
+  private _lastTime = Date.now();
+  private _lastFPS: number[] = [];
+  private _lastFPSIdx = 0;
 
   private _dirLights: Array<DirectionalLight> = [
     { dir: UnitVector.fromValues(0.0, 0.0, -1.3), col: [0.6, 0.6, 0.6, 0.0] },
@@ -128,6 +132,10 @@ export class Gpu implements GPUConnection {
       // TODO: handle loosing the device and recreate it
       console.log('WebGPU:device lost');
     });
+  }
+
+  get fps(): number {
+    return this._lastFPS.reduce((p, c) => p + c, 0) / 10;
   }
 
   get dirLights(): Array<DirectionalLight> {
@@ -270,12 +278,15 @@ export class Gpu implements GPUConnection {
     colors[0]!.view = textureView;
     const renderPass = commandEncoder.beginRenderPass(_renderPassDescription);
 
-    this._pipelines.forEach((gpuPipeLine) => {
+    this._pipelines.forEach((gpuPipeLine, _idx) => {
       const { pipeline, altPipeline, uniformBuffers, bindGroups, triangleMesh } = gpuPipeLine;
 
+      // We need to send the scene data only once!
+      // if (idx === 0) {
       // Writes the Scene into the uniformBuffer ZERO...
       this.sceneIntoBuffer(uniformBuffers[0]);
       renderPass.setBindGroup(0, bindGroups[0]!); // Scene data binding groups
+      // }
 
       const activePipeline = this._pipelineMode === 'default' ? pipeline : altPipeline;
       renderPass.setPipeline(activePipeline);
@@ -294,6 +305,11 @@ export class Gpu implements GPUConnection {
     });
     renderPass.end();
     device.queue.submit([commandEncoder.finish()]);
+    const time = Date.now();
+    this._lastTimeSpan = time - this._lastTime;
+    this._lastTime = time;
+    this._lastFPSIdx = (this._lastFPSIdx + 1) % 10;
+    this._lastFPS[this._lastFPSIdx] = 1000 / this._lastTimeSpan;
   };
 
   private renderLoop() {

@@ -3,6 +3,7 @@ import { TriangleData } from '../triangle-data';
 import { computeNormals } from './utils';
 import { RGBAColor } from '../types';
 
+
 export const cubeTriMesh = (t: Transform, color?: RGBAColor) => {
   const points: Point[] = [
     Point.fromValues(0.5, -0.5, 0.5).map(t),
