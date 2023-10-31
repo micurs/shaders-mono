@@ -10,11 +10,11 @@ const buildScene = async (gpu: Gpu): Promise<Scene> => {
   const cube = WebGPU.cubeTriMesh(
     Transform.rotationX(Math.PI / 3)
       .rotationZ(Math.PI * 0.2)
-      .translation(-1.8, 0, 0),
+      .translation(-1.6, 0, 0),
     color3
   );
-  const cylinder = WebGPU.cylinderTriMesh(12, color2, Transform.rotationY(Math.PI * 0.7).translation(1.8, 0, 0));
-  const sphere = WebGPU.sphereTriMesh(4, color1, Transform.scale(1.5, 1.5, 1.5));
+  const cylinder = WebGPU.cylinderTriMesh(12, color2, Transform.rotationY(Math.PI * 0.7).translation(1.6, 0, 0));
+  const sphere = WebGPU.sphereTriMesh(3, color1, Transform.scale(1.5, 1.5, 1.5));
   sphere.buildGpuBuffer(gpu);
   cylinder.buildGpuBuffer(gpu);
   cube.buildGpuBuffer(gpu);

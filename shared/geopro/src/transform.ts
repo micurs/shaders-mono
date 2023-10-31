@@ -178,11 +178,6 @@ export class Transform {
     return this.compose(t);
   }
 
-  scale(x: number, y: number, z: number) {
-    const t = Transform.scale(x, y, z);
-    return this.compose(t);
-  }
-
   rotationX(a: number) {
     const t = Transform.rotationX(a);
     return this.compose(t);
@@ -195,6 +190,11 @@ export class Transform {
 
   rotationZ(a: number) {
     const t = Transform.rotationZ(a);
+    return this.compose(t);
+  }
+
+  scale(tx: number, ty: number, tz: number) {
+    const t = Transform.scale(tx, ty, tz);
     return this.compose(t);
   }
 
