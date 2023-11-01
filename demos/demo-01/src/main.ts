@@ -6,6 +6,8 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
     <h2>Hello WebGPU!</h2>
     <div class="main">
       <div class="left">
+        <h3>Camera control test</h3>
+        <p>Click and move the mouse to rotate the camera.</p>
         <h3>Controls</h3>
         <ul>
           <li>Left mouse button: rotate</li>
