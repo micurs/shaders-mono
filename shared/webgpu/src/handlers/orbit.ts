@@ -3,8 +3,6 @@ import { MouseCbs, MouseLocation, MouseMovement, TransCbs } from '../types';
 import { Gpu } from '../gpu-connection';
 
 export const getOrbitHandlers = (gpu: Gpu): [MouseCbs, TransCbs] => {
-  const maxRes = Math.min(gpu.canvas.width, gpu.canvas.height);
-  const aspectRatio = gpu.canvas.width / gpu.canvas.height;
   let target = Point.fromValues(0, 0, 0);
   let eye = Point.fromValues(0.0, 7.0, 1.0);
   let vuv = UnitVector.fromValues(0, 1, 0);
@@ -13,12 +11,13 @@ export const getOrbitHandlers = (gpu: Gpu): [MouseCbs, TransCbs] => {
   let zoom = 0.0;
   let fov = Math.PI / 5;
   let distToTarget = Vector.fromPoints(eye, target).lengthSquare;
-  let rotSensitivity = (1.0 / maxRes) * distToTarget * 2;
-  let panSensitivity = (fov / maxRes) * 2;
   let cameraFrame = Frame.lookAt(eye, target, vuv);
   let rotating = false;
 
   const mouseHandler = (bt: number, r: MouseMovement, _p: MouseLocation) => {
+    let maxRes = Math.min(gpu.canvas.width, gpu.canvas.height);
+    let rotSensitivity = (1.0 / maxRes) * distToTarget * 2;
+    let panSensitivity = (fov / maxRes) * 2;
     switch (bt) {
       case 0:
         rot = [r.direction[0] * rotSensitivity, r.direction[1] * rotSensitivity];
@@ -43,6 +42,7 @@ export const getOrbitHandlers = (gpu: Gpu): [MouseCbs, TransCbs] => {
   };
 
   const projectionHandler = (_t?: Transform): Transform => {
+    const aspectRatio = gpu.canvas.width / gpu.canvas.height;
     return Transform.perspective(fov, aspectRatio, 0.1, 100.0);
   };
 
@@ -84,6 +84,7 @@ export const getOrbitHandlers = (gpu: Gpu): [MouseCbs, TransCbs] => {
     // 3. Update the camera frame on the new eye and vuv
     cameraFrame = Frame.lookAt(eye, target, vuv);
 
+    // Reset pan, zoom and rot (for rotation do a smooth stop)
     if (!rotating) {
       rot = [rot[0] * 0.95, rot[1] * 0.95];
       if (Math.abs(rot[0]) < 0.001 && Math.abs(rot[1]) < 0.001) {
@@ -93,9 +94,6 @@ export const getOrbitHandlers = (gpu: Gpu): [MouseCbs, TransCbs] => {
     zoom = 0;
     pan = [0, 0];
     distToTarget = Vector.fromPoints(eye, target).length;
-    rotSensitivity = distToTarget / maxRes;
-    panSensitivity = (fov / maxRes) * 2;
-
     return cameraFrame.toTransform();
   };
 

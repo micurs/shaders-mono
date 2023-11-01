@@ -1,5 +1,6 @@
+import { Point, Transform, UnitVector } from '@shaders-mono/geopro';
 import { Gpu } from '../gpu-connection';
-import { RGBAColor } from '../types';
+import { GPUConnection, GpuTransformations, PredefinedShaders, RGBAColor, Shaders, TransCbs } from '../types';
 import { styleColorToGpu } from '../webgpu';
 
 export const createGPUBufferUint = (
@@ -40,20 +41,21 @@ export const createGPUBuffer = (
 };
 
 export const buildRenderPassDescriptor = (gpu: Gpu): GPURenderPassDescriptor => {
-  const { device, canvas } = gpu;
+  const { device, canvas, context } = gpu;
   // Create the Z-buffer to hold depth values for each pixel and control the render pass.
   const depthTexture = device.createTexture({
+    label: 'DepthTexture',
     size: [canvas.width, canvas.height, 1],
     format: 'depth24plus',
     usage: GPUTextureUsage.RENDER_ATTACHMENT,
   });
   const clearColor = styleColorToGpu(window.getComputedStyle(canvas).backgroundColor);
-  const textureView = gpu.context.getCurrentTexture().createView();
+  const colorTexture = context.getCurrentTexture();
 
   return {
     colorAttachments: [
       {
-        view: textureView,
+        view: colorTexture.createView(),
         clearValue: clearColor, //background color
         //loadValue: { r: 0.2, g: 0.247, b: 0.314, a: 1.0 },
         loadOp: 'clear',
@@ -76,4 +78,76 @@ export const buildRenderPassDescriptor = (gpu: Gpu): GPURenderPassDescriptor => 
 
 export const colorBuffer = (c: RGBAColor): Float32Array => {
   return new Float32Array(c);
+};
+
+/**
+ * Connect WebGPU to the canvas
+ * @param canvas
+ * @returns
+ */
+export const connectGPU = async (canvas: HTMLCanvasElement): Promise<GPUConnection> => {
+  const adapter = await navigator.gpu.requestAdapter({ powerPreference: 'high-performance' });
+  if (!adapter) {
+    throw new Error('WebGPU:adapter is NOT available!');
+  }
+
+  const info = await adapter.requestAdapterInfo();
+  console.log('WebGPU:adapter info', info);
+  console.log('WebGPU:adapter is fallback:', adapter.isFallbackAdapter);
+
+  const device = await adapter.requestDevice();
+  if (!device) {
+    throw new Error('WebGPU:device is NOT available!');
+  }
+
+  const context = (canvas as HTMLCanvasElement).getContext('webgpu');
+  if (!context) {
+    throw new Error('WebGPU:context from instantiated Canvas not available!');
+  }
+
+  const format = navigator.gpu.getPreferredCanvasFormat();
+  context.configure({
+    device,
+    format,
+    usage: GPUTextureUsage.RENDER_ATTACHMENT,
+    alphaMode: 'opaque', // 'premultiplied' should allow transparency, but it does not work?.
+  });
+
+  return { context, device, canvas, format };
+};
+
+/**
+ * Type-predicate to check if a shader is a predefined shader
+ * @param shader - a string containing the shader source code or the name of a predefined shader
+ * @returns
+ */
+export const isPredefinedShader = (shader: Shaders): shader is PredefinedShaders => {
+  return typeof shader === 'string';
+};
+
+/**
+ * Set the Transformation for the scene. It set them with default values if no transGen is provided.
+ * @param currTrans - The current transformations for the scene
+ * @param dim - a pair with the dimensions of the viewport
+ * @param transGen - optional generator of view transformation
+ */
+export const getTransformations = (currTrans: GpuTransformations, [w, h]: [number, number], transGen?: TransCbs): GpuTransformations => {
+  return {
+    view:
+      transGen && transGen.view
+        ? transGen.view(currTrans.view)
+        : Transform.lookAt(
+            Point.fromValues(-5.0, -5.0, -5.0), // eye
+            Point.fromValues(0, 0, 0), // target
+            UnitVector.fromValues(0, 0, 1) // vup
+          ),
+    model:
+      transGen && transGen.model
+        ? transGen.model(currTrans.model) // Compose the current model with the new one from transGen
+        : currTrans.model, // .composeWith(Transform.rotationY(deg2rad(1.0))),
+    projection:
+      transGen && transGen.projection
+        ? transGen.projection(currTrans.projection) // Compose the current projection with the new one from transGen
+        : Transform.perspective(Math.PI / 5, w / h, 0.1, 100.0),
+  };
 };
