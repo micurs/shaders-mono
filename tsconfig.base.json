@@ -1,8 +1,36 @@
 {
   "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "useDefineForClassFields": true,
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "skipLibCheck": true,
+    "outDir": "./dist",
+
+    /* Bundler mode */
+    "moduleResolution": "Bundler",
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+
+    "allowJs": false,
+    "esModuleInterop": false,
+    "allowSyntheticDefaultImports": true,
+
+    /* Linting */
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+
+    "baseUrl": ".",
     "paths": {
       "@shaders-mono/webgpu": ["./shared/webgpu/src/index.ts"],
       "@shaders-mono/geopro": ["./shared/geopro/src/index.ts"]
-    }
-  }
+    },
+    "types": ["@webgpu/types"]
+  },
+  "include": ["src/**/*", "shared/**/*.ts", "shared/**/*.wgsl"],
+  "exclude": ["node_modules", "*.test.ts", "*.test.tsx", "*.spec.ts", "*.spec.tsx"]
 }

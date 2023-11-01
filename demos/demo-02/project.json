@@ -4,24 +4,27 @@
   "sourceRoot": "demos/demo-02/src",
   "projectType": "application",
   "targets": {
-    "build": {
-      "executor": "@nx/vite:build",
-      "outputs": ["{options.outputPath}"],
-      "defaultConfiguration": "production",
-      "options": {
-        "outputPath": "dist/demos/demo-02"
-      },
-      "configurations": {
-        "development": {
-          "mode": "development"
-        },
-        "production": {
-          "mode": "production"
-        }
-      }
-    },
+    // "build": {
+    //   "executor": "@nx/vite:build",
+    //   "dependsOn": ["^build"],
+    //   "outputs": ["{options.outputPath}"],
+    //   "defaultConfiguration": "production",
+    //   "options": {
+    //     "outputPath": "dist/demos/demo-02",
+    //     "tsConfig": "demos/demo-02/tsconfig.json"
+    //   },
+    //   "configurations": {
+    //     "development": {
+    //       "mode": "development"
+    //     },
+    //     "production": {
+    //       "mode": "production"
+    //     }
+    //   }
+    // },
     "serve": {
       "executor": "@nx/vite:dev-server",
+      "dependsOn": ["^build"],
       "defaultConfiguration": "development",
       "options": {
         "buildTarget": "demo-02:build"

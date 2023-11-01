@@ -1,6 +1,6 @@
 import { describe, test, expect } from 'vitest';
 
-import { Vector, Transform, round, Point, Ray } from '../src';
+import { Vector, Transform, round } from '../src';
 
 describe('Transform vector', () =>{
   const precision = 4;

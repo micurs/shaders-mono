@@ -14,7 +14,8 @@
   "targetDefaults": {
     "build": {
       "input": ["noMd", "~noMd", "noTests"],
-      "dependsOn": ["^build"]
+      "dependsOn": ["^build"],
+      "cache": false
     },
     "serve": {
       "input": ["noMd", "~noMd", "noTests"],
