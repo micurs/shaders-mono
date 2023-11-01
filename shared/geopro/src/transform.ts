@@ -1,7 +1,8 @@
 import { mat4 } from 'gl-matrix';
 import { GeoMap } from './operations';
 import { Point } from './point';
-import { UnitVector, Vector } from '.';
+import { UnitVector } from './unit-vector';
+import { Vector } from './vector';
 
 export class Transform {
   _direct: mat4;

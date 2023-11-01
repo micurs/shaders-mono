@@ -107,7 +107,7 @@ function subdivide(vertices: UnitVector[], triangles: TriangleIndexes[], depth: 
 export const sphereTriMesh = (steps: number, color: RGBAColor, t: Transform = Transform.world()) => {
   const [sphVertices, sphIndexes] = subdivide(vertices, indices, steps);
 
-  console.log(' Number of vertices', vertices.length);
+  // console.log(' Number of vertices', vertices.length);
 
   const coordinates: number[] = [];
   const normals: number[] = [];

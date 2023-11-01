@@ -1,8 +1,5 @@
 import { init } from './model-builder';
 import './style.css';
-import { Frame } from '@shaders-mono/geopro';
-
-const f = Frame.world();
 
 document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
   <div>

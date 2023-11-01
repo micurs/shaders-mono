@@ -1,4 +1,4 @@
-import { Vector, Transform } from '@shaders-mono/geopro';
+import { Transform } from '@shaders-mono/geopro';
 import * as WebGPU from '@shaders-mono/webgpu';
 import type { Gpu, Scene } from '@shaders-mono/webgpu';
 

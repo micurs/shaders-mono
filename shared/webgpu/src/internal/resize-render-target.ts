@@ -7,7 +7,6 @@ export const initRebuildViewTexture = (gpu: Gpu) => {
   const observer = new ResizeObserver((entries) => {
     const { width, height } = entries[0].contentRect;
     [w, h] = [Math.round(width), Math.round(height)];
-    console.log('WebGPU:resize canvas w=', w);
   });
   observer.observe(canvas.parentElement!);
 

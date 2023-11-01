@@ -1,25 +1,6 @@
 {
-  "compilerOptions": {
-    "target": "ES2020",
-    "useDefineForClassFields": true,
-    "module": "ESNext",
-    "lib": ["ES2020"],
-    "skipLibCheck": true,
-
-    "noEmit": true,
-    "outDir": "dist",
-
-    /* Bundler mode */
-    "moduleResolution": "bundler",
-    "allowImportingTsExtensions": true,
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-
-    /* Linting */
-    "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true
-  },
-  "include": ["src"]
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {},
+  "include": ["src"],
+  "exclude": ["*.test.ts"]
 }

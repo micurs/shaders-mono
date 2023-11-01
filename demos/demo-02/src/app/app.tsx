@@ -3,7 +3,6 @@ import React from 'react';
 import * as WebGPU from '@shaders-mono/webgpu';
 import { init } from '../gpu/init';
 import { DirectionalLight, RGBAColorToStyle } from '@shaders-mono/webgpu';
-import { kill } from 'process';
 
 export function App() {
   const canvasRef = React.useRef<HTMLCanvasElement>(null);
@@ -40,7 +39,7 @@ export function App() {
   const onWireframe = React.useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       if (!gpu) return;
-      setWireframe((w) => e.target.checked);
+      setWireframe(() => e.target.checked);
       if (e.target.checked) {
         gpu.setPipelineMode('alternative');
       } else {
@@ -114,7 +113,7 @@ export function App() {
                 className="flex flex-col justify-center border-slate-600 bg-slate-900 border-solid border-l-[1px] border-t-[1px] p-1 text-center"
               >
                 <label htmlFor={`light-${idx}}`}>Dir {idx}</label>
-                <input id="light-1" type="checkbox" className="m-1" checked={l.col[3] !== 0} onChange={(e) => switchLight(idx)} />
+                <input id="light-1" type="checkbox" className="m-1" checked={l.col[3] !== 0} onChange={() => switchLight(idx)} />
                 <input
                   id={`light-${idx}-color`}
                   type="color"
@@ -132,7 +131,7 @@ export function App() {
                 className="flex flex-col justify-center border-slate-600 bg-slate-900 border-solid border-l-[1px] border-t-[1px] p-1 text-center"
               >
                 <label htmlFor={`pos-light-${idx}}`}>Pt {idx}</label>
-                <input id="light-1" type="checkbox" className="m-1" checked={l.col[3] !== 0} onChange={(e) => switchPointLight(idx)} />
+                <input id="light-1" type="checkbox" className="m-1" checked={l.col[3] !== 0} onChange={() => switchPointLight(idx)} />
                 <input
                   id={`pos-light-${idx}-color`}
                   type="color"

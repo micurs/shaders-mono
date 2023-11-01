@@ -146,6 +146,9 @@ export class Vector {
     return this._coord[2];
   }
 
+  /**
+   * Get components as a triplet of numbers
+   */
   get triplet(): [number, number, number] {
     return [this.x, this.y, this.z];
   }

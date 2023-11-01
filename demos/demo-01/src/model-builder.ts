@@ -1,3 +1,4 @@
+import { Transform } from '@shaders-mono/geopro';
 import { Gpu, createTexture, TriangleData, Scene, MouseLocation, getOrbitHandlers } from '@shaders-mono/webgpu';
 import * as WebGPU from '@shaders-mono/webgpu';
 
@@ -15,7 +16,7 @@ export async function init(canvasEl: HTMLCanvasElement, supportEl: HTMLParagraph
 
   await gpu.setupShaders('standard-3d');
 
-  const scene = await buildScene(gpu, WebGPU.cubeTriMesh(), 'teapot');
+  const scene = await buildScene(gpu, WebGPU.cubeTriMesh(Transform.identity()), 'teapot');
   await gpu.setupGeoBuilder(scene);
 
   const [mouseHandlers, viewHandlers] = getOrbitHandlers(gpu);
