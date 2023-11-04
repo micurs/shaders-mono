@@ -2,7 +2,7 @@
 
 import { UnitVector, Vector } from '@shaders-mono/geopro';
 import { TriangleData } from '../triangle-data';
-import { RGBAColor } from '../types';
+import { GeoOptions, TriGenerator } from '../types';
 import { Transform } from '@shaders-mono/geopro';
 import { Point } from '@shaders-mono/geopro';
 
@@ -104,7 +104,18 @@ function subdivide(vertices: UnitVector[], triangles: TriangleIndexes[], depth: 
   }
 }
 
-export const sphereTriMesh = (steps: number, color: RGBAColor, t: Transform = Transform.world()) => {
+interface SphereOptions {
+  steps: number;
+}
+
+/**
+ * Build a sphere mesh
+ * @param t
+ * @param options
+ * @returns
+ */
+export const sphereTriMesh: TriGenerator<SphereOptions> = (t: Transform, options: GeoOptions<SphereOptions>) => {
+  const { steps, color } = options;
   const [sphVertices, sphIndexes] = subdivide(vertices, indices, steps);
 
   // console.log(' Number of vertices', vertices.length);
@@ -126,7 +137,8 @@ export const sphereTriMesh = (steps: number, color: RGBAColor, t: Transform = Tr
     normals.push(...n1.triplet);
     normals.push(...n2.triplet);
   });
-  const triangleData = new TriangleData(new Float32Array(coordinates), coordinates.length / 3, color);
+  const triangleData = new TriangleData('triangle-list', color);
+  triangleData.addVertices(new Float32Array(coordinates));
   triangleData.addNormals(new Float32Array(normals));
   return triangleData;
 };

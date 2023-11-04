@@ -217,4 +217,9 @@ export class Transform {
   get isIdentity() {
     return this._isIdentity;
   }
+
+  get scaleVector(): Vector {
+    const v = Vector.fromValues(1, 1, 1);
+    return v.map(this);
+  }
 }

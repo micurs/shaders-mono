@@ -1,10 +1,11 @@
 import { Point, Transform } from '@shaders-mono/geopro';
 import { TriangleData } from '../triangle-data';
 import { computeNormals } from './utils';
-import { RGBAColor } from '../types';
+import { GeoOptions, TriGenerator } from '../types';
 
+export const cubeTriMesh: TriGenerator = (t: Transform, options: GeoOptions<{}>) => {
+  const { color } = options;
 
-export const cubeTriMesh = (t: Transform, color?: RGBAColor) => {
   const points: Point[] = [
     Point.fromValues(0.5, -0.5, 0.5).map(t),
     Point.fromValues(-0.5, -0.5, 0.5).map(t),
@@ -56,7 +57,8 @@ export const cubeTriMesh = (t: Transform, color?: RGBAColor) => {
   ];
 
   const coordinates: number[] = points.flatMap((p) => p.triplet);
-  const triangleData = new TriangleData(new Float32Array(coordinates), coordinates.length / 3, color);
+  const triangleData = new TriangleData('triangle-list', color);
+  triangleData.addVertices(new Float32Array(coordinates));
 
   if (!color) {
     triangleData.addTextures(

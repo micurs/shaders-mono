@@ -8,17 +8,17 @@ const float32Size = 4;
  * TriangleData is a class that holds the data for triangles, its colors, normals and texture coordinates.
  */
 export class TriangleData implements TriangleMesh {
-  private _vertices: Float32Array; // 3 coordinates per vertex - 3 points for a triangle
+  private _vertices: Float32Array[] = []; // 3 coordinates per vertex - 3 points for a triangle
+  private _colors: Float32Array[] | null = null; // 4 color components per vertex - 3 points for a triangle
+  private _normals: Float32Array[] | null = null; // 3 coordinates per vertex - 3 points for a triangle
+  private _textures: Float32Array[] | null = null; // 2 coordinates per vertex - 3 points for a triangle
   private _color: RGBAColor = [1.0, 1.0, 1.0, 1.0]; // 4 color components per vertex - 3 points for a triangle
-  private _colors: Float32Array | null = null; // 4 color components per vertex - 3 points for a triangle
-  private _normals: Float32Array | null = null; // 3 coordinates per vertex - 3 points for a triangle
-  private _textures: Float32Array | null = null; // 2 coordinates per vertex - 3 points for a triangle
   private _hasTextures = false;
-  private _vertexCount = 0;
   private _vertexByteSize: number = 0;
 
-  private _buffer: GPUBuffer | null = null;
+  private _buffers: GPUBuffer[] = [];
   private _bufferLayout: GPUVertexBufferLayout | null = null;
+  private _topology: GPUPrimitiveTopology = 'triangle-list';
 
   get hasTextures() {
     return this._hasTextures;
@@ -29,14 +29,15 @@ export class TriangleData implements TriangleMesh {
   }
 
   get primitives(): GPUPrimitiveTopology {
-    return 'triangle-list';
+    return this._topology;
   }
 
   get vertexCount() {
-    if (this._vertices === null) {
-      return 0;
-    }
-    return this._vertices.length / 3;
+    return this._vertices.reduce((acc, vtx) => acc + vtx.length / 3, 0);
+  }
+
+  getVertexCountPerStrip(strip: number): number {
+    return this._vertices[strip].length / 3;
   }
 
   // The size of each vertex in the buffer as number of bytes!
@@ -44,44 +45,55 @@ export class TriangleData implements TriangleMesh {
     return this._vertexByteSize;
   }
 
-  get byteSize() {
-    if (this._vertices === null) {
-      return 0;
-    }
+  getByteSizePerStrip(strip: number = 0) {
     const size =
-      this._vertices.length * float32Size +
+      this._vertices[strip].length * float32Size +
       (this._colors !== null ? this._colors.length * float32Size : 0) +
       (this._normals !== null ? this._normals.length * float32Size : 0) +
       (this._textures !== null ? this._textures.length * float32Size : 0);
     return size;
   }
 
-  get vertices() {
+  /**
+   * Add vertices to the triangle data
+   * @param vertices - The vertices to add
+   */
+  addVertices(vertices: Float32Array) {
+    this._vertices.push(vertices);
+  }
+
+  /**
+   * Get all the group of vertices as a Float32Array
+   */
+  get vertices(): Float32Array[] {
     if (this._vertices === null) {
-      return new Float32Array();
+      return [new Float32Array()];
     }
-    const fragments = [];
-    for (let vi = 0, ci = 0, ni = 0, ti = 0; vi < this._vertices.length; vi += 3, ci += 4, ni += 3, ti += 2) {
-      const fragment = [this._vertices[vi + 0], this._vertices[vi + 1], this._vertices[vi + 2]];
-      if (this._colors !== null) {
-        fragment.push(this._colors[ci + 0]);
-        fragment.push(this._colors[ci + 1]);
-        fragment.push(this._colors[ci + 2]);
-        fragment.push(this._colors[ci + 3]);
+
+    return this._vertices.map((vertices, idx) => {
+      const fragments = [];
+      for (let vi = 0, ci = 0, ni = 0, ti = 0; vi < vertices.length; vi += 3, ci += 4, ni += 3, ti += 2) {
+        const fragment = [vertices[vi + 0], vertices[vi + 1], vertices[vi + 2]];
+        if (this._colors !== null) {
+          fragment.push(this._colors[idx][ci + 0]);
+          fragment.push(this._colors[idx][ci + 1]);
+          fragment.push(this._colors[idx][ci + 2]);
+          fragment.push(this._colors[idx][ci + 3]);
+        }
+        if (this._textures !== null) {
+          fragment.push(this._textures[idx][ti + 0]);
+          fragment.push(this._textures[idx][ti + 1]);
+        }
+        if (this._normals !== null) {
+          fragment.push(this._normals[idx][ni + 0]);
+          fragment.push(this._normals[idx][ni + 1]);
+          fragment.push(this._normals[idx][ni + 2]);
+        }
+        fragments.push(...fragment);
       }
-      if (this._textures !== null) {
-        fragment.push(this._textures[ti + 0]);
-        fragment.push(this._textures[ti + 1]);
-      }
-      if (this._normals !== null) {
-        fragment.push(this._normals[ni + 0]);
-        fragment.push(this._normals[ni + 1]);
-        fragment.push(this._normals[ni + 2]);
-      }
-      fragments.push(...fragment);
-    }
-    // console.log('fragments size', fragments.length, fragments.length * float32Size);
-    return new Float32Array(fragments);
+      // console.log('fragments size', fragments.length, fragments.length * float32Size);
+      return new Float32Array(fragments);
+    });
   }
 
   get layouts(): GPUVertexAttribute[] {
@@ -131,8 +143,8 @@ export class TriangleData implements TriangleMesh {
     return layouts;
   }
 
-  get buffer(): GPUBuffer | null {
-    return this._buffer;
+  get buffers(): GPUBuffer[] {
+    return this._buffers;
   }
 
   get bufferLayout(): GPUVertexBufferLayout {
@@ -142,18 +154,14 @@ export class TriangleData implements TriangleMesh {
     return this._bufferLayout;
   }
 
-  constructor(vertices: Float32Array, vertexCount: number, color: RGBAColor = [1.0, 1.0, 1.0, 1.0]) {
-    if (vertices.length !== vertexCount * 3) {
-      throw new Error('TriangleData: Invalid vertex data!');
-    }
-    this._vertexCount = vertexCount;
-    this._vertices = vertices;
+  constructor(topology: GPUPrimitiveTopology, color: RGBAColor = [1.0, 1.0, 1.0, 1.0]) {
+    this._topology = topology;
     this._vertexByteSize = 3 * 4;
     this._color = color;
   }
 
   buildGpuBuffer(gpu: Gpu) {
-    this._buffer = createGPUBuffer(gpu.device, this.vertices);
+    this._buffers = this._vertices.map((vertices) => createGPUBuffer(gpu.device, vertices));
     this._bufferLayout = {
       arrayStride: this.vertexByteSize,
       attributes: this.layouts,
@@ -161,27 +169,27 @@ export class TriangleData implements TriangleMesh {
   }
 
   addColors(colors: Float32Array) {
-    if (colors.length !== this._vertexCount * 4) {
-      throw new Error('TriangleData: Invalid color data!');
+    if (this._colors === null) {
+      this._colors = [];
+      this._vertexByteSize += 4 * 4;
     }
-    this._colors = colors;
-    this._vertexByteSize += 4 * 4;
+    this._colors.push(colors);
   }
 
   addNormals(normals: Float32Array) {
-    if (normals.length !== this._vertexCount * 3) {
-      throw new Error('TriangleData: Invalid normal data!');
+    if (this._normals === null) {
+      this._normals = [];
+      this._vertexByteSize += 3 * 4;
     }
-    this._normals = normals;
-    this._vertexByteSize += 3 * 4;
+    this._normals?.push(normals);
   }
 
   addTextures(textures: Float32Array) {
-    if (textures.length !== this._vertexCount * 2) {
-      throw new Error('TriangleData: Invalid texture data!');
+    if (this._textures === null) {
+      this._textures = [];
+      this._vertexByteSize += 2 * 4;
+      this._hasTextures = true;
     }
-    this._textures = textures;
-    this._vertexByteSize += 2 * 4;
-    this._hasTextures = true;
+    this._textures.push(textures);
   }
 }

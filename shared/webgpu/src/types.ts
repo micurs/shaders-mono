@@ -13,10 +13,11 @@ export interface GPUConnection {
 }
 
 export interface TriangleMesh {
-  buffer: GPUBuffer | null;
+  buffers: GPUBuffer[];
   bufferLayout: GPUVertexBufferLayout | null;
   vertexCount: number;
-  byteSize: number;
+  getByteSizePerStrip: (strip: number) => number;
+  getVertexCountPerStrip(strip: number): number;
   color: RGBAColor;
   primitives: GPUPrimitiveTopology;
 }
@@ -82,3 +83,10 @@ export interface PointLight {
   pos: Point;
   col: RGBAColor;
 }
+
+export type GeoOptions<T> = T & {
+  color: RGBAColor;
+  texture?: GPUTexture;
+};
+
+export type TriGenerator<T = {}> = (t: Transform, options: GeoOptions<T>) => TriangleData;
