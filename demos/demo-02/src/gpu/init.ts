@@ -7,25 +7,50 @@ const buildScene = async (gpu: Gpu): Promise<Scene> => {
   const color2: WebGPU.RGBAColor = [0.5, 0.5, 1.0, 1.0];
   const color3: WebGPU.RGBAColor = [0.8, 0.3, 1.0, 1.0];
 
+  const plane = WebGPU.planeTriMesh(Transform.translation(0, 0, 0).scale(120, 120, 1), { color: [0.6, 0.6, 0.8, 0.5], steps: 10 });
+
   const cube = WebGPU.cubeTriMesh(
     Transform.rotationX(Math.PI / 3)
       .rotationZ(Math.PI * 0.2)
-      .translation(-1.6, 0, 0),
+      .translation(-5, 0, 1),
     { color: color3 }
   );
   const cylinder = WebGPU.cylinderTriMesh(
-    Transform.rotationY(Math.PI * 0.7).translation(1.6, 0, 0), // move to the right
+    Transform.rotationY(Math.PI * 0.7).translation(5, 0, 1), // move to the right
     { steps: 12, color: color2 }
   );
-  const sphere = WebGPU.sphereTriMesh(
-    Transform.scale(1.5, 1.5, 1.5), // Keep the sphere in the center
+
+  const sphere0 = WebGPU.sphereTriMesh(
+    Transform.scale(2.5, 2.5, 2.5), // , // Keep the sphere in the center
+    { steps: 3, color: [0.8, 0.8, 0.8, 1.0] }
+  );
+
+  const sphere1 = WebGPU.sphereTriMesh(
+    Transform.scale(1.5, 1.5, 1.5).translation(-15, -15, 0.0), // , // Keep the sphere in the center
+    { steps: 3, color: [1.0, 0.0, 0.0, 1.0] }
+  );
+  const sphere2 = WebGPU.sphereTriMesh(
+    Transform.scale(1.5, 1.5, 1.5).translation(15, 15, 0.0), // , // Keep the sphere in the center
+    { steps: 3, color: [0, 0, 1, 1] }
+  );
+  const sphere3 = WebGPU.sphereTriMesh(
+    Transform.scale(1.5, 1.5, 1.5).translation(15, -15, 0.0), // , // Keep the sphere in the center
     { steps: 3, color: color1 }
   );
-  sphere.buildGpuBuffer(gpu);
+  const sphere4 = WebGPU.sphereTriMesh(
+    Transform.scale(1.5, 1.5, 1.5).translation(-15, 15, 0.0), // , // Keep the sphere in the center
+    { steps: 3, color: color1 }
+  );
+  plane.buildGpuBuffer(gpu);
+  sphere0.buildGpuBuffer(gpu);
+  sphere1.buildGpuBuffer(gpu);
+  sphere2.buildGpuBuffer(gpu);
+  sphere3.buildGpuBuffer(gpu);
+  sphere4.buildGpuBuffer(gpu);
   cylinder.buildGpuBuffer(gpu);
   cube.buildGpuBuffer(gpu);
 
-  return [[cube], [sphere], [cylinder]];
+  return [[cube], [sphere0], [sphere1], [sphere2], [sphere3], [sphere4], [cylinder], [plane]];
 };
 
 export const init = async (canvas: HTMLCanvasElement) => {
