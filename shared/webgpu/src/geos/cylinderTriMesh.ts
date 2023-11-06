@@ -17,7 +17,7 @@ const disc = (step: number, z: number, facing: 'up' | 'down', t: Transform): [nu
     coordinates.push(...pt1.triplet);
     coordinates.push(...pt2.triplet);
   }
-  return [coordinates, computeNormals(coordinates)];
+  return [coordinates, computeNormals('triangle-list', coordinates)];
 };
 
 const pipe = (step: number, bottom: number, top: number, t: Transform): [number[], number[]] => {

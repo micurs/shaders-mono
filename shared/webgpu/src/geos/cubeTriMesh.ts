@@ -96,7 +96,7 @@ export const cubeTriMesh: TriGenerator = (t: Transform, options: GeoOptions<{}>)
     );
   }
 
-  const normals = computeNormals(coordinates);
+  const normals = computeNormals('triangle-list', coordinates);
   triangleData.addNormals(new Float32Array(normals));
 
   return triangleData;

@@ -85,7 +85,7 @@ export interface PointLight {
 }
 
 export type GeoOptions<T> = T & {
-  color: RGBAColor;
+  color?: RGBAColor;
   texture?: GPUTexture;
 };
 
