@@ -56,11 +56,27 @@ export const createPipelines = (gpu: Gpu, shaderModule: GPUShaderModule, scene: 
       fragment: {
         module: shaderModule,
         entryPoint: type === 'texturePipeline' ? 'fragmentTextureShader' : 'fragmentColorShader',
-        targets: [{ format }],
+        targets: [
+          {
+            format: format,
+            blend: {
+              color: {
+                srcFactor: 'src-alpha',
+                dstFactor: 'one-minus-src-alpha',
+                operation: 'add',
+              },
+              alpha: {
+                srcFactor: 'src-alpha',
+                dstFactor: 'one-minus-src-alpha',
+                operation: 'add',
+              },
+            },
+          },
+        ],
       },
       primitive: {
         topology: triangleMesh.primitives, // 'triangle-list',
-        cullMode: 'back',
+        cullMode: triangleMesh.cullMode, //  'none',
       },
       depthStencil: {
         depthWriteEnabled: true,

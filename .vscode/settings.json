@@ -13,5 +13,6 @@
     "tab.activeForeground": "#fff",
     "tab.inactiveForeground": "#fff",
     "tab.inactiveBackground": "#444"
-  }
+  },
+  "typescript.tsdk": "node_modules/typescript/lib"
 }

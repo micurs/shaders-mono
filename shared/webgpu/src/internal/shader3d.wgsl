@@ -57,7 +57,7 @@ fn computeDiffuseColor(
     pos: vec3<f32>,
     normal: vec3<f32>,
     sceneLights: SceneLights) -> vec3<f32> {
-  let shininess: f32 = 24.0;
+  let shininess: f32 = 32.0;
   var diffuse: vec3<f32> = vec3<f32>(0.15, 0.15, 0.1);
   for (var i: u32 = 0; i < MAX_DIR_LIGHTS; i = i + 1) {
     if (sceneLights.dirLights[i].col.a != 0.0) {
@@ -141,5 +141,5 @@ fn fragmentColorShader(in: ColorFragment) -> @location(0) vec4<f32> {
   let diffuse: vec3<f32> = computeDiffuseColor( in.eye, in.pos, in.normal, sceneLights );
 
   // return vec4<f32>(myColor.color.rgb * diffuse , 1.0);
-  return vec4<f32>(myColor.color.rgb * diffuse.rgb , 1.0);
+  return vec4<f32>(myColor.color.rgb * diffuse.rgb, myColor.color.a);
 }

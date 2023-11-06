@@ -4,8 +4,8 @@ import { Gpu } from '../gpu-connection';
 
 export const getOrbitHandlers = (gpu: Gpu): [MouseCbs, TransCbs] => {
   let target = Point.fromValues(0, 0, 0);
-  let eye = Point.fromValues(0.0, 7.0, 1.0);
-  let vuv = UnitVector.fromValues(0, 1, 0);
+  let eye = Point.fromValues(9.0, 9.0, 9.0);
+  let vuv = UnitVector.fromValues(0, 0, 1);
   let rot = [0.0, 0.0];
   let pan = [0.0, 0.0];
   let zoom = 0.0;
@@ -16,7 +16,7 @@ export const getOrbitHandlers = (gpu: Gpu): [MouseCbs, TransCbs] => {
 
   const mouseHandler = (bt: number, r: MouseMovement, _p: MouseLocation) => {
     let maxRes = Math.min(gpu.canvas.width, gpu.canvas.height);
-    let rotSensitivity = (1.0 / maxRes) * distToTarget * 2;
+    let rotSensitivity = (1.0 / maxRes) * 2;
     let panSensitivity = (fov / maxRes) * 2;
     switch (bt) {
       case 0:
@@ -43,7 +43,9 @@ export const getOrbitHandlers = (gpu: Gpu): [MouseCbs, TransCbs] => {
 
   const projectionHandler = (_t?: Transform): Transform => {
     const aspectRatio = gpu.canvas.width / gpu.canvas.height;
-    return Transform.perspective(fov, aspectRatio, 0.1, 100.0);
+    const ltoTarget = Vector.fromPoints(eye, target).length;
+    const depth = Math.max(200, ltoTarget - ltoTarget / 2);
+    return Transform.perspective(fov, aspectRatio, Math.max(0.01, ltoTarget - depth), ltoTarget + depth);
   };
 
   const viewHandler = (t?: Transform): Transform => {

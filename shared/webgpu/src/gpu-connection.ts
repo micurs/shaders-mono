@@ -172,8 +172,8 @@ export class Gpu implements GPUConnection {
   rotateLights() {
     const rotX = Transform.rotationX(-Math.PI / 640);
     const rotY = Transform.rotationY(Math.PI / 240);
-    const rotZ = Transform.rotationZ(Math.PI / 190);
-    const trans = [rotX.compose(rotY), rotY.compose(rotZ), rotZ.compose(rotX).compose(rotY), rotZ];
+    const rotZ = Transform.rotationZ(Math.PI / 360);
+    const trans = [rotZ, rotY.compose(rotZ), rotZ.compose(rotX).compose(rotY), rotZ];
     this._pointLights.forEach((light, idx) => {
       light.pos = light.pos.map(trans[idx]);
     });
