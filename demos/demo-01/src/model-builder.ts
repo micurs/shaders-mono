@@ -1,16 +1,20 @@
 import { Transform } from '@shaders-mono/geopro';
-import { Gpu, createTexture, TriangleData, Scene, MouseLocation, getOrbitHandlers } from '@shaders-mono/webgpu';
+import { Gpu, createTexture, Scene, MouseLocation, getOrbitHandlers } from '@shaders-mono/webgpu';
 import * as WebGPU from '@shaders-mono/webgpu';
 
-export const buildScene = async (gpu: Gpu, trimesh: TriangleData, imageId: string): Promise<Scene> => {
+export const buildScene = async (gpu: Gpu, trimesh: WebGPU.GeoRenderable, imageId: string): Promise<Scene> => {
   const textureEl = document.getElementById(imageId) as HTMLImageElement;
   const image = await createImageBitmap(textureEl);
 
   const material = createTexture(gpu, image);
-  trimesh.buildGpuBuffer(gpu);
   return [[trimesh, material]];
 };
 
+/**
+ *
+ * @param canvasEl
+ * @param supportEl
+ */
 export async function init(canvasEl: HTMLCanvasElement, supportEl: HTMLParagraphElement) {
   const gpu = await WebGPU.initialize(canvasEl);
 

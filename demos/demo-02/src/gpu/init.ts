@@ -1,8 +1,8 @@
 import { Transform } from '@shaders-mono/geopro';
 import * as WebGPU from '@shaders-mono/webgpu';
-import type { Gpu, Scene } from '@shaders-mono/webgpu';
+import type { Scene } from '@shaders-mono/webgpu';
 
-const buildScene = async (gpu: Gpu): Promise<Scene> => {
+const buildScene = async (): Promise<Scene> => {
   const color2: WebGPU.RGBAColor = [0.5, 0.5, 1.0, 1.0];
   const color3: WebGPU.RGBAColor = [0.8, 0.3, 1.0, 1.0];
 
@@ -41,15 +41,6 @@ const buildScene = async (gpu: Gpu): Promise<Scene> => {
     Transform.scale(1.5, 1.5, 1.5).translation(-15, 15, 0.0), // , // Keep the sphere in the center
     { steps: 3, color: [1, 1, 0, 1] }
   );
-  plane.buildGpuBuffer(gpu);
-  sphere0.buildGpuBuffer(gpu);
-  sphere1.buildGpuBuffer(gpu);
-  sphere2.buildGpuBuffer(gpu);
-  sphere3.buildGpuBuffer(gpu);
-  sphere4.buildGpuBuffer(gpu);
-  cylinder.buildGpuBuffer(gpu);
-  cube.buildGpuBuffer(gpu);
-  grid.buildGpuBuffer(gpu);
 
   return [[cube], [sphere0], [sphere1], [sphere2], [sphere3], [sphere4], [cylinder], [plane], [grid]];
 };
@@ -58,7 +49,7 @@ export const init = async (canvas: HTMLCanvasElement) => {
   const gpu = await WebGPU.initialize(canvas);
   await gpu.setupShaders('standard-3d');
 
-  const scene = await buildScene(gpu);
+  const scene = await buildScene();
   await gpu.setupGeoBuilder(scene);
 
   const [mouseHandlers, viewHandlers] = WebGPU.getOrbitHandlers(gpu);

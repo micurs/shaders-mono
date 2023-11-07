@@ -116,9 +116,15 @@ export class Gpu implements GPUConnection {
     if (!this._shaderModule) {
       throw new Error('WebGPU:shader module is NOT available!');
     }
-    // Setup the GPU pipeline with the compiled shaders
+    // 1 - Setup the GPU buffers for the scene
+    scene.forEach(([geo, _]) => {
+      geo.buildGpuBuffer(this);
+    });
+
+    // 2 - Setup the GPU pipeline with the compiled shaders
     this._pipelines = createPipelines(this, this._shaderModule, scene);
 
+    // 3 - Setup the render pass descriptor
     this._renderPassDescription = buildRenderPassDescriptor(this);
   }
 
