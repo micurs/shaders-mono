@@ -1,7 +1,7 @@
 import { Point, Transform } from '@shaders-mono/geopro';
 import { GeoOptions, TriGenerator } from '../types';
 import { computeNormals } from './utils';
-import { TriangleData } from '../triangle-data';
+import { GeoRenderable } from '../geo-renderable';
 
 const logN = (n: number, base: number) => Math.log(n) / Math.log(base);
 
@@ -42,10 +42,10 @@ export const planeTriMesh: TriGenerator<{ steps: number }> = (t: Transform, opti
       const normals = computeNormals('triangle-strip', coords);
       return [new Float32Array(coords), new Float32Array(normals)];
     })
-    .reduce((triangleData: TriangleData, [coords, normals]) => {
+    .reduce((triangleData: GeoRenderable, [coords, normals]) => {
       triangleData.addVertices(coords);
       triangleData.addNormals(normals);
       return triangleData;
-    }, new TriangleData('triangle-strip', color))
+    }, new GeoRenderable('triangle-strip', color))
     .setCullMode('none');
 };

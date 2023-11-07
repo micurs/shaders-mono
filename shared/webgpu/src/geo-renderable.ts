@@ -1,13 +1,13 @@
 import { Gpu } from './gpu-connection';
 import { createGPUBuffer } from './internal/utils';
-import { TriangleMesh, RGBAColor } from './types';
+import { Renderable, RGBAColor } from './types';
 
 const float32Size = 4;
 
 /**
  * TriangleData is a class that holds the data for triangles, its colors, normals and texture coordinates.
  */
-export class TriangleData implements TriangleMesh {
+export class GeoRenderable implements Renderable {
   private _bufferData: Float32Array[] | null = null;
   private _vertices: Float32Array[] = []; // 3 coordinates per vertex - 3 points for a triangle
   private _colors: Float32Array[] = []; // 4 color components per vertex - 3 points for a triangle

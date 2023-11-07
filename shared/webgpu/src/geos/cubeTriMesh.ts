@@ -1,5 +1,5 @@
 import { Point, Transform } from '@shaders-mono/geopro';
-import { TriangleData } from '../triangle-data';
+import { GeoRenderable } from '../geo-renderable';
 import { computeNormals } from './utils';
 import { GeoOptions, TriGenerator } from '../types';
 
@@ -57,7 +57,7 @@ export const cubeTriMesh: TriGenerator = (t: Transform, options: GeoOptions<{}>)
   ];
 
   const coordinates: number[] = points.flatMap((p) => p.triplet);
-  const triangleData = new TriangleData('triangle-list', color);
+  const triangleData = new GeoRenderable('triangle-list', color);
   triangleData.addVertices(new Float32Array(coordinates));
 
   if (!color) {

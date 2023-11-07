@@ -1,5 +1,5 @@
 import { Point, UnitVector, Vector, Transform } from '@shaders-mono/geopro';
-import { TriangleData } from '../triangle-data';
+import { GeoRenderable } from '../geo-renderable';
 import { computeNormals } from './utils';
 import { TriGenerator, GeoOptions } from '../types';
 
@@ -86,7 +86,7 @@ export const cylinderTriMesh: TriGenerator<CylinderOptions> = (t: Transform, opt
   normals.push(...n2);
   normals.push(...n3);
 
-  const triangleData = new TriangleData('triangle-list', color);
+  const triangleData = new GeoRenderable('triangle-list', color);
   triangleData.addVertices(new Float32Array(coordinates));
   triangleData.addNormals(new Float32Array(normals));
   return triangleData;

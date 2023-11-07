@@ -1,7 +1,7 @@
 // Constants for the icosahedron generation
 
 import { UnitVector, Vector } from '@shaders-mono/geopro';
-import { TriangleData } from '../triangle-data';
+import { GeoRenderable } from '../geo-renderable';
 import { GeoOptions, TriGenerator } from '../types';
 import { Transform } from '@shaders-mono/geopro';
 import { Point } from '@shaders-mono/geopro';
@@ -137,7 +137,7 @@ export const sphereTriMesh: TriGenerator<SphereOptions> = (t: Transform, options
     normals.push(...n1.triplet);
     normals.push(...n2.triplet);
   });
-  const triangleData = new TriangleData('triangle-list', color);
+  const triangleData = new GeoRenderable('triangle-list', color);
   triangleData.addVertices(new Float32Array(coordinates));
   triangleData.addNormals(new Float32Array(normals));
   return triangleData;

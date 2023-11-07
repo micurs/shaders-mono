@@ -3,7 +3,6 @@ import * as WebGPU from '@shaders-mono/webgpu';
 import type { Gpu, Scene } from '@shaders-mono/webgpu';
 
 const buildScene = async (gpu: Gpu): Promise<Scene> => {
-  const color1: WebGPU.RGBAColor = [0.8, 0.8, 0.8, 1.0]; // WebGPU.styleColorToVec(window.getComputedStyle(gpu.canvas).color);
   const color2: WebGPU.RGBAColor = [0.5, 0.5, 1.0, 1.0];
   const color3: WebGPU.RGBAColor = [0.8, 0.3, 1.0, 1.0];
 
@@ -21,8 +20,8 @@ const buildScene = async (gpu: Gpu): Promise<Scene> => {
   );
 
   const sphere0 = WebGPU.sphereTriMesh(
-    Transform.scale(2.5, 2.5, 2.5), // , // Keep the sphere in the center
-    { steps: 3, color: [0.8, 0.8, 0.8, 1.0] }
+    Transform.scale(3.5, 3.5, 3.5), // , // Keep the sphere in the center
+    { steps: 3, color: [0.8, 0.8, 1.0, 1.0] }
   );
 
   const sphere1 = WebGPU.sphereTriMesh(
@@ -35,11 +34,11 @@ const buildScene = async (gpu: Gpu): Promise<Scene> => {
   );
   const sphere3 = WebGPU.sphereTriMesh(
     Transform.scale(1.5, 1.5, 1.5).translation(15, -15, 0.0), // , // Keep the sphere in the center
-    { steps: 3, color: color1 }
+    { steps: 3, color: [0, 1, 0, 1] }
   );
   const sphere4 = WebGPU.sphereTriMesh(
     Transform.scale(1.5, 1.5, 1.5).translation(-15, 15, 0.0), // , // Keep the sphere in the center
-    { steps: 3, color: color1 }
+    { steps: 3, color: [1, 1, 0, 1] }
   );
   plane.buildGpuBuffer(gpu);
   sphere0.buildGpuBuffer(gpu);

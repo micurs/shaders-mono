@@ -1,5 +1,5 @@
 import { Point, Transform, UnitVector } from '@shaders-mono/geopro';
-import { TriangleData } from '.';
+import { GeoRenderable } from './geo-renderable';
 
 export type RGBAColor = [number, number, number, number];
 
@@ -12,7 +12,7 @@ export interface GPUConnection {
   readonly format: GPUTextureFormat;
 }
 
-export interface TriangleMesh {
+export interface Renderable {
   buffers: GPUBuffer[];
   bufferLayout: GPUVertexBufferLayout | null;
   vertexCount: number;
@@ -36,7 +36,7 @@ export interface GPUPipeline {
   type: 'colorPipeline' | 'texturePipeline';
   pipeline: GPURenderPipeline;
   altPipeline: GPURenderPipeline;
-  triangleMesh: TriangleMesh; // To be replaced with a more generic triangle mesh structure!
+  triangleMesh: Renderable; // To be replaced with a more generic triangle mesh structure!
   uniformBuffers: Array<Array<GPUBuffer>>;
   bindGroups: Array<GPUBindGroup | undefined>;
 }
@@ -72,7 +72,7 @@ export interface MouseCbs {
   zoom?: MouseZoomHandler;
 }
 
-export type Scene = Array<[TriangleData, Material?]>;
+export type Scene = Array<[GeoRenderable, Material?]>;
 
 export interface DirectionalLight {
   dir: UnitVector;
@@ -89,4 +89,4 @@ export type GeoOptions<T> = T & {
   texture?: GPUTexture;
 };
 
-export type TriGenerator<T = {}> = (t: Transform, options: GeoOptions<T>) => TriangleData;
+export type TriGenerator<T = {}> = (t: Transform, options: GeoOptions<T>) => GeoRenderable;
