@@ -44,7 +44,7 @@ export const getOrbitHandlers = (gpu: Gpu): [MouseCbs, TransCbs] => {
   const projectionHandler = (_t?: Transform): Transform => {
     const aspectRatio = gpu.canvas.width / gpu.canvas.height;
     const ltoTarget = Vector.fromPoints(eye, target).length;
-    const depth = Math.max(200, ltoTarget - ltoTarget / 2);
+    const depth = Math.max(400, ltoTarget * 0.8);
     return Transform.perspective(fov, aspectRatio, Math.max(0.01, ltoTarget - depth), ltoTarget + depth);
   };
 

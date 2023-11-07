@@ -202,7 +202,7 @@ export class Gpu implements GPUConnection {
     const renderPass = commandEncoder.beginRenderPass(renderPassDescription);
 
     this._pipelines.forEach((gpuPipeLine, idx) => {
-      const { pipeline, altPipeline, uniformBuffers, bindGroups, triangleMesh } = gpuPipeLine;
+      const { pipeline, altPipeline, uniformBuffers, bindGroups, geoRenderable: triangleMesh } = gpuPipeLine;
 
       // We need to send the scene data only once!
       if (idx === 0) {

@@ -2,7 +2,7 @@
 
 import { UnitVector, Vector } from '@shaders-mono/geopro';
 import { GeoRenderable } from '../geo-renderable';
-import { GeoOptions, TriGenerator } from '../types';
+import { GeoOptions, GeoGenerator } from '../types';
 import { Transform } from '@shaders-mono/geopro';
 import { Point } from '@shaders-mono/geopro';
 
@@ -114,7 +114,7 @@ interface SphereOptions {
  * @param options
  * @returns
  */
-export const sphereTriMesh: TriGenerator<SphereOptions> = (t: Transform, options: GeoOptions<SphereOptions>) => {
+export const sphereTriMesh: GeoGenerator<SphereOptions> = (t: Transform, options: GeoOptions<SphereOptions>) => {
   const { steps, color } = options;
   const [sphVertices, sphIndexes] = subdivide(vertices, indices, steps);
 

@@ -33,10 +33,10 @@ export type PredefinedShaders = 'standard-3d' | 'standard-2d';
 export type Shaders = PredefinedShaders | { source: string };
 
 export interface GPUPipeline {
-  type: 'colorPipeline' | 'texturePipeline';
+  type: string;
   pipeline: GPURenderPipeline;
   altPipeline: GPURenderPipeline;
-  triangleMesh: Renderable; // To be replaced with a more generic triangle mesh structure!
+  geoRenderable: Renderable; // To be replaced with a more generic triangle mesh structure!
   uniformBuffers: Array<Array<GPUBuffer>>;
   bindGroups: Array<GPUBindGroup | undefined>;
 }
@@ -89,4 +89,4 @@ export type GeoOptions<T> = T & {
   texture?: GPUTexture;
 };
 
-export type TriGenerator<T = {}> = (t: Transform, options: GeoOptions<T>) => GeoRenderable;
+export type GeoGenerator<T = {}> = (t: Transform, options: GeoOptions<T>) => GeoRenderable;

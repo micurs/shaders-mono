@@ -1,16 +1,15 @@
 import { Point, Transform } from '@shaders-mono/geopro';
-import { GeoOptions, TriGenerator } from '../types';
+import { GeoOptions, GeoGenerator } from '../types';
 import { computeNormals } from './utils';
 import { GeoRenderable } from '../geo-renderable';
-
-const logN = (n: number, base: number) => Math.log(n) / Math.log(base);
+import { logN } from '../internal/utils';
 
 /**
  * Build a plane mesh on the XY plane
  * @param t - The transformation to orient the plane as you want
  * @param color - color or texture to apply to the plane
  */
-export const planeTriMesh: TriGenerator<{ steps: number }> = (t: Transform, options: GeoOptions<{ steps: number }>) => {
+export const planeTriMesh: GeoGenerator<{ steps: number }> = (t: Transform, options: GeoOptions<{ steps: number }>) => {
   const { color, steps } = options;
 
   // 0 - Determine the scale of the plane (x/y)

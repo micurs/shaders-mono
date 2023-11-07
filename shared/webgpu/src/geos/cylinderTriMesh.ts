@@ -1,7 +1,7 @@
 import { Point, UnitVector, Vector, Transform } from '@shaders-mono/geopro';
 import { GeoRenderable } from '../geo-renderable';
 import { computeNormals } from './utils';
-import { TriGenerator, GeoOptions } from '../types';
+import { GeoGenerator, GeoOptions } from '../types';
 
 const disc = (step: number, z: number, facing: 'up' | 'down', t: Transform): [number[], number[]] => {
   const r = 0.5;
@@ -72,7 +72,7 @@ interface CylinderOptions {
  * @param options
  * @returns
  */
-export const cylinderTriMesh: TriGenerator<CylinderOptions> = (t: Transform, options: GeoOptions<CylinderOptions>) => {
+export const cylinderTriMesh: GeoGenerator<CylinderOptions> = (t: Transform, options: GeoOptions<CylinderOptions>) => {
   const { steps, color } = options;
   const coordinates = [];
   const normals = [];

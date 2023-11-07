@@ -41,6 +41,12 @@ struct ColorFragment {
   @location(2) eye: vec3<f32>,
 };
 
+struct ColorLineFragment {
+  @builtin(position) position: vec4<f32>,
+  @location(0) viewZ: f32,
+  @location(1) targetZ: f32,
+};
+
 struct ColorData {
     color: vec4<f32>,
 };
@@ -139,7 +145,33 @@ fn vertexColorShader(
 @fragment
 fn fragmentColorShader(in: ColorFragment) -> @location(0) vec4<f32> {
   let diffuse: vec3<f32> = computeDiffuseColor( in.eye, in.pos, in.normal, sceneLights );
-
-  // return vec4<f32>(myColor.color.rgb * diffuse , 1.0);
   return vec4<f32>(myColor.color.rgb * diffuse.rgb, myColor.color.a);
+}
+
+
+@vertex
+fn vertexLineShader(
+    @location(0) vertexPosition: vec3<f32>) -> ColorLineFragment {
+  var output: ColorLineFragment;
+  let eye  = vec4<f32>(sceneData.invertView[3].xyz, 1.0);
+
+  let eyeInViewSpace = sceneData.view * eye;
+  let positionInViewSpace = sceneData.view * vec4<f32>(vertexPosition, 1.0);
+  let bias = 0.002 * positionInViewSpace.z;
+  let biasedPositionInViewSpace = positionInViewSpace - vec4<f32>(0.0, 0.0, bias, 0.0);
+  output.viewZ = -biasedPositionInViewSpace.z;
+  output.targetZ = eyeInViewSpace.z;
+  output.position = sceneData.projection * biasedPositionInViewSpace;
+  return output;
+}
+
+
+@fragment
+fn fragmentLineShader(in: ColorLineFragment) -> @location(0) vec4<f32> {
+
+  let att: f32 =  clamp(in.viewZ / 300, 0.0, 1.0);
+  let a: f32 = myColor.color.a - (myColor.color.a * att);
+
+  return vec4<f32>(myColor.color.rgb,a);
+  // return vec4<f32>(myColor.color.rgb, a);
 }

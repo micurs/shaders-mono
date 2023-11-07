@@ -22,8 +22,26 @@ export class GeoRenderable implements Renderable {
   private _topology: GPUPrimitiveTopology = 'triangle-list';
   private _cullMode: GPUCullMode = 'back';
 
+  get label(): string {
+    return this._topology;
+  }
+
   get hasTextures() {
     return this._hasTextures;
+  }
+
+  get vertexShader() {
+    if (this._topology === 'triangle-strip' || this._topology === 'triangle-list') {
+      return this.hasTextures ? 'vertexTextureShader' : 'vertexColorShader';
+    }
+    return 'vertexLineShader';
+  }
+
+  get fragmentShader() {
+    if (this._topology === 'triangle-strip' || this._topology === 'triangle-list') {
+      return this.hasTextures ? 'fragmentTextureShader' : 'fragmentColorShader';
+    }
+    return 'fragmentLineShader';
   }
 
   get color(): RGBAColor {
@@ -35,7 +53,10 @@ export class GeoRenderable implements Renderable {
   }
 
   get cullMode(): GPUCullMode {
-    return this._cullMode;
+    if (this._topology === 'triangle-strip' || this._topology === 'triangle-list') {
+      return this._cullMode;
+    }
+    return 'none';
   }
 
   get vertexCount() {

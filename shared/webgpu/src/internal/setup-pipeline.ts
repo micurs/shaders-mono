@@ -39,23 +39,26 @@ const createPipelineLayout = (gpu: Gpu, material: Material | undefined): Pipelin
 export const createPipelines = (gpu: Gpu, shaderModule: GPUShaderModule, scene: Scene): GPUPipeline[] => {
   const { device, format } = gpu;
 
-  return scene.map(([triangleMesh, material]) => {
-    const type = material ? 'texturePipeline' : 'colorPipeline';
+  return scene.map(([geoRenderable, material]) => {
+    // const type = material ? 'texturePipeline' : 'colorPipeline';
 
     const [pipelineLayout, groups, buffers] = createPipelineLayout(gpu, material);
 
     // Create the render pipeline and decide which shaders to use.
     const regPipelineData: GPURenderPipelineDescriptor = {
-      label: type,
+      label: geoRenderable.label,
       layout: pipelineLayout,
+      multisample: {
+        count: 1,
+      },
       vertex: {
         module: shaderModule,
-        entryPoint: type === 'texturePipeline' ? 'vertexTextureShader' : 'vertexColorShader',
-        buffers: [triangleMesh.bufferLayout],
+        entryPoint: geoRenderable.vertexShader,
+        buffers: [geoRenderable.bufferLayout],
       },
       fragment: {
         module: shaderModule,
-        entryPoint: type === 'texturePipeline' ? 'fragmentTextureShader' : 'fragmentColorShader',
+        entryPoint: geoRenderable.fragmentShader,
         targets: [
           {
             format: format,
@@ -75,8 +78,8 @@ export const createPipelines = (gpu: Gpu, shaderModule: GPUShaderModule, scene: 
         ],
       },
       primitive: {
-        topology: triangleMesh.primitives, // 'triangle-list',
-        cullMode: triangleMesh.cullMode, //  'none',
+        topology: geoRenderable.primitives,
+        cullMode: geoRenderable.cullMode,
       },
       depthStencil: {
         depthWriteEnabled: true,
@@ -87,7 +90,7 @@ export const createPipelines = (gpu: Gpu, shaderModule: GPUShaderModule, scene: 
     const pipeline = device.createRenderPipeline(regPipelineData);
     const altPipelineData: GPURenderPipelineDescriptor = {
       ...regPipelineData,
-      label: `${type}-alt`,
+      label: `${geoRenderable.label}-alt`,
       primitive: {
         topology: 'line-list',
         cullMode: 'none',
@@ -96,10 +99,10 @@ export const createPipelines = (gpu: Gpu, shaderModule: GPUShaderModule, scene: 
     const altPipeline = device.createRenderPipeline(altPipelineData);
 
     return {
-      type,
+      type: geoRenderable.label,
       pipeline,
       altPipeline,
-      triangleMesh,
+      geoRenderable,
       uniformBuffers: buffers,
       bindGroups: groups,
     };

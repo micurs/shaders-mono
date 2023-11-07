@@ -1,9 +1,9 @@
 import { Point, Transform } from '@shaders-mono/geopro';
 import { GeoRenderable } from '../geo-renderable';
 import { computeNormals } from './utils';
-import { GeoOptions, TriGenerator } from '../types';
+import { GeoOptions, GeoGenerator } from '../types';
 
-export const cubeTriMesh: TriGenerator = (t: Transform, options: GeoOptions<{}>) => {
+export const cubeTriMesh: GeoGenerator = (t: Transform, options: GeoOptions<{}>) => {
   const { color } = options;
 
   const points: Point[] = [
