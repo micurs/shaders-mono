@@ -13,6 +13,7 @@ export const initRebuildViewTexture = (gpu: Gpu) => {
   const viewTexture = (renderDescriptor: GPURenderPassDescriptor): GPURenderPassDescriptor => {
     if (w === canvas.width && h === canvas.height && renderDescriptor) {
       const colorTexture = context.getCurrentTexture();
+
       const colors = renderDescriptor.colorAttachments! as GPURenderPassColorAttachment[];
       colors[0]!.view = colorTexture.createView();
 
@@ -20,20 +21,27 @@ export const initRebuildViewTexture = (gpu: Gpu) => {
     }
     canvas.width = w;
     canvas.height = h;
-    canvas.style.width = w + 'px';
-    canvas.style.height = h + 'px';
+    // canvas.style.width = w + 'px';
+    // canvas.style.height = h + 'px';
 
     // New Z-buffer to hold depth values for each pixel and control the render pass.
     const depthTexture = device.createTexture({
       label: 'DepthTexture',
+      sampleCount: 1,
       size: [canvas.width, canvas.height, 1],
       format: 'depth24plus',
       usage: GPUTextureUsage.RENDER_ATTACHMENT,
     });
 
     // New Color buffer to hold color values for each pixel and control the render pass.
-    const colorTexture = context.getCurrentTexture();
-
+    // const colorTexture = context.getCurrentTexture();
+    const colorTexture = device.createTexture({
+      label: 'ColorTexture',
+      size: { width: canvas.width, height: canvas.height, depthOrArrayLayers: 1 },
+      sampleCount: 1, // match the sample count to the pipeline
+      format: 'bgra8unorm',
+      usage: GPUTextureUsage.RENDER_ATTACHMENT,
+    });
     const colors = renderDescriptor.colorAttachments! as GPURenderPassColorAttachment[];
     colors[0]!.view = colorTexture.createView();
     const depth = renderDescriptor.depthStencilAttachment! as GPURenderPassDepthStencilAttachment;

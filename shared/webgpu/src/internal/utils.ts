@@ -41,16 +41,25 @@ export const createGPUBuffer = (
 };
 
 export const buildRenderPassDescriptor = (gpu: Gpu): GPURenderPassDescriptor => {
-  const { device, canvas, context } = gpu;
+  const { device, canvas } = gpu;
+
+  const colorTexture = device.createTexture({
+    size: { width: canvas.width, height: canvas.height, depthOrArrayLayers: 1 },
+    sampleCount: 1, // set to 4 for MSAA multisampling
+    format: gpu.format,
+    usage: GPUTextureUsage.RENDER_ATTACHMENT,
+  });
+
   // Create the Z-buffer to hold depth values for each pixel and control the render pass.
   const depthTexture = device.createTexture({
     label: 'DepthTexture',
+    sampleCount: 1,
     size: [canvas.width, canvas.height, 1],
     format: 'depth24plus',
     usage: GPUTextureUsage.RENDER_ATTACHMENT,
   });
   const clearColor = styleColorToGpu(window.getComputedStyle(canvas).backgroundColor);
-  const colorTexture = context.getCurrentTexture();
+  // const colorTexture = context.getCurrentTexture();
 
   return {
     colorAttachments: [
@@ -151,3 +160,5 @@ export const getTransformations = (currTrans: GpuTransformations, [w, h]: [numbe
         : Transform.perspective(Math.PI / 5, w / h, 0.1, 100.0),
   };
 };
+
+export const logN = (n: number, base: number) => Math.log(n) / Math.log(base);

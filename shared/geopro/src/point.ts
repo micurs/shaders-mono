@@ -3,6 +3,7 @@ import { VecEntries } from "./types";
 import { GeoMap } from "./operations";
 import { Vector } from "./vector";
 import { Frame } from "./frame";
+import { UnitVector } from '.';
 
 
 
@@ -28,7 +29,7 @@ export class Point {
     return p;
   }
 
-  static fromVector(v: Vector) {
+  static fromVector(v: Vector | UnitVector) {
     const p = new Point();
     p._coord = vec4.fromValues(v.x, v.y, v.z, 1.0);
     return p;

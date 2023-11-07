@@ -39,8 +39,8 @@ export class Gpu implements GPUConnection {
     { dir: UnitVector.fromValues(-1.0, -1.0, -1.0), col: [0.3, 0.3, 0.3, 0.0] },
   ];
   private _pointLights: Array<PointLight> = [
-    { pos: Point.fromValues(-4.0, -4.0, -10.0), col: [0.4, 0.4, 0.4, 1.0] },
-    { pos: Point.fromValues(-13.0, 5.0, 2.0), col: [0.4, 0.3, 0.6, 0.0] },
+    { pos: Point.fromValues(-10.0, -10.0, -10.0), col: [0.4, 0.4, 0.4, 1.0] },
+    { pos: Point.fromValues(10.0, 10.0, 10.0), col: [0.4, 0.3, 0.6, 0.0] },
     { pos: Point.fromValues(3.0, -15.0, -5.0), col: [0.2, 0.2, 0.7, 0.0] },
     { pos: Point.fromValues(13.0, 12.0, -13.0), col: [0.6, 0.1, 0.1, 0.0] },
   ];
@@ -172,8 +172,8 @@ export class Gpu implements GPUConnection {
   rotateLights() {
     const rotX = Transform.rotationX(-Math.PI / 640);
     const rotY = Transform.rotationY(Math.PI / 240);
-    const rotZ = Transform.rotationZ(Math.PI / 190);
-    const trans = [rotX.compose(rotY), rotY.compose(rotZ), rotZ.compose(rotX).compose(rotY), rotZ];
+    const rotZ = Transform.rotationZ(Math.PI / 360);
+    const trans = [rotZ, rotY.compose(rotZ), rotZ.compose(rotX).compose(rotY), rotZ];
     this._pointLights.forEach((light, idx) => {
       light.pos = light.pos.map(trans[idx]);
     });
@@ -202,7 +202,7 @@ export class Gpu implements GPUConnection {
     const renderPass = commandEncoder.beginRenderPass(renderPassDescription);
 
     this._pipelines.forEach((gpuPipeLine, idx) => {
-      const { pipeline, altPipeline, uniformBuffers, bindGroups, triangleMesh } = gpuPipeLine;
+      const { pipeline, altPipeline, uniformBuffers, bindGroups, geoRenderable: triangleMesh } = gpuPipeLine;
 
       // We need to send the scene data only once!
       if (idx === 0) {
@@ -223,8 +223,10 @@ export class Gpu implements GPUConnection {
         renderPass.setBindGroup(2, bindGroups[2]); // Texture data
       }
 
-      renderPass.setVertexBuffer(0, triangleMesh.buffer);
-      renderPass.draw(triangleMesh.vertexCount);
+      triangleMesh.buffers.forEach((buffer, idx) => {
+        renderPass.setVertexBuffer(0, buffer);
+        renderPass.draw(triangleMesh.getVertexCountPerStrip(idx));
+      });
     });
     renderPass.end();
     device.queue.submit([commandEncoder.finish()]);

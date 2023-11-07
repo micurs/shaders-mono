@@ -1,8 +1,8 @@
 // Constants for the icosahedron generation
 
 import { UnitVector, Vector } from '@shaders-mono/geopro';
-import { TriangleData } from '../triangle-data';
-import { RGBAColor } from '../types';
+import { GeoRenderable } from '../geo-renderable';
+import { GeoOptions, GeoGenerator } from '../types';
 import { Transform } from '@shaders-mono/geopro';
 import { Point } from '@shaders-mono/geopro';
 
@@ -104,7 +104,18 @@ function subdivide(vertices: UnitVector[], triangles: TriangleIndexes[], depth: 
   }
 }
 
-export const sphereTriMesh = (steps: number, color: RGBAColor, t: Transform = Transform.world()) => {
+interface SphereOptions {
+  steps: number;
+}
+
+/**
+ * Build a sphere mesh
+ * @param t
+ * @param options
+ * @returns
+ */
+export const sphereTriMesh: GeoGenerator<SphereOptions> = (t: Transform, options: GeoOptions<SphereOptions>) => {
+  const { steps, color } = options;
   const [sphVertices, sphIndexes] = subdivide(vertices, indices, steps);
 
   // console.log(' Number of vertices', vertices.length);
@@ -113,12 +124,12 @@ export const sphereTriMesh = (steps: number, color: RGBAColor, t: Transform = Tr
   const normals: number[] = [];
   const center = Point.fromValues(0, 0, 0).map(t);
   sphIndexes.forEach((triangle) => {
-    const pt0 = sphVertices[triangle[2]].scale(0.5).map(t);
-    const pt1 = sphVertices[triangle[1]].scale(0.5).map(t);
-    const pt2 = sphVertices[triangle[0]].scale(0.5).map(t);
-    const n0 = UnitVector.fromVector(Vector.fromPoints(center, Point.fromVector(pt0)));
-    const n1 = UnitVector.fromVector(Vector.fromPoints(center, Point.fromVector(pt1)));
-    const n2 = UnitVector.fromVector(Vector.fromPoints(center, Point.fromVector(pt2)));
+    const pt0 = Point.fromVector(sphVertices[triangle[2]]).scale(0.5).map(t);
+    const pt1 = Point.fromVector(sphVertices[triangle[1]]).scale(0.5).map(t);
+    const pt2 = Point.fromVector(sphVertices[triangle[0]]).scale(0.5).map(t);
+    const n0 = UnitVector.fromVector(Vector.fromPoints(center, pt0));
+    const n1 = UnitVector.fromVector(Vector.fromPoints(center, pt1));
+    const n2 = UnitVector.fromVector(Vector.fromPoints(center, pt2));
     coordinates.push(...pt0.triplet);
     coordinates.push(...pt1.triplet);
     coordinates.push(...pt2.triplet);
@@ -126,7 +137,8 @@ export const sphereTriMesh = (steps: number, color: RGBAColor, t: Transform = Tr
     normals.push(...n1.triplet);
     normals.push(...n2.triplet);
   });
-  const triangleData = new TriangleData(new Float32Array(coordinates), coordinates.length / 3, color);
+  const triangleData = new GeoRenderable('triangle-list', color);
+  triangleData.addVertices(new Float32Array(coordinates));
   triangleData.addNormals(new Float32Array(normals));
   return triangleData;
 };

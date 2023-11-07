@@ -98,7 +98,7 @@ export function App() {
         </div>
       </div>
       <div className="flex-1 overflow-hidden">
-        <canvas className="bg-slate-800 text-yellow-400 w-full h-full" ref={canvasRef}></canvas>
+        <canvas className="bg-slate-800 text-yellow-400 w-full h-full" ref={canvasRef} width={600} height={600}></canvas>
       </div>
       <div className="bg-slate-800 flex flex-row justify-center flex-1 text-slate-400 items-stretch">
         <div className="flex flex-col justify-center border-slate-600 bg-slate-900 border-solid border-l-[1px] border-t-[1px] px-6 text-center">

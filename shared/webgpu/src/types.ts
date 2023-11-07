@@ -1,5 +1,5 @@
 import { Point, Transform, UnitVector } from '@shaders-mono/geopro';
-import { TriangleData } from '.';
+import { GeoRenderable } from './geo-renderable';
 
 export type RGBAColor = [number, number, number, number];
 
@@ -12,11 +12,12 @@ export interface GPUConnection {
   readonly format: GPUTextureFormat;
 }
 
-export interface TriangleMesh {
-  buffer: GPUBuffer | null;
+export interface Renderable {
+  buffers: GPUBuffer[];
   bufferLayout: GPUVertexBufferLayout | null;
   vertexCount: number;
-  byteSize: number;
+  getByteSizePerStrip: (strip: number) => number;
+  getVertexCountPerStrip(strip: number): number;
   color: RGBAColor;
   primitives: GPUPrimitiveTopology;
 }
@@ -32,10 +33,10 @@ export type PredefinedShaders = 'standard-3d' | 'standard-2d';
 export type Shaders = PredefinedShaders | { source: string };
 
 export interface GPUPipeline {
-  type: 'colorPipeline' | 'texturePipeline';
+  type: string;
   pipeline: GPURenderPipeline;
   altPipeline: GPURenderPipeline;
-  triangleMesh: TriangleMesh; // To be replaced with a more generic triangle mesh structure!
+  geoRenderable: Renderable; // To be replaced with a more generic triangle mesh structure!
   uniformBuffers: Array<Array<GPUBuffer>>;
   bindGroups: Array<GPUBindGroup | undefined>;
 }
@@ -71,7 +72,7 @@ export interface MouseCbs {
   zoom?: MouseZoomHandler;
 }
 
-export type Scene = Array<[TriangleData, Material?]>;
+export type Scene = Array<[GeoRenderable, Material?]>;
 
 export interface DirectionalLight {
   dir: UnitVector;
@@ -82,3 +83,10 @@ export interface PointLight {
   pos: Point;
   col: RGBAColor;
 }
+
+export type GeoOptions<T> = T & {
+  color?: RGBAColor;
+  texture?: GPUTexture;
+};
+
+export type GeoGenerator<T = {}> = (t: Transform, options: GeoOptions<T>) => GeoRenderable;

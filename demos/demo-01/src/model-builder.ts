@@ -16,7 +16,7 @@ export async function init(canvasEl: HTMLCanvasElement, supportEl: HTMLParagraph
 
   await gpu.setupShaders('standard-3d');
 
-  const scene = await buildScene(gpu, WebGPU.cubeTriMesh(Transform.identity()), 'teapot');
+  const scene = await buildScene(gpu, WebGPU.cubeTriMesh(Transform.scale(1.5, 1.5, 1.5), {}), 'teapot');
   await gpu.setupGeoBuilder(scene);
 
   const [mouseHandlers, viewHandlers] = getOrbitHandlers(gpu);

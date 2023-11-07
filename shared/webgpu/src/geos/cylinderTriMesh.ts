@@ -1,7 +1,7 @@
 import { Point, UnitVector, Vector, Transform } from '@shaders-mono/geopro';
-import { TriangleData } from '../triangle-data';
+import { GeoRenderable } from '../geo-renderable';
 import { computeNormals } from './utils';
-import { RGBAColor } from '..';
+import { GeoGenerator, GeoOptions } from '../types';
 
 const disc = (step: number, z: number, facing: 'up' | 'down', t: Transform): [number[], number[]] => {
   const r = 0.5;
@@ -17,7 +17,7 @@ const disc = (step: number, z: number, facing: 'up' | 'down', t: Transform): [nu
     coordinates.push(...pt1.triplet);
     coordinates.push(...pt2.triplet);
   }
-  return [coordinates, computeNormals(coordinates)];
+  return [coordinates, computeNormals('triangle-list', coordinates)];
 };
 
 const pipe = (step: number, bottom: number, top: number, t: Transform): [number[], number[]] => {
@@ -62,7 +62,18 @@ const pipe = (step: number, bottom: number, top: number, t: Transform): [number[
   return [coordinates, normals];
 };
 
-export const cylinderTriMesh = (steps: number, color: RGBAColor, t: Transform) => {
+interface CylinderOptions {
+  steps: number;
+}
+
+/**
+ * Build a cylinder mesh
+ * @param t
+ * @param options
+ * @returns
+ */
+export const cylinderTriMesh: GeoGenerator<CylinderOptions> = (t: Transform, options: GeoOptions<CylinderOptions>) => {
+  const { steps, color } = options;
   const coordinates = [];
   const normals = [];
   const [v1, n1] = disc(steps, 0.5, 'up', t);
@@ -75,7 +86,8 @@ export const cylinderTriMesh = (steps: number, color: RGBAColor, t: Transform) =
   normals.push(...n2);
   normals.push(...n3);
 
-  const triangleData = new TriangleData(new Float32Array(coordinates), coordinates.length / 3, color);
+  const triangleData = new GeoRenderable('triangle-list', color);
+  triangleData.addVertices(new Float32Array(coordinates));
   triangleData.addNormals(new Float32Array(normals));
   return triangleData;
 };
