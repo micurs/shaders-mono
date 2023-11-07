@@ -1,6 +1,6 @@
 import { Point, Transform, UnitVector } from '@shaders-mono/geopro';
 import { Gpu } from '../gpu-connection';
-import { GPUConnection, GpuTransformations, PredefinedShaders, RGBAColor, Shaders, TransCbs } from '../types';
+import { GPUConnection, CameraTransformations, PredefinedShaders, RGBAColor, Shaders, CameraTransformationHandlers } from '../types';
 import { styleColorToGpu } from '../webgpu';
 
 export const createGPUBufferUint = (
@@ -140,7 +140,11 @@ export const isPredefinedShader = (shader: Shaders): shader is PredefinedShaders
  * @param dim - a pair with the dimensions of the viewport
  * @param transGen - optional generator of view transformation
  */
-export const getTransformations = (currTrans: GpuTransformations, [w, h]: [number, number], transGen?: TransCbs): GpuTransformations => {
+export const getTransformations = (
+  currTrans: CameraTransformations,
+  [w, h]: [number, number],
+  transGen?: CameraTransformationHandlers
+): CameraTransformations => {
   return {
     view:
       transGen && transGen.view
@@ -150,10 +154,6 @@ export const getTransformations = (currTrans: GpuTransformations, [w, h]: [numbe
             Point.fromValues(0, 0, 0), // target
             UnitVector.fromValues(0, 0, 1) // vup
           ),
-    model:
-      transGen && transGen.model
-        ? transGen.model(currTrans.model) // Compose the current model with the new one from transGen
-        : currTrans.model, // .composeWith(Transform.rotationY(deg2rad(1.0))),
     projection:
       transGen && transGen.projection
         ? transGen.projection(currTrans.projection) // Compose the current projection with the new one from transGen
@@ -162,3 +162,5 @@ export const getTransformations = (currTrans: GpuTransformations, [w, h]: [numbe
 };
 
 export const logN = (n: number, base: number) => Math.log(n) / Math.log(base);
+
+export const zeroHex = (num: number, places: number): string => num.toString(16).padStart(places, '0');

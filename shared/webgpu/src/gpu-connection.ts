@@ -1,7 +1,20 @@
 import { Point, Transform, UnitVector } from '@shaders-mono/geopro';
 
 import * as fps from './internal/fps';
-import { GPUConnection, GPUPipeline, GpuTransformations, Shaders, TransCbs, MouseCbs, Scene, DirectionalLight, PointLight } from './types';
+import {
+  GPUConnection,
+  GPUPipeline,
+  CameraTransformations,
+  Shaders,
+  CameraTransformationHandlers,
+  MouseCbs,
+  Scene,
+  DirectionalLight,
+  PointLight,
+  RGBAColor,
+  FrameHandlers,
+  LightsTransformationHandlers,
+} from './types';
 import { setupShaderModule } from './internal/setup-shaders';
 import { createPipelines } from './internal/setup-pipeline';
 import { initMouseHandler } from './internal/mouse-capture';
@@ -21,26 +34,29 @@ export class Gpu implements GPUConnection {
   private _pipelineMode: PipelineMode = 'default';
   private _shaderModule: GPUShaderModule | undefined;
   private _pipelines: Array<GPUPipeline> = [];
-  private _transformations: GpuTransformations = {
+  private _transformations: CameraTransformations = {
     projection: Transform.identity(),
     view: Transform.identity(),
-    model: Transform.identity(),
   };
   private _renderPassDescription: GPURenderPassDescriptor | undefined = undefined;
-  private _transGen: TransCbs | undefined;
+  private _cameraTransHandler: CameraTransformationHandlers | undefined = undefined;
+  private _lightsHandler: LightsTransformationHandlers | undefined = undefined;
   private _fps = fps.init();
 
   private _rebuildViewTexture: ReturnType<typeof initRebuildViewTexture> | undefined = undefined;
 
+  // Lights
+  private _ambientLight: RGBAColor = [0.2, 0.2, 0.2, 1.0];
+
   private _dirLights: Array<DirectionalLight> = [
-    { dir: UnitVector.fromValues(0.0, -1.5, -0.5), col: [0.3, 0.3, 0.3, 1.0] },
-    { dir: UnitVector.fromValues(-1.0, -1.0, 1.0), col: [0.4, 0.4, 0.4, 1.0] },
+    { dir: UnitVector.fromValues(0.0, -1.5, -0.5), col: [0.3, 0.3, 0.3, 0.0] },
+    { dir: UnitVector.fromValues(-1.0, -1.0, 1.0), col: [0.0, 0.0, 0.0, 0.0] },
     { dir: UnitVector.fromValues(1.0, 0.0, 0.0), col: [0.5, 0.5, 0.5, 0.0] },
     { dir: UnitVector.fromValues(-1.0, -1.0, -1.0), col: [0.3, 0.3, 0.3, 0.0] },
   ];
   private _pointLights: Array<PointLight> = [
-    { pos: Point.fromValues(-10.0, -10.0, -10.0), col: [0.4, 0.4, 0.4, 1.0] },
-    { pos: Point.fromValues(10.0, 10.0, 10.0), col: [0.4, 0.3, 0.6, 0.0] },
+    { pos: Point.fromValues(-10.0, -10.0, -10.0), col: [0.4, 0.4, 0.4, 0.0] },
+    { pos: Point.fromValues(10.0, 10.0, 10.0), col: [0.0, 0.0, 0.0, 0.0] },
     { pos: Point.fromValues(3.0, -15.0, -5.0), col: [0.2, 0.2, 0.7, 0.0] },
     { pos: Point.fromValues(13.0, 12.0, -13.0), col: [0.6, 0.1, 0.1, 0.0] },
   ];
@@ -68,6 +84,21 @@ export class Gpu implements GPUConnection {
 
   get pontLights(): Array<PointLight> {
     return this._pointLights;
+  }
+
+  setAmbientLight(lightCol: RGBAColor) {
+    this._ambientLight = lightCol as RGBAColor;
+  }
+
+  setLight(type: 'ambient' | 'directional' | 'point', idx: number, light: DirectionalLight | PointLight) {
+    switch (type) {
+      case 'directional':
+        this._dirLights[idx] = light as DirectionalLight;
+        break;
+      case 'point':
+        this._pointLights[idx] = light as PointLight;
+        break;
+    }
   }
 
   /**
@@ -157,9 +188,9 @@ export class Gpu implements GPUConnection {
     const { device } = this;
     const { projection, view } = this._transformations;
     const viewInv = view.invert();
+
     // Writes the 3 matrixes into the uniformBuffer ...
     let transOffset = 0;
-    let lightOffset = 0;
     device.queue.writeBuffer(buffer[0], transOffset, view.buffer());
     transOffset += Transform.bufferSize;
     device.queue.writeBuffer(buffer[0], transOffset, viewInv.buffer());
@@ -167,22 +198,25 @@ export class Gpu implements GPUConnection {
     device.queue.writeBuffer(buffer[0], transOffset, projection.buffer());
     transOffset += Transform.bufferSize;
 
+    // Lights
+    let lightOffset = 0;
     const dirLightsBuffer = new Float32Array(this._dirLights.flatMap(({ dir, col }) => [...dir.coordinates, ...col]));
     device.queue.writeBuffer(buffer[1], lightOffset, dirLightsBuffer);
     lightOffset += dirLightsBuffer.byteLength;
     const posLightBuffer = new Float32Array(this._pointLights.flatMap(({ pos, col }) => [...pos.coordinates, ...col]));
     device.queue.writeBuffer(buffer[1], lightOffset, posLightBuffer);
     lightOffset += posLightBuffer.byteLength;
+    const ambientLightBuffer = new Float32Array(this._ambientLight);
+    device.queue.writeBuffer(buffer[1], lightOffset, ambientLightBuffer);
   }
 
-  rotateLights() {
-    const rotX = Transform.rotationX(-Math.PI / 640);
-    const rotY = Transform.rotationY(Math.PI / 240);
-    const rotZ = Transform.rotationZ(Math.PI / 360);
-    const trans = [rotZ, rotY.compose(rotZ), rotZ.compose(rotX).compose(rotY), rotZ];
-    this._pointLights.forEach((light, idx) => {
-      light.pos = light.pos.map(trans[idx]);
-    });
+  updateLights() {
+    if (!this._lightsHandler) {
+      return;
+    }
+    const { dirLights, posLights } = this._lightsHandler;
+    dirLights && dirLights(this._dirLights);
+    posLights && posLights(this._pointLights);
   }
 
   /**
@@ -193,7 +227,7 @@ export class Gpu implements GPUConnection {
    */
   private render = () => {
     const { device } = this;
-    this.rotateLights();
+    this.updateLights();
 
     // 1 - We rebuild the rendering texture id needed when canvas is resized!
     let renderPassDescription = this._rebuildViewTexture
@@ -242,14 +276,15 @@ export class Gpu implements GPUConnection {
   private renderLoop() {
     const { width, height } = this.canvas;
     // Get transformation from the outside to allow camera and model movements.
-    this._transformations = getTransformations(this._transformations, [width, height], this._transGen);
+    this._transformations = getTransformations(this._transformations, [width, height], this._cameraTransHandler);
 
     this.render();
     requestAnimationFrame(this.renderLoop.bind(this));
   }
 
-  beginRenderLoop(transGen?: TransCbs) {
-    this._transGen = transGen;
+  beginRenderLoop(frameHandlers?: FrameHandlers) {
+    this._cameraTransHandler = frameHandlers?.camera;
+    this._lightsHandler = frameHandlers?.lights;
     this.renderLoop();
   }
 }

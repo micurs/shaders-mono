@@ -20,6 +20,7 @@ struct SceneData {
 struct SceneLights {
   dirLights: array<DirectionalLight, MAX_DIR_LIGHTS>,
   pointLights: array<PointLight, MAX_POINT_LIGHTS>,
+  ambient: vec4<f32>,
 };
 
 struct ObjectData {
@@ -64,7 +65,7 @@ fn computeDiffuseColor(
     normal: vec3<f32>,
     sceneLights: SceneLights) -> vec3<f32> {
   let shininess: f32 = 32.0;
-  var diffuse: vec3<f32> = vec3<f32>(0.15, 0.15, 0.1);
+  var diffuse: vec3<f32> = sceneLights.ambient.rgb;
   for (var i: u32 = 0; i < MAX_DIR_LIGHTS; i = i + 1) {
     if (sceneLights.dirLights[i].col.a != 0.0) {
       let lightDir: vec3<f32> = normalize(sceneLights.dirLights[i].dir.xyz); //
@@ -86,7 +87,7 @@ fn computeDiffuseColor(
       // Specular
       let V = normalize(eye - pos);
       let R = normalize(reflect(lightDir, normal));
-      let specularIntensity = pow(max(dot(V, R), 0.0), shininess);
+      let specularIntensity = pow(max(dot(V, R), 0.0), shininess * attenuation);
       let specularColor = specularIntensity * lightColor;
 
       diffuse = diffuse + (diffuseColor+ specularColor) * attenuation;

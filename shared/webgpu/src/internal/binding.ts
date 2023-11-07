@@ -10,9 +10,11 @@ export const createSceneDataBindingGroup = (gpu: Gpu): [GPUBindGroupLayout, GPUB
     4 * (2 * Vector.bufferSize) + // 5 directional lights (direction + color)
     4 * (Vector.bufferSize + Point.bufferSize); // 20 point lights (position + color)
 
+  const numberOfLights = 4;
   const lightSize =
-    4 * (2 * Vector.bufferSize) + // 2 directional lights (direction + color)
-    4 * (Vector.bufferSize + Point.bufferSize); // 2 point lights (position + color)
+    numberOfLights * (2 * Vector.bufferSize) + // 2 directional lights (direction + color)
+    numberOfLights * (Vector.bufferSize + Point.bufferSize) + // 2 point lights (position + color)
+    4 * 4; // 4 32 bit floating point (4 byte each);
 
   const transBuffer = gpu.device.createBuffer({
     label: 'TransBuffer',

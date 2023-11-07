@@ -1,8 +1,8 @@
 import { Frame, Point, Transform, UnitVector, Vector } from '@shaders-mono/geopro';
-import { MouseCbs, MouseLocation, MouseMovement, TransCbs } from '../types';
+import { MouseCbs, MouseLocation, MouseMovement, CameraTransformationHandlers } from '../types';
 import { Gpu } from '../gpu-connection';
 
-export const getOrbitHandlers = (gpu: Gpu): [MouseCbs, TransCbs] => {
+export const getOrbitHandlers = (gpu: Gpu): [MouseCbs, CameraTransformationHandlers] => {
   let target = Point.fromValues(0, 0, 0);
   let eye = Point.fromValues(9.0, 9.0, 9.0);
   let vuv = UnitVector.fromValues(0, 0, 1);
@@ -100,10 +100,12 @@ export const getOrbitHandlers = (gpu: Gpu): [MouseCbs, TransCbs] => {
   };
 
   return [
+    // Mouse handlers
     {
       move: mouseHandler,
       zoom: zoomHandler,
     },
+    // Matrix camera handlers
     {
       view: viewHandler,
       projection: projectionHandler,

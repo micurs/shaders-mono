@@ -1,4 +1,5 @@
 import { Gpu } from './gpu-connection';
+import { zeroHex } from './internal/utils';
 import { Material, RGBAColor } from './types';
 
 // export namespace WebGPU {
@@ -129,7 +130,7 @@ export const styleColorToVec = (styleColor: string): RGBAColor => {
 
 export const RGBAColorToStyle = (color: RGBAColor): string => {
   const [r, g, b, _] = color;
-  return `#${Math.round(r * 255).toString(16)}${Math.round(g * 255).toString(16)}${Math.round(b * 255).toString(16)}`;
+  return `#${zeroHex(Math.round(r * 255), 2)}${zeroHex(Math.round(g * 255), 2)}${zeroHex(Math.round(b * 255), 2)}`;
 };
 
 
