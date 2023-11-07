@@ -41,10 +41,9 @@ export interface GPUPipeline {
   bindGroups: Array<GPUBindGroup | undefined>;
 }
 
-export interface GpuTransformations {
+export interface CameraTransformations {
   projection: Transform;
   view: Transform;
-  model: Transform;
 }
 
 export type MouseMoveHandler = (bt: number, r: MouseMovement, p: MouseLocation) => void;
@@ -52,10 +51,21 @@ export type MouseClickHandler = (bt: number, p: MouseLocation) => void;
 export type MouseZoomHandler = (delta: number) => void;
 export type TransformHandler = (prev?: Transform) => Transform;
 
-export interface TransCbs {
+export interface CameraTransformationHandlers {
   view?: TransformHandler;
-  model?: TransformHandler;
   projection?: TransformHandler;
+}
+
+export type LightHandler<T extends DirectionalLight | PointLight> = (prev: Array<T>) => void;
+
+export interface LightsTransformationHandlers {
+  dirLights?: LightHandler<DirectionalLight>;
+  posLights?: LightHandler<PointLight>;
+}
+
+export interface FrameHandlers {
+  camera?: CameraTransformationHandlers;
+  lights?: LightsTransformationHandlers;
 }
 
 export type MouseLocation = [number, number];

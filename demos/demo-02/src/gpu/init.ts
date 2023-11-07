@@ -1,4 +1,4 @@
-import { Transform } from '@shaders-mono/geopro';
+import { Point, Transform, UnitVector } from '@shaders-mono/geopro';
 import * as WebGPU from '@shaders-mono/webgpu';
 import type { Scene } from '@shaders-mono/webgpu';
 
@@ -52,8 +52,29 @@ export const init = async (canvas: HTMLCanvasElement) => {
   const scene = await buildScene();
   await gpu.setupGeoBuilder(scene);
 
+  gpu.setAmbientLight([0.2, 0.2, 0.2, 1.0]);
+  gpu.setLight('directional', 0, { dir: UnitVector.fromValues(0.0, -1.5, -0.5), col: [0.3, 0.3, 0.3, 1.0] });
+  gpu.setLight('point', 0, { pos: Point.fromValues(2.0, 2.0, -0.5), col: [0.5, 0.1, 0.1, 1.0] });
+  gpu.setLight('point', 1, { pos: Point.fromValues(4.0, 4.0, +2.5), col: [0.3, 0.3, 0.1, 1.0] });
+  gpu.setLight('point', 2, { pos: Point.fromValues(-6.0, 4.0, 4.5), col: [0.0, 0.1, 0.4, 1.0] });
+  gpu.setLight('point', 3, { pos: Point.fromValues(-6.0, 14.0, 8.5), col: [0.2, 0.5, 0.0, 1.0] });
+
+  const rotZ = Transform.rotationX(-Math.PI / 640);
+  const rotY = Transform.rotationX(-Math.PI / 240);
+  const rotX = Transform.rotationX(-Math.PI / 360);
+
   const [mouseHandlers, viewHandlers] = WebGPU.getOrbitHandlers(gpu);
   gpu.captureMouseMotion(mouseHandlers);
-  gpu.beginRenderLoop(viewHandlers);
+  gpu.beginRenderLoop({
+    camera: viewHandlers,
+    lights: {
+      posLights: (lights: WebGPU.PointLight[]) => {
+        lights[0].pos = lights[0].pos.map(rotZ);
+        lights[1].pos = lights[1].pos.map(rotX).map(rotZ);
+        lights[2].pos = lights[2].pos.map(rotZ).map(rotX).map(rotZ);
+        lights[3].pos = lights[3].pos.map(rotX).map(rotY).map(rotZ).map(rotY.invert());
+      },
+    },
+  });
   return gpu;
 };
