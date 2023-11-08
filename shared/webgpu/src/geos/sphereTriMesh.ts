@@ -115,7 +115,7 @@ interface SphereOptions {
  * @returns
  */
 export const sphereTriMesh: GeoGenerator<SphereOptions> = (t: Transform, options: GeoOptions<SphereOptions>) => {
-  const { steps, color } = options;
+  const { steps, color, id } = options;
   const [sphVertices, sphIndexes] = subdivide(vertices, indices, steps);
 
   // console.log(' Number of vertices', vertices.length);
@@ -137,7 +137,7 @@ export const sphereTriMesh: GeoGenerator<SphereOptions> = (t: Transform, options
     normals.push(...n1.triplet);
     normals.push(...n2.triplet);
   });
-  const triangleData = new GeoRenderable('triangle-list', color);
+  const triangleData = new GeoRenderable(id, 'triangle-list', color);
   triangleData.addVertices(new Float32Array(coordinates));
   triangleData.addNormals(new Float32Array(normals));
   return triangleData;

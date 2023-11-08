@@ -4,7 +4,7 @@ import { logN } from '../internal/utils';
 import { GeoRenderable } from '../geo-renderable';
 
 export const planeGridLines: GeoGenerator<{ steps: number }> = (t: Transform, options: GeoOptions<{ steps: number }>) => {
-  const { color, steps } = options;
+  const { color, steps, id } = options;
 
   // 0 - Determine the scale of the plane (x/y)
   const s = t.scaleVector;
@@ -33,7 +33,7 @@ export const planeGridLines: GeoGenerator<{ steps: number }> = (t: Transform, op
     pts.push(ptStart, ptEnd);
   }
 
-  const geo = new GeoRenderable('line-list', color);
+  const geo = new GeoRenderable(id, 'line-list', color);
   geo.addVertices(new Float32Array(pts.flatMap((p) => p.triplet)));
   return geo;
 };

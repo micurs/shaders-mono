@@ -10,7 +10,7 @@ import { logN } from '../internal/utils';
  * @param color - color or texture to apply to the plane
  */
 export const planeTriMesh: GeoGenerator<{ steps: number }> = (t: Transform, options: GeoOptions<{ steps: number }>) => {
-  const { color, steps } = options;
+  const { color, steps, id } = options;
 
   // 0 - Determine the scale of the plane (x/y)
   const s = t.scaleVector;
@@ -45,6 +45,6 @@ export const planeTriMesh: GeoGenerator<{ steps: number }> = (t: Transform, opti
       triangleData.addVertices(coords);
       triangleData.addNormals(normals);
       return triangleData;
-    }, new GeoRenderable('triangle-strip', color))
+    }, new GeoRenderable(id, 'triangle-strip', color))
     .setCullMode('none');
 };

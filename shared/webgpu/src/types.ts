@@ -20,6 +20,7 @@ export interface Renderable {
   getVertexCountPerStrip(strip: number): number;
   color: RGBAColor;
   primitives: GPUPrimitiveTopology;
+  transformationData: Float32Array; // 2  4by4 matrices containing the transformation data (direct and inverse)
 }
 
 export interface Material {
@@ -36,9 +37,9 @@ export interface GPUPipeline {
   type: string;
   pipeline: GPURenderPipeline;
   altPipeline: GPURenderPipeline;
-  geoRenderable: Renderable; // To be replaced with a more generic triangle mesh structure!
+  geoRenderable: GeoRenderable; // The geometry to render
   uniformBuffers: Array<Array<GPUBuffer>>;
-  bindGroups: Array<GPUBindGroup | undefined>;
+  bindGroups: [GPUBindGroup, GPUBindGroup, GPUBindGroup, GPUBindGroup | undefined];
 }
 
 export interface CameraTransformations {
@@ -58,14 +59,21 @@ export interface CameraTransformationHandlers {
 
 export type LightHandler<T extends DirectionalLight | PointLight> = (prev: Array<T>) => void;
 
+export type ModelTransformHandler = (prev: Transform) => Transform;
+
 export interface LightsTransformationHandlers {
   dirLights?: LightHandler<DirectionalLight>;
   posLights?: LightHandler<PointLight>;
 }
 
+export interface ModelTransformationHandlers {
+  [id: string]: ModelTransformHandler;
+}
+
 export interface FrameHandlers {
   camera?: CameraTransformationHandlers;
   lights?: LightsTransformationHandlers;
+  models?: ModelTransformationHandlers;
 }
 
 export type MouseLocation = [number, number];
@@ -95,6 +103,7 @@ export interface PointLight {
 }
 
 export type GeoOptions<T> = T & {
+  id: string; // A unique ID in the scene
   color?: RGBAColor;
   texture?: GPUTexture;
 };

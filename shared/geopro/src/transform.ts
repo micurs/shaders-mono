@@ -147,8 +147,20 @@ export class Transform {
     return false;
   }
 
+  get values(): IterableIterator<number> {
+    return this._direct.values();
+  }
+
+  get inverseValues(): IterableIterator<number> {
+    return this._inverse.values();
+  }
+
   buffer(): ArrayBuffer {
     return new Float32Array(this._direct.values());
+  }
+
+  inverseBuffer(): ArrayBuffer {
+    return new Float32Array(this._inverse.values());
   }
 
   /**

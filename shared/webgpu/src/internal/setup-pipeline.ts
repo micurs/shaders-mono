@@ -1,8 +1,11 @@
 import { Gpu } from '../gpu-connection';
 import { GPUPipeline, Material, Scene } from '../types';
-import { createColorsBindingGroup, createTextureBindingGroup, createSceneDataBindingGroup } from './binding';
+import { createColorsBindingGroup, createTextureBindingGroup, createSceneDataBindingGroup, createModelTransBindingGroup } from './binding';
 
-type PipelineLayoutData = [GPUPipelineLayout, GPUBindGroup[], GPUBuffer[][]];
+type PipelineBindingGroups = [GPUBindGroup, GPUBindGroup, GPUBindGroup, GPUBindGroup | undefined];
+type PipelineBuffers = [GPUBuffer[], GPUBuffer[], GPUBuffer[]];
+
+type PipelineLayoutData = [GPUPipelineLayout, PipelineBindingGroups, PipelineBuffers];
 
 /**
  * Create the pipeline layout for the a primitive object in the scene.
@@ -17,12 +20,15 @@ const createPipelineLayout = (gpu: Gpu, material: Material | undefined): Pipelin
   const [layout0, group0, buffer0] = createSceneDataBindingGroup(gpu);
   // Group 1: colors
   const [layout1, group1, buffer1] = createColorsBindingGroup(gpu);
-  // Group 2: texture, and sampler
-  const [layout2, group2] = material ? createTextureBindingGroup(gpu, material!) : [undefined, undefined];
+  // Group 2: model and inverse model transformation
+  const [layout2, group2, buffer2] = createModelTransBindingGroup(gpu);
 
-  const bindGroupLayouts = layout2 ? [layout0, layout1, layout2] : [layout0, layout1];
-  const groups = group2 ? [group0, group1, group2] : [group0, group1];
-  const buffers = [buffer0, buffer1];
+  // Group 3: texture, and sampler
+  const [layout3, group3] = material ? createTextureBindingGroup(gpu, material!) : [undefined, undefined];
+
+  const bindGroupLayouts = layout3 ? [layout0, layout1, layout2, layout3] : [layout0, layout1, layout2];
+  const groups: PipelineBindingGroups = [group0, group1, group2, group3];
+  const buffers: PipelineBuffers = [buffer0, buffer1, buffer2];
 
   const pipelineLayout = device.createPipelineLayout({ bindGroupLayouts });
 
@@ -36,12 +42,10 @@ const createPipelineLayout = (gpu: Gpu, material: Material | undefined): Pipelin
  * @param scene - The scene with all the object we want to render
  * @returns
  */
-export const createPipelines = (gpu: Gpu, shaderModule: GPUShaderModule, scene: Scene): GPUPipeline[] => {
+export const createPipelines = (gpu: Gpu, shaderModule: GPUShaderModule, scene: Scene): Map<string, GPUPipeline> => {
   const { device, format } = gpu;
 
-  return scene.map(([geoRenderable, material]) => {
-    // const type = material ? 'texturePipeline' : 'colorPipeline';
-
+  const idGeoPairs = scene.map<[string, GPUPipeline]>(([geoRenderable, material]): [string, GPUPipeline] => {
     const [pipelineLayout, groups, buffers] = createPipelineLayout(gpu, material);
 
     // Create the render pipeline and decide which shaders to use.
@@ -98,13 +102,17 @@ export const createPipelines = (gpu: Gpu, shaderModule: GPUShaderModule, scene: 
     };
     const altPipeline = device.createRenderPipeline(altPipelineData);
 
-    return {
-      type: geoRenderable.label,
-      pipeline,
-      altPipeline,
-      geoRenderable,
-      uniformBuffers: buffers,
-      bindGroups: groups,
-    };
+    return [
+      geoRenderable.id,
+      {
+        type: geoRenderable.label,
+        pipeline,
+        altPipeline,
+        geoRenderable,
+        uniformBuffers: buffers,
+        bindGroups: groups,
+      },
+    ];
   });
+  return new Map<string, GPUPipeline>(idGeoPairs);
 };

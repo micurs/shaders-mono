@@ -73,7 +73,7 @@ interface CylinderOptions {
  * @returns
  */
 export const cylinderTriMesh: GeoGenerator<CylinderOptions> = (t: Transform, options: GeoOptions<CylinderOptions>) => {
-  const { steps, color } = options;
+  const { steps, color, id } = options;
   const coordinates = [];
   const normals = [];
   const [v1, n1] = disc(steps, 0.5, 'up', t);
@@ -86,7 +86,7 @@ export const cylinderTriMesh: GeoGenerator<CylinderOptions> = (t: Transform, opt
   normals.push(...n2);
   normals.push(...n3);
 
-  const triangleData = new GeoRenderable('triangle-list', color);
+  const triangleData = new GeoRenderable(id, 'triangle-list', color);
   triangleData.addVertices(new Float32Array(coordinates));
   triangleData.addNormals(new Float32Array(normals));
   return triangleData;
