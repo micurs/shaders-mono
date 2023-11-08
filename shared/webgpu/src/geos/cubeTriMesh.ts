@@ -4,7 +4,7 @@ import { computeNormals } from './utils';
 import { GeoOptions, GeoGenerator } from '../types';
 
 export const cubeTriMesh: GeoGenerator = (t: Transform, options: GeoOptions<{}>) => {
-  const { color } = options;
+  const { color, id } = options;
 
   const points: Point[] = [
     Point.fromValues(0.5, -0.5, 0.5).map(t),
@@ -57,7 +57,7 @@ export const cubeTriMesh: GeoGenerator = (t: Transform, options: GeoOptions<{}>)
   ];
 
   const coordinates: number[] = points.flatMap((p) => p.triplet);
-  const triangleData = new GeoRenderable('triangle-list', color);
+  const triangleData = new GeoRenderable(id, 'triangle-list', color);
   triangleData.addVertices(new Float32Array(coordinates));
 
   if (!color) {

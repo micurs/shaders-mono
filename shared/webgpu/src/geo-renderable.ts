@@ -1,6 +1,7 @@
+import { Transform } from '@shaders-mono/geopro';
 import { Gpu } from './gpu-connection';
 import { createGPUBuffer } from './internal/utils';
-import { Renderable, RGBAColor } from './types';
+import { ModelTransformHandler, Renderable, RGBAColor } from './types';
 
 const float32Size = 4;
 
@@ -8,11 +9,13 @@ const float32Size = 4;
  * TriangleData is a class that holds the data for triangles, its colors, normals and texture coordinates.
  */
 export class GeoRenderable implements Renderable {
+  private _id: string;
   private _bufferData: Float32Array[] | null = null;
   private _vertices: Float32Array[] = []; // 3 coordinates per vertex - 3 points for a triangle
   private _colors: Float32Array[] = []; // 4 color components per vertex - 3 points for a triangle
   private _normals: Float32Array[] = []; // 3 coordinates per vertex - 3 points for a triangle
   private _textures: Float32Array[] = []; // 2 coordinates per vertex - 3 points for a triangle
+  private _transformation: Transform = Transform.identity();
   private _color: RGBAColor = [1.0, 1.0, 1.0, 1.0]; // 4 color components per vertex - 3 points for a triangle
   private _hasTextures = false;
   private _vertexByteSize: number = 0;
@@ -21,6 +24,10 @@ export class GeoRenderable implements Renderable {
   private _bufferLayout: GPUVertexBufferLayout | null = null;
   private _topology: GPUPrimitiveTopology = 'triangle-list';
   private _cullMode: GPUCullMode = 'back';
+
+  get id(): string {
+    return this._id;
+  }
 
   get label(): string {
     return this._topology;
@@ -63,6 +70,11 @@ export class GeoRenderable implements Renderable {
     return this._vertices.reduce((acc, vtx) => acc + vtx.length / 3, 0);
   }
 
+  transform(th: ModelTransformHandler) {
+    this._transformation = th(this._transformation);
+    return this;
+  }
+
   getVertexCountPerStrip(strip: number): number {
     return this._vertices[strip].length / 3;
   }
@@ -92,6 +104,10 @@ export class GeoRenderable implements Renderable {
    */
   addVertices(vertices: Float32Array) {
     this._vertices.push(vertices);
+  }
+
+  get transformationData(): Float32Array {
+    return new Float32Array([...this._transformation.values, ...this._transformation.inverseValues]);
   }
 
   /**
@@ -192,7 +208,8 @@ export class GeoRenderable implements Renderable {
     return this._bufferLayout;
   }
 
-  constructor(topology: GPUPrimitiveTopology, color: RGBAColor = [1.0, 1.0, 1.0, 1.0]) {
+  constructor(id: string, topology: GPUPrimitiveTopology, color: RGBAColor = [1.0, 1.0, 1.0, 1.0]) {
+    this._id = id;
     this._topology = topology;
     this._vertexByteSize = 3 * 4;
     this._color = color;

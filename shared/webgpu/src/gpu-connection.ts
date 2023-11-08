@@ -14,6 +14,7 @@ import {
   RGBAColor,
   FrameHandlers,
   LightsTransformationHandlers,
+  ModelTransformationHandlers,
 } from './types';
 import { setupShaderModule } from './internal/setup-shaders';
 import { createPipelines } from './internal/setup-pipeline';
@@ -33,7 +34,7 @@ export class Gpu implements GPUConnection {
 
   private _pipelineMode: PipelineMode = 'default';
   private _shaderModule: GPUShaderModule | undefined;
-  private _pipelines: Array<GPUPipeline> = [];
+  private _pipelines: Map<string, GPUPipeline> = new Map();
   private _transformations: CameraTransformations = {
     projection: Transform.identity(),
     view: Transform.identity(),
@@ -41,6 +42,7 @@ export class Gpu implements GPUConnection {
   private _renderPassDescription: GPURenderPassDescriptor | undefined = undefined;
   private _cameraTransHandler: CameraTransformationHandlers | undefined = undefined;
   private _lightsHandler: LightsTransformationHandlers | undefined = undefined;
+  private _modelHandlers: ModelTransformationHandlers = {};
   private _fps = fps.init();
 
   private _rebuildViewTexture: ReturnType<typeof initRebuildViewTexture> | undefined = undefined;
@@ -117,7 +119,7 @@ export class Gpu implements GPUConnection {
   }
 
   get pipelines(): Array<GPUPipeline> {
-    return this._pipelines;
+    return [...this._pipelines.values()];
   }
 
   async setupShaders(shaders: Shaders): Promise<void> {
@@ -143,7 +145,7 @@ export class Gpu implements GPUConnection {
    * @param geoBuilder
    * @returns
    */
-  async setupGeoBuilder(scene: Scene): Promise<void> {
+  async setScene(scene: Scene): Promise<void> {
     if (!this._shaderModule) {
       throw new Error('WebGPU:shader module is NOT available!');
     }
@@ -241,31 +243,38 @@ export class Gpu implements GPUConnection {
     const commandEncoder = device.createCommandEncoder();
     const renderPass = commandEncoder.beginRenderPass(renderPassDescription);
 
-    this._pipelines.forEach((gpuPipeLine, idx) => {
-      const { pipeline, altPipeline, uniformBuffers, bindGroups, geoRenderable: triangleMesh } = gpuPipeLine;
+    this.pipelines.forEach((gpuPipeLine, idx) => {
+      const { pipeline, altPipeline, uniformBuffers, bindGroups, geoRenderable } = gpuPipeLine;
 
       // We need to send the scene data only once!
       if (idx === 0) {
         // Writes the Scene into the uniformBuffer ZERO...
         this.sceneIntoBuffer(uniformBuffers[0]);
-        renderPass.setBindGroup(0, bindGroups[0]!); // Scene data binding groups
+        renderPass.setBindGroup(0, bindGroups[0]); // Scene data binding groups
       }
 
       const activePipeline = this._pipelineMode === 'default' ? pipeline : altPipeline;
       renderPass.setPipeline(activePipeline);
 
       // For each object in the scene we set the uniform buffer with the color and (potentially) the model matrix
-      const uniformColorData = new Float32Array(triangleMesh.color); // Color for the current object
+      const uniformColorData = new Float32Array(geoRenderable.color); // Color for the current object
       device.queue.writeBuffer(uniformBuffers[1][0], 0, uniformColorData);
-      renderPass.setBindGroup(1, bindGroups[1]!); // Color
+      renderPass.setBindGroup(1, bindGroups[1]); // Color
 
-      if (bindGroups[2]) {
-        renderPass.setBindGroup(2, bindGroups[2]); // Texture data
+      if (this._modelHandlers[geoRenderable.id]) {
+        geoRenderable.transform(this._modelHandlers[geoRenderable.id]);
       }
 
-      triangleMesh.buffers.forEach((buffer, idx) => {
+      device.queue.writeBuffer(uniformBuffers[2][0], 0, geoRenderable.transformationData);
+      renderPass.setBindGroup(2, bindGroups[2]); // Model transformation
+
+      if (bindGroups[3]) {
+        renderPass.setBindGroup(2, bindGroups[3]); // Texture data
+      }
+
+      geoRenderable.buffers.forEach((buffer, idx) => {
         renderPass.setVertexBuffer(0, buffer);
-        renderPass.draw(triangleMesh.getVertexCountPerStrip(idx));
+        renderPass.draw(geoRenderable.getVertexCountPerStrip(idx));
       });
     });
     renderPass.end();
@@ -285,6 +294,7 @@ export class Gpu implements GPUConnection {
   beginRenderLoop(frameHandlers?: FrameHandlers) {
     this._cameraTransHandler = frameHandlers?.camera;
     this._lightsHandler = frameHandlers?.lights;
+    this._modelHandlers = frameHandlers?.models ?? {};
     this.renderLoop();
   }
 }

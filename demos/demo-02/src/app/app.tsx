@@ -26,6 +26,7 @@ export function App() {
           setStatus('WebGPU active and initialized');
         })
         .catch((error) => {
+          console.error(error);
           setStatus(error.message);
         });
     }

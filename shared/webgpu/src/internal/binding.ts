@@ -66,6 +66,43 @@ export const createSceneDataBindingGroup = (gpu: Gpu): [GPUBindGroupLayout, GPUB
   return [layout, group, [transBuffer, lightBuffer]];
 };
 
+// Group 2
+export const createModelTransBindingGroup = (gpu: Gpu): [GPUBindGroupLayout, GPUBindGroup, GPUBuffer[]] => {
+  const transSize = 2 * Transform.bufferSize; // 2 transformations
+  const transBuffer = gpu.device.createBuffer({
+    label: 'TransBuffer',
+    size: transSize + (transSize % 16),
+    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+  });
+  const entries: GPUBindGroupLayoutEntry[] = [
+    {
+      binding: 0,
+      visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
+      buffer: {
+        type: 'uniform',
+      },
+    },
+  ];
+  const layout = gpu.device.createBindGroupLayout({ label: 'modelTransf', entries });
+
+  // Build the group (the equivalent of the instance in the shader)
+  const bindings: GPUBindGroupEntry[] = [
+    {
+      binding: 0,
+      resource: { buffer: transBuffer },
+    },
+  ];
+  const group = gpu.device.createBindGroup({
+    label: 'SceneData',
+    layout: layout,
+    entries: bindings,
+  });
+  return [layout, group, [transBuffer]];
+
+
+};
+
+
 // Group 1: colors
 export const createColorsBindingGroup = (gpu: Gpu): [GPUBindGroupLayout, GPUBindGroup, GPUBuffer[]] => {
   const buffer = gpu.device.createBuffer({
