@@ -212,13 +212,13 @@ export class Gpu implements GPUConnection {
     device.queue.writeBuffer(buffer[1], lightOffset, ambientLightBuffer);
   }
 
-  updateLights() {
+  updateLights(timeSpan: number) {
     if (!this._lightsHandler) {
       return;
     }
     const { dirLights, posLights } = this._lightsHandler;
-    dirLights && dirLights(this._dirLights);
-    posLights && posLights(this._pointLights);
+    dirLights && dirLights(timeSpan, this._dirLights);
+    posLights && posLights(timeSpan, this._pointLights);
   }
 
   /**
@@ -229,7 +229,6 @@ export class Gpu implements GPUConnection {
    */
   private render = () => {
     const { device } = this;
-    this.updateLights();
 
     // 1 - We rebuild the rendering texture id needed when canvas is resized!
     let renderPassDescription = this._rebuildViewTexture
@@ -242,7 +241,8 @@ export class Gpu implements GPUConnection {
 
     const commandEncoder = device.createCommandEncoder();
     const renderPass = commandEncoder.beginRenderPass(renderPassDescription);
-
+    const timeSpan = this._fps.getLastTimeSpan();
+    this.updateLights(timeSpan);
     this.pipelines.forEach((gpuPipeLine, idx) => {
       const { pipeline, altPipeline, uniformBuffers, bindGroups, geoRenderable } = gpuPipeLine;
 
@@ -262,7 +262,7 @@ export class Gpu implements GPUConnection {
       renderPass.setBindGroup(1, bindGroups[1]); // Color
 
       if (this._modelHandlers[geoRenderable.id]) {
-        geoRenderable.transform(this._modelHandlers[geoRenderable.id]);
+        geoRenderable.transform(timeSpan, this._modelHandlers[geoRenderable.id]);
       }
 
       device.queue.writeBuffer(uniformBuffers[2][0], 0, geoRenderable.transformationData);

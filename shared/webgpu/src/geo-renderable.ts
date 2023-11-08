@@ -70,8 +70,8 @@ export class GeoRenderable implements Renderable {
     return this._vertices.reduce((acc, vtx) => acc + vtx.length / 3, 0);
   }
 
-  transform(th: ModelTransformHandler) {
-    this._transformation = th(this._transformation);
+  transform(timeSpan: number, th: ModelTransformHandler) {
+    this._transformation = th(timeSpan, this._transformation);
     return this;
   }
 
