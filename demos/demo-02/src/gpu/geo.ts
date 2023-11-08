@@ -59,9 +59,10 @@ export const buildScene = async (gpu: WebGPU.Gpu): Promise<ModelTransformationHa
   });
 
   const sphere0 = WebGPU.sphereTriMesh(
-    Transform.scale(5, 5, 5), // , // Keep the sphere in the center
-    { id: 'sphere-center', steps: 3, color: [0.7, 0.7, 1.0, 0.8] }
+    Transform.scale(4, 4, 4), // , // Keep the sphere in the center
+    { id: 'sphere-center', steps: 3, color: [0.7, 0.7, 0.8, 0.8] }
   );
+
   const minuteTicks = buildTicks('minute-tick', 10, 60, 0.3, [0.8, 0.8, 0.4, 0.8]);
   const fiveMinTicks = buildTicks('five-min-tick', 10, 12, 1.3, [1.0, 0.4, 0.2, 1.0]);
   const scene: Scene = [[grid], [seconds], [sphere0], [minutes], [hour], ...minuteTicks, ...fiveMinTicks, [plane]];

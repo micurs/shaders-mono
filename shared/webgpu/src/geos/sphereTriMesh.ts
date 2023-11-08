@@ -127,9 +127,9 @@ export const sphereTriMesh: GeoGenerator<SphereOptions> = (t: Transform, options
     const pt0 = Point.fromVector(sphVertices[triangle[2]]).scale(0.5).map(t);
     const pt1 = Point.fromVector(sphVertices[triangle[1]]).scale(0.5).map(t);
     const pt2 = Point.fromVector(sphVertices[triangle[0]]).scale(0.5).map(t);
-    const n0 = UnitVector.fromVector(Vector.fromPoints(center, pt0));
-    const n1 = UnitVector.fromVector(Vector.fromPoints(center, pt1));
-    const n2 = UnitVector.fromVector(Vector.fromPoints(center, pt2));
+    const n0 = UnitVector.fromVector(Vector.fromPoints(pt0, center));
+    const n1 = UnitVector.fromVector(Vector.fromPoints(pt1, center));
+    const n2 = UnitVector.fromVector(Vector.fromPoints(pt2, center));
     coordinates.push(...pt0.triplet);
     coordinates.push(...pt1.triplet);
     coordinates.push(...pt2.triplet);

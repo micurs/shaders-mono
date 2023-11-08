@@ -30,32 +30,32 @@ const pipe = (step: number, bottom: number, top: number, t: Transform): [number[
 
   for (let alpha = 0; alpha < Math.PI * 2; alpha += alphaStep) {
     const pt1 = Point.fromValues(r * Math.cos(alpha), r * Math.sin(alpha), bottom).map(t);
-    const nm1 = UnitVector.fromVector(Vector.fromPoints(centerBottomPt, pt1));
+    const nm1 = UnitVector.fromVector(Vector.fromPoints(pt1, centerBottomPt));
     coordinates.push(...pt1.triplet);
     normals.push(...nm1.triplet);
 
     const pt2 = Point.fromValues(r * Math.cos(alpha + alphaStep), r * Math.sin(alpha + alphaStep), bottom).map(t);
-    const nm2 = UnitVector.fromVector(Vector.fromPoints(centerBottomPt, pt2));
+    const nm2 = UnitVector.fromVector(Vector.fromPoints(pt2, centerBottomPt));
     coordinates.push(...pt2.triplet);
     normals.push(...nm2.triplet);
 
     const pt3 = Point.fromValues(r * Math.cos(alpha), r * Math.sin(alpha), top).map(t);
-    const nm3 = UnitVector.fromVector(Vector.fromPoints(centerTopPt, pt3));
+    const nm3 = UnitVector.fromVector(Vector.fromPoints(pt3, centerTopPt));
     coordinates.push(...pt3.triplet);
     normals.push(...nm3.triplet);
 
     const pt4 = Point.fromValues(r * Math.cos(alpha), r * Math.sin(alpha), top).map(t);
-    const nm4 = UnitVector.fromVector(Vector.fromPoints(centerTopPt, pt4));
+    const nm4 = UnitVector.fromVector(Vector.fromPoints(pt4, centerTopPt));
     coordinates.push(...pt4.triplet);
     normals.push(...nm4.triplet);
 
     const pt5 = Point.fromValues(r * Math.cos(alpha + alphaStep), r * Math.sin(alpha + alphaStep), bottom).map(t);
-    const nm5 = UnitVector.fromVector(Vector.fromPoints(centerBottomPt, pt5));
+    const nm5 = UnitVector.fromVector(Vector.fromPoints(pt5, centerBottomPt));
     coordinates.push(...pt5.triplet);
     normals.push(...nm5.triplet);
 
     const pt6 = Point.fromValues(r * Math.cos(alpha + alphaStep), r * Math.sin(alpha + alphaStep), top).map(t);
-    const nm6 = UnitVector.fromVector(Vector.fromPoints(centerTopPt, pt6));
+    const nm6 = UnitVector.fromVector(Vector.fromPoints(pt6, centerTopPt));
     coordinates.push(...pt6.triplet);
     normals.push(...nm6.triplet);
   }

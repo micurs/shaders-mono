@@ -19,7 +19,7 @@ struct SceneData {
 
 struct ModelData {
   model: mat4x4<f32>,
-  invertModel: mat4x4<f32>,
+  modelInverseTranspose: mat4x4<f32>,
 };
 
 struct SceneLights {
@@ -91,7 +91,7 @@ fn computeDiffuseColor(
       let diffuseColor = NdotL * lightColor;
 
       // Specular
-      let V = normalize(eye - pos);
+      let V = normalize(pos - eye);
       let R = normalize(reflect(lightDir, normal));
       let specularIntensity = pow(max(dot(V, R), 0.0), shininess * attenuation);
       let specularColor = specularIntensity * lightColor;
@@ -141,9 +141,8 @@ fn vertexColorShader(
     @location(1) vertexNormal: vec3<f32>) -> ColorFragment {
   var output: ColorFragment;
   var vertex = myModel.model * vec4<f32>(vertexPosition, 1.0);
-
+  output.normal = (myModel.modelInverseTranspose * vec4<f32>(vertexNormal, 0.0)).xyz;
   output.position = sceneData.projection * sceneData.view * vertex;
-  output.normal = (myModel.model * vec4<f32>(vertexNormal, 0.0)).xyz;
   output.pos = vertex.xyz;
   output.eye = sceneData.invertView[3].xyz;
   // Transform the light direction in camera coordinat with the inverse of the view matrix to view space

@@ -8,7 +8,7 @@ export const calculateNormalForwardTri = (vx: number[], vertexId: number): UnitV
   const v1 = Vector.fromPoints(p2, p1);
   const v2 = Vector.fromPoints(p2, p3);
 
-  return UnitVector.crossProduct(v1, v2);
+  return UnitVector.crossProduct(v2, v1);
 };
 
 export const calculateNormalsBackwardTri = (vx: number[], vertexId: number): UnitVector => {
@@ -19,7 +19,7 @@ export const calculateNormalsBackwardTri = (vx: number[], vertexId: number): Uni
   const v1 = Vector.fromPoints(p2, p1);
   const v2 = Vector.fromPoints(p2, p3);
 
-  return UnitVector.crossProduct(v1, v2);
+  return UnitVector.crossProduct(v2, v1);
 };
 
 export const computeNormals = (topology: GPUPrimitiveTopology, coordinates: number[]) => {
