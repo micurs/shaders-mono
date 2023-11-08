@@ -57,9 +57,9 @@ export interface CameraTransformationHandlers {
   projection?: TransformHandler;
 }
 
-export type LightHandler<T extends DirectionalLight | PointLight> = (prev: Array<T>) => void;
+export type LightHandler<T extends DirectionalLight | PointLight> = (ts: number, prev: Array<T>) => void;
 
-export type ModelTransformHandler = (prev: Transform) => Transform;
+export type ModelTransformHandler = (timespan: number, prev: Transform) => Transform;
 
 export interface LightsTransformationHandlers {
   dirLights?: LightHandler<DirectionalLight>;

@@ -16,5 +16,9 @@ export const init = () => {
     return lastFPS.reduce((p, c) => p + c, 0) / 10;
   };
 
-  return { getFPS, measureFPS };
+  const getLastTimeSpan = () => {
+    return lastTimeSpan;
+  };
+
+  return { getFPS, measureFPS, getLastTimeSpan };
 };
