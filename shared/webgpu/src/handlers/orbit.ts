@@ -78,9 +78,13 @@ export const getOrbitHandlers = (gpu: Gpu): [MouseCbs, CameraTransformationHandl
 
     // Now get the eye relative to the rotation frame
     const eyeInRotationFrame = cameraMoveFrame.relative(eye);
-    const vuvInRotationFrame = cameraMoveFrame.relative(vuv);
+    let vuvInRotationFrame = cameraMoveFrame.relative(vuv);
 
-    // 2. Rotate the view frame
+    // 2. Perform the tilt
+    const tiltRotation = Transform.rotationZ(tilt);
+    vuvInRotationFrame = tiltRotation.apply(vuvInRotationFrame);
+
+    // 3. Rotate the view frame
     const rotation = Transform.rotationX(-rot[1]).compose(Transform.rotationY(-rot[0]));
     eye = rotation.apply(eyeInRotationFrame).absolute(cameraMoveFrame);
     vuv = rotation.apply(vuvInRotationFrame).absolute(cameraMoveFrame);
@@ -88,10 +92,6 @@ export const getOrbitHandlers = (gpu: Gpu): [MouseCbs, CameraTransformationHandl
 
     target = move.apply(target);
     eye = move.apply(eye);
-
-    // 3. Perform the tilt
-    const tiltRotation = Transform.rotationZ(tilt);
-    vuv = tiltRotation.apply(vuv);
 
     // 4. Update the camera frame on the new eye and vuv
     cameraFrame = Frame.lookAt(eye, target, vuv);
