@@ -183,6 +183,11 @@ export class Gpu implements GPUConnection {
         ((_delta) => {
           // console.log('Mouse zoom:', delta);
         }),
+      tilt:
+        cb?.tilt ??
+        ((_delta) => {
+          // console.log('Mouse tilt:', delta);
+        }),
     });
   }
 

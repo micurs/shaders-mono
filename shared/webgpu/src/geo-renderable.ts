@@ -106,8 +106,11 @@ export class GeoRenderable implements Renderable {
     this._vertices.push(vertices);
   }
 
+  /**
+   * Return the transformation matrix and the inverse of the transpose of the transformation matrix as a Float32Array
+   */
   get transformationData(): Float32Array {
-    return new Float32Array([...this._transformation.values, ...this._transformation.inverseValues]);
+    return new Float32Array([...this._transformation.values, ...this._transformation.transpose().inverseValues]);
   }
 
   /**

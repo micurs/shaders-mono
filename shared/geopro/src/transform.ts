@@ -186,6 +186,14 @@ export class Transform {
     return t;
   }
 
+  transpose() {
+    const t = new Transform();
+    mat4.transpose(t._direct, this._direct);
+    mat4.invert(t._inverse, t._direct);
+    t._isIdentity = false;
+    return t;
+  }
+
   translation(x: number, y: number, z: number) {
     const t = Transform.translation(x, y, z);
     return this.compose(t);
