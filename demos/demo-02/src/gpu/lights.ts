@@ -1,24 +1,29 @@
-import { Point, Transform, UnitVector } from '@shaders-mono/geopro';
+import { Point, Transform, UnitVector, deg2rad } from '@shaders-mono/geopro';
 import { Gpu, LightsTransformationHandlers, PointLight } from '@shaders-mono/webgpu';
 
 export const buildLights = (gpu: Gpu): LightsTransformationHandlers => {
-  const oneDeg = Math.PI / 180;
+  const time = new Date();
+  const s = time.getSeconds();
+  const oneDeg = deg2rad(1);
+  const one60 = -deg2rad(360 / 60);
 
-  gpu.setAmbientLight([0.0, 0.0, 0.0, 1.0]);
-  gpu.setLight('directional', 0, { dir: UnitVector.fromValues(0.0, 0, 1.0), col: [0.3, 0.3, 0.3, 0.0] });
-  gpu.setLight('point', 0, { pos: Point.fromValues(0.0, 0.0, 4), col: [1.0, 1.0, 1.0, 1.0] });
-  gpu.setLight('point', 1, { pos: Point.fromValues(4.0, 4.0, +2.5), col: [0.3, 0.3, 0.1, 0.0] });
+  const posSec = Point.fromValues(0.0, 9.0, 3).map(Transform.rotationZ(one60 * s));
+
+  gpu.setAmbientLight([0.0, 0.0, 0.0, 0.0]);
+  gpu.setLight('directional', 0, { dir: UnitVector.fromValues(0.0, 0, 1.0), col: [0.2, 0.2, 0.2, 0.0] });
+  gpu.setLight('point', 0, { pos: Point.fromValues(0.0, 0.0, 5), col: [0.75, 0.25, 0.25, 0.0] });
+  gpu.setLight('point', 1, { pos: posSec, col: [0.75, 0.75, 1.0, 1.0] });
   gpu.setLight('point', 2, { pos: Point.fromValues(-6.0, 4.0, 4.5), col: [0.0, 0.1, 0.4, 0.0] });
   gpu.setLight('point', 3, { pos: Point.fromValues(-6.0, 14.0, 8.5), col: [0.2, 0.5, 0.0, 0.0] });
 
   return {
     posLights: (msDelta: number, lights: PointLight[]) => {
-      const onceDegSec = (msDelta / 1000) * oneDeg;
-      const rotZ = Transform.rotationZ(onceDegSec * 45);
-      const rotY = Transform.rotationY(onceDegSec * 30);
-      const rotX = Transform.rotationX(onceDegSec * 15);
+      const deltaSec = msDelta / 1000;
+      const rotZ = Transform.rotationZ(one60 * deltaSec);
+      const rotY = Transform.rotationY(deltaSec * oneDeg * 30);
+      const rotX = Transform.rotationX(deltaSec * oneDeg * 15);
       lights[0].pos = lights[0].pos.map(rotX);
-      lights[1].pos = lights[1].pos.map(rotX).map(rotY);
+      lights[1].pos = lights[1].pos.map(rotZ);
       lights[2].pos = lights[2].pos.map(rotZ).map(rotX).map(rotZ);
       lights[3].pos = lights[3].pos.map(rotX).map(rotY).map(rotZ).map(rotY.invert());
     },

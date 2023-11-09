@@ -1,5 +1,5 @@
 import { Frame, Point, Transform, UnitVector, Vector } from '@shaders-mono/geopro';
-import { MouseCbs, MouseLocation, MouseMovement, CameraTransformationHandlers } from '../types';
+import { MouseCbs, MouseLocation, MouseMovement, CameraTransformationHandlers, MouseButton } from '../types';
 import { Gpu } from '../gpu-connection';
 
 export const getOrbitHandlers = (gpu: Gpu): [MouseCbs, CameraTransformationHandlers] => {
@@ -9,27 +9,28 @@ export const getOrbitHandlers = (gpu: Gpu): [MouseCbs, CameraTransformationHandl
   let rot = [0.0, 0.0];
   let pan = [0.0, 0.0];
   let zoom = 0.0;
+  let tilt = 0.0;
   let fov = Math.PI / 5;
   let distToTarget = Vector.fromPoints(eye, target).lengthSquare;
   let cameraFrame = Frame.lookAt(eye, target, vuv);
   let rotating = false;
 
-  const mouseHandler = (bt: number, r: MouseMovement, _p: MouseLocation) => {
+  const mouseHandler = (bt: MouseButton, r: MouseMovement, _p: MouseLocation) => {
     let maxRes = Math.min(gpu.canvas.width, gpu.canvas.height);
     let rotSensitivity = (1.0 / maxRes) * 2;
     let panSensitivity = (fov / maxRes) * 2;
     switch (bt) {
-      case 0:
+      case 'mouse-0':
         rot = [r.direction[0] * rotSensitivity, r.direction[1] * rotSensitivity];
         rotating = true;
         break;
-      case 1:
+      case 'mouse-1':
         pan = [-r.direction[0] * panSensitivity, r.direction[1] * panSensitivity];
         break;
-      case 2:
+      case 'mouse-2':
         fov += r.direction[1] * panSensitivity;
         break;
-      case -1:
+      case 'none':
         rotating = false;
         break;
       default:
@@ -39,6 +40,11 @@ export const getOrbitHandlers = (gpu: Gpu): [MouseCbs, CameraTransformationHandl
 
   const zoomHandler = (delta: number) => {
     zoom = delta * 0.001;
+  };
+
+  const tiltHandler = (delta: number) => {
+    tilt = delta * 0.0005;
+    rotating = false;
   };
 
   const projectionHandler = (_t?: Transform): Transform => {
@@ -83,14 +89,20 @@ export const getOrbitHandlers = (gpu: Gpu): [MouseCbs, CameraTransformationHandl
     target = move.apply(target);
     eye = move.apply(eye);
 
-    // 3. Update the camera frame on the new eye and vuv
+    // 3. Perform the tilt
+    const tiltRotation = Transform.rotationZ(tilt);
+    vuv = tiltRotation.apply(vuv);
+
+    // 4. Update the camera frame on the new eye and vuv
     cameraFrame = Frame.lookAt(eye, target, vuv);
 
     // Reset pan, zoom and rot (for rotation do a smooth stop)
     if (!rotating) {
       rot = [rot[0] * 0.95, rot[1] * 0.95];
-      if (Math.abs(rot[0]) < 0.001 && Math.abs(rot[1]) < 0.001) {
+      tilt *= 0.95;
+      if (Math.abs(rot[0]) < 0.001 && Math.abs(rot[1]) < 0.001 && Math.abs(tilt) < 0.001) {
         rot = [0.0, 0.0];
+        tilt = 0;
       }
     }
     zoom = 0;
@@ -104,6 +116,7 @@ export const getOrbitHandlers = (gpu: Gpu): [MouseCbs, CameraTransformationHandl
     {
       move: mouseHandler,
       zoom: zoomHandler,
+      tilt: tiltHandler,
     },
     // Matrix camera handlers
     {

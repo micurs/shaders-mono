@@ -1,7 +1,7 @@
-import { MouseCbs, MouseDirection, MouseLocation } from '../types';
+import { MouseButton, MouseCbs, MouseDirection, MouseLocation } from '../types';
 
 export const initMouseHandler = (canvas: HTMLCanvasElement, mouse: Required<MouseCbs>) => {
-  let buttonPressed = -1;
+  let buttonPressed: MouseButton = 'none';
   let origin: MouseLocation = [0.0, 0.0];
   let direction: MouseDirection = [0.0, 0.0];
   let pos: MouseLocation = [0.0, 0.0];
@@ -11,7 +11,7 @@ export const initMouseHandler = (canvas: HTMLCanvasElement, mouse: Required<Mous
   });
 
   canvas.addEventListener('wheel', (e) => {
-    mouse.zoom(e.deltaY);
+    e.ctrlKey ? mouse.tilt(e.deltaY) : mouse.zoom(e.deltaY);
   });
 
   canvas.addEventListener('pointerdown', (e) => {
@@ -19,12 +19,12 @@ export const initMouseHandler = (canvas: HTMLCanvasElement, mouse: Required<Mous
     origin = [e.offsetX, e.offsetY];
     direction = [0.0, 0.0];
     pos = origin;
-    buttonPressed = e.button;
+    buttonPressed = `${e.ctrlKey ? 'ctrl-' : ''}mouse-${e.button}` as MouseButton;
     mouse.move(buttonPressed, { origin, direction }, pos);
   });
 
   canvas.addEventListener('pointermove', (e) => {
-    if (buttonPressed < 0) {
+    if (buttonPressed === 'none') {
       return;
     }
     const newPos: MouseLocation = [e.offsetX, e.offsetY];
@@ -38,9 +38,9 @@ export const initMouseHandler = (canvas: HTMLCanvasElement, mouse: Required<Mous
     const pos: MouseLocation = [e.offsetX, e.offsetY];
     direction = [pos[0] - origin[0], pos[1] - origin[1]];
     if (direction[0] <= 0.9 && direction[1] <= 0.9) {
-      mouse.click(-1, pos);
+      mouse.click('none', pos);
     }
-    mouse.move(-1, { origin, direction }, pos);
-    buttonPressed = -1;
+    mouse.move('none', { origin, direction }, pos);
+    buttonPressed = 'none';
   });
 };

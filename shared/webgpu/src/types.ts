@@ -47,8 +47,8 @@ export interface CameraTransformations {
   view: Transform;
 }
 
-export type MouseMoveHandler = (bt: number, r: MouseMovement, p: MouseLocation) => void;
-export type MouseClickHandler = (bt: number, p: MouseLocation) => void;
+export type MouseMoveHandler = (bt: MouseButton, r: MouseMovement, p: MouseLocation) => void;
+export type MouseClickHandler = (bt: MouseButton, p: MouseLocation) => void;
 export type MouseZoomHandler = (delta: number) => void;
 export type TransformHandler = (prev?: Transform) => Transform;
 
@@ -88,6 +88,7 @@ export interface MouseCbs {
   move?: MouseMoveHandler;
   click?: MouseClickHandler;
   zoom?: MouseZoomHandler;
+  tilt?: MouseZoomHandler;
 }
 
 export type Scene = Array<[GeoRenderable, Material?]>;
@@ -109,3 +110,5 @@ export type GeoOptions<T> = T & {
 };
 
 export type GeoGenerator<T = {}> = (t: Transform, options: GeoOptions<T>) => GeoRenderable;
+
+export type MouseButton = 'none' | 'mouse-0' | 'mouse-1' | 'mouse-2' | 'ctrl-mouse-0' | 'ctrl-mouse-1' | 'ctrl-mouse-2';
