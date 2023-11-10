@@ -7,12 +7,12 @@ let sphereCounter = 0;
 let planeCounter = 0;
 
 const buildPlane = (): Scene => {
-  const plane = WebGPU.planeTriMesh(Transform.scale(120, 120, 1), {
+  const plane = WebGPU.planeTriMesh(Transform.scale(20, 20, 1), {
     id: `ref-xyplane-${planeCounter++}`,
     color: [0.4, 0.4, 0.4, 0.5],
     steps: 10,
   });
-  const grid = WebGPU.planeGridLines(Transform.scale(120, 120, 1), {
+  const grid = WebGPU.planeGridLines(Transform.scale(20, 20, 1), {
     id: `ref-xygrid-${planeCounter++}`,
     color: [0.6, 0.6, 1.0, 0.2],
     steps: 10,

@@ -52,13 +52,13 @@ export class Gpu implements GPUConnection {
   private _ambientLight: RGBAColor = [0.2, 0.2, 0.2, 1.0];
 
   private _dirLights: Array<DirectionalLight> = [
-    { dir: UnitVector.fromValues(0.0, -1.5, -0.5), col: [0.5, 0.5, 0.5, 1.0] },
+    { dir: UnitVector.fromValues(0.0, -1.5, -0.5), col: [-0.5, -0.5, -0.5, 1.0] },
     { dir: UnitVector.fromValues(-1.0, -1.0, 1.0), col: [0.0, 0.0, 0.0, 0.0] },
     { dir: UnitVector.fromValues(1.0, 0.0, 0.0), col: [0.5, 0.5, 0.5, 0.0] },
     { dir: UnitVector.fromValues(-1.0, -1.0, -1.0), col: [0.3, 0.3, 0.3, 0.0] },
   ];
   private _pointLights: Array<PointLight> = [
-    { pos: Point.fromValues(-10.0, -10.0, -10.0), col: [0.4, 0.4, 0.4, 0.0] },
+    { pos: Point.fromValues(10.0, 10.0, 10.0), col: [0.4, 0.4, 0.4, 1.0] },
     { pos: Point.fromValues(10.0, 10.0, 10.0), col: [0.0, 0.0, 0.0, 0.0] },
     { pos: Point.fromValues(3.0, -15.0, -5.0), col: [0.2, 0.2, 0.7, 0.0] },
     { pos: Point.fromValues(13.0, 12.0, -13.0), col: [0.6, 0.1, 0.1, 0.0] },
@@ -271,44 +271,66 @@ export class Gpu implements GPUConnection {
     const renderPass = commandEncoder.beginRenderPass(renderPassDescription);
     const timeSpan = this._fps.getLastTimeSpan();
     this.updateLights(timeSpan);
-    this.pipelines.forEach((gpuPipeLine, idx) => {
-      const { pipeline, altPipeline, uniformBuffers, bindGroups, geoRenderable } = gpuPipeLine;
-
-      // We need to send the scene data only once!
-      if (idx === 0) {
-        // Writes the Scene into the uniformBuffer ZERO...
-        this.sceneIntoBuffer(uniformBuffers[0]);
-        renderPass.setBindGroup(0, bindGroups[0]); // Scene data binding groups
-      }
-
-      const activePipeline = this._pipelineMode === 'default' ? pipeline : altPipeline;
-      renderPass.setPipeline(activePipeline);
-
-      // For each object in the scene we set the uniform buffer with the color and (potentially) the model matrix
-      const uniformColorData = new Float32Array(geoRenderable.color); // Color for the current object
-      device.queue.writeBuffer(uniformBuffers[1][0], 0, uniformColorData);
-      renderPass.setBindGroup(1, bindGroups[1]); // Color
-
-      if (this._modelHandlers[geoRenderable.id]) {
-        geoRenderable.transform(timeSpan, this._modelHandlers[geoRenderable.id]);
-      }
-
-      device.queue.writeBuffer(uniformBuffers[2][0], 0, geoRenderable.transformationData);
-      renderPass.setBindGroup(2, bindGroups[2]); // Model transformation
-
-      if (bindGroups[3]) {
-        renderPass.setBindGroup(2, bindGroups[3]); // Texture data
-      }
-
-      geoRenderable.buffers.forEach((buffer, idx) => {
-        renderPass.setVertexBuffer(0, buffer);
-        renderPass.draw(geoRenderable.getVertexCountPerStrip(idx));
+    // Render opaque objects first
+    this.pipelines
+      .filter(({ geoRenderable }) => geoRenderable.color[3] === 1.0)
+      .forEach((gpuPipeLine, idx) => {
+        this.renderPipeline(gpuPipeLine, idx, renderPass, timeSpan);
       });
-    });
+    // Render transparent objects last
+    this.pipelines
+      .filter(({ geoRenderable }) => geoRenderable.color[3] < 1.0)
+      .forEach((gpuPipeLine, idx) => {
+        this.renderPipeline(gpuPipeLine, idx, renderPass, timeSpan);
+      });
     renderPass.end();
     device.queue.submit([commandEncoder.finish()]);
     this._fps.measureFPS();
   };
+
+  /**
+   * Render a pipeline and its associated geoRenderable
+   * @param gpuPipeLine
+   * @param idx
+   * @param renderPass
+   * @param device
+   * @param timeSpan
+   */
+  private renderPipeline(gpuPipeLine: GPUPipeline, idx: number, renderPass: GPURenderPassEncoder, timeSpan: number) {
+    const { pipeline, altPipeline, uniformBuffers, bindGroups, geoRenderable } = gpuPipeLine;
+    const { device } = this;
+
+    // We need to send the scene data only once!
+    if (idx === 0) {
+      // Writes the Scene into the uniformBuffer ZERO...
+      this.sceneIntoBuffer(uniformBuffers[0]);
+      renderPass.setBindGroup(0, bindGroups[0]); // Scene data binding groups
+    }
+
+    const activePipeline = this._pipelineMode === 'default' ? pipeline : altPipeline;
+    renderPass.setPipeline(activePipeline);
+
+    // For each object in the scene we set the uniform buffer with the color and (potentially) the model matrix
+    const uniformColorData = new Float32Array(geoRenderable.color); // Color for the current object
+    device.queue.writeBuffer(uniformBuffers[1][0], 0, uniformColorData);
+    renderPass.setBindGroup(1, bindGroups[1]); // Color
+
+    if (this._modelHandlers[geoRenderable.id]) {
+      geoRenderable.transform(timeSpan, this._modelHandlers[geoRenderable.id]);
+    }
+
+    device.queue.writeBuffer(uniformBuffers[2][0], 0, geoRenderable.transformationData);
+    renderPass.setBindGroup(2, bindGroups[2]); // Model transformation
+
+    if (bindGroups[3]) {
+      renderPass.setBindGroup(2, bindGroups[3]); // Texture data
+    }
+
+    geoRenderable.buffers.forEach((buffer, idx) => {
+      renderPass.setVertexBuffer(0, buffer);
+      renderPass.draw(geoRenderable.getVertexCountPerStrip(idx));
+    });
+  }
 
   private renderLoop() {
     const { width, height } = this.canvas;

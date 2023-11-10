@@ -24,7 +24,7 @@ export const GpuCanvas = ({ onError, onConnected }: GpuCanvasProps) => {
           if (!gpuConn) {
             return;
           }
-          const [mouseHandlers, viewHandlers] = WebGPU.getOrbitHandlers(gpuConn);
+          const [mouseHandlers, viewHandlers] = WebGPU.getOrbitHandlers(gpuConn, [5, 5, 5]);
           gpuConn.captureMouseMotion(mouseHandlers);
           gpuConn.setScene([]);
           gpuConn.beginRenderLoop({
