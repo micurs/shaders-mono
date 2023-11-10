@@ -105,6 +105,7 @@ export const createPipelines = (gpu: Gpu, shaderModule: GPUShaderModule, scene: 
     return [
       geoRenderable.id,
       {
+        id: geoRenderable.id,
         type: geoRenderable.label,
         pipeline,
         altPipeline,

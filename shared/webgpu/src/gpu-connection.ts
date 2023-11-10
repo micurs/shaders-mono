@@ -32,6 +32,7 @@ export class Gpu implements GPUConnection {
   readonly device: GPUDevice;
   readonly format: GPUTextureFormat;
 
+  private _activeRenderLoop = false;
   private _pipelineMode: PipelineMode = 'default';
   private _shaderModule: GPUShaderModule | undefined;
   private _pipelines: Map<string, GPUPipeline> = new Map();
@@ -51,7 +52,7 @@ export class Gpu implements GPUConnection {
   private _ambientLight: RGBAColor = [0.2, 0.2, 0.2, 1.0];
 
   private _dirLights: Array<DirectionalLight> = [
-    { dir: UnitVector.fromValues(0.0, -1.5, -0.5), col: [0.3, 0.3, 0.3, 0.0] },
+    { dir: UnitVector.fromValues(0.0, -1.5, -0.5), col: [0.5, 0.5, 0.5, 1.0] },
     { dir: UnitVector.fromValues(-1.0, -1.0, 1.0), col: [0.0, 0.0, 0.0, 0.0] },
     { dir: UnitVector.fromValues(1.0, 0.0, 0.0), col: [0.5, 0.5, 0.5, 0.0] },
     { dir: UnitVector.fromValues(-1.0, -1.0, -1.0), col: [0.3, 0.3, 0.3, 0.0] },
@@ -122,7 +123,15 @@ export class Gpu implements GPUConnection {
     return [...this._pipelines.values()];
   }
 
-  async setupShaders(shaders: Shaders): Promise<void> {
+  /**
+   *
+   * @param shaders - the source code for the shaders or predefined shaders
+   * @returns
+   */
+  async setupShaders(shaders: Shaders): Promise<Gpu> {
+    if (this._shaderModule) {
+      return this;
+    }
     let shaderSource: string;
     if (isPredefinedShader(shaders)) {
       switch (shaders) {
@@ -138,6 +147,7 @@ export class Gpu implements GPUConnection {
       shaderSource = shaders.source;
     }
     this._shaderModule = await setupShaderModule(this, shaderSource);
+    return this;
   }
 
   /**
@@ -145,7 +155,7 @@ export class Gpu implements GPUConnection {
    * @param geoBuilder
    * @returns
    */
-  async setScene(scene: Scene): Promise<void> {
+  setScene(scene: Scene) {
     if (!this._shaderModule) {
       throw new Error('WebGPU:shader module is NOT available!');
     }
@@ -157,8 +167,24 @@ export class Gpu implements GPUConnection {
     // 2 - Setup the GPU pipeline with the compiled shaders
     this._pipelines = createPipelines(this, this._shaderModule, scene);
 
-    // 3 - Setup the render pass descriptor
+    // // 3 - Setup the render pass descriptor
     this._renderPassDescription = buildRenderPassDescriptor(this);
+  }
+
+  addToScene(scene: Scene) {
+    if (!this._shaderModule) {
+      throw new Error('WebGPU:shader module is NOT available!');
+    }
+    // 1 - Setup the GPU buffers for the scene
+    scene.forEach(([geo, _]) => {
+      geo.buildGpuBuffer(this);
+    });
+
+    // 2 - Update the GPU pipeline with the compiled shaders
+    const newPipelines = createPipelines(this, this._shaderModule, scene);
+    newPipelines.forEach((pipeline, key) => {
+      this._pipelines.set(key, pipeline);
+    });
   }
 
   /**
@@ -236,12 +262,9 @@ export class Gpu implements GPUConnection {
     const { device } = this;
 
     // 1 - We rebuild the rendering texture id needed when canvas is resized!
-    let renderPassDescription = this._rebuildViewTexture
-      ? this._rebuildViewTexture(this._renderPassDescription!)
-      : this._renderPassDescription;
-    if (!renderPassDescription) {
-      console.error('WebGPU:renderPassDescription is NOT available!');
-      return;
+    let renderPassDescription: GPURenderPassDescriptor = this._renderPassDescription ?? buildRenderPassDescriptor(this);
+    if (this._rebuildViewTexture) {
+      this._renderPassDescription = this._rebuildViewTexture(renderPassDescription);
     }
 
     const commandEncoder = device.createCommandEncoder();
@@ -293,13 +316,21 @@ export class Gpu implements GPUConnection {
     this._transformations = getTransformations(this._transformations, [width, height], this._cameraTransHandler);
 
     this.render();
-    requestAnimationFrame(this.renderLoop.bind(this));
+    this._activeRenderLoop && requestAnimationFrame(this.renderLoop.bind(this));
   }
 
   beginRenderLoop(frameHandlers?: FrameHandlers) {
+    // if (!this._renderPassDescription) {
+    //   throw new Error('WebGPU:renderPassDescription is NOT available! - Did you call setScene() ?');
+    // }
     this._cameraTransHandler = frameHandlers?.camera;
     this._lightsHandler = frameHandlers?.lights;
     this._modelHandlers = frameHandlers?.models ?? {};
+    this._activeRenderLoop = true;
     this.renderLoop();
+  }
+
+  endRenderLoop() {
+    this._activeRenderLoop = false;
   }
 }

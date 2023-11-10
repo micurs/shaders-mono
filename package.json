@@ -9,7 +9,7 @@
     "build:demo1": "nx run demo-01:build --verbose",
     "build:demo2": "nx run demo-02:build --verbose",
     "build:demo3": "nx run demo-03:build --verbose",
-    "dev:shared": "nx run-many --projects=@shaders-mono/geopro,@shaders-mono/webgpu --target=dev",
+    "dev:shared": "nx run-many --projects=@shaders-mono/webgpu --target=dev",
     "dev:demo3": "nx dev demo-03",
     "dev:demo2": "nx run demo-02:serve",
     "dev:demo1": "nx dev demo-01",

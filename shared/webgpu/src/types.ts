@@ -34,6 +34,7 @@ export type PredefinedShaders = 'standard-3d' | 'standard-2d';
 export type Shaders = PredefinedShaders | { source: string };
 
 export interface GPUPipeline {
+  id: string;
   type: string;
   pipeline: GPURenderPipeline;
   altPipeline: GPURenderPipeline;
