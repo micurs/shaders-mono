@@ -17,7 +17,7 @@ export const getOrbitHandlers = (gpu: Gpu, eyeStart: [number, number, number] = 
 
   const mouseHandler = (bt: MouseButton, r: MouseMovement, _p: MouseLocation) => {
     let maxRes = Math.min(gpu.canvas.width, gpu.canvas.height);
-    let rotSensitivity = (1.0 / maxRes) * 2;
+    let rotSensitivity = (1.0 / maxRes) * 6;
     let panSensitivity = (fov / maxRes) * 2;
     switch (bt) {
       case 'mouse-0':

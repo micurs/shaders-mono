@@ -49,17 +49,17 @@ export class Gpu implements GPUConnection {
   private _rebuildViewTexture: ReturnType<typeof initRebuildViewTexture> | undefined = undefined;
 
   // Lights
-  private _ambientLight: RGBAColor = [0.2, 0.2, 0.2, 1.0];
+  private _ambientLight: RGBAColor = [0.1, 0.1, 0.1, 1.0];
 
   private _dirLights: Array<DirectionalLight> = [
-    { dir: UnitVector.fromValues(0.0, -1.5, -0.5), col: [-0.5, -0.5, -0.5, 1.0] },
-    { dir: UnitVector.fromValues(-1.0, -1.0, 1.0), col: [0.0, 0.0, 0.0, 0.0] },
+    { dir: UnitVector.fromValues(-1.0, -1.0, -1.0), col: [0.5, 0.5, 0.5, 1.0] },
+    { dir: UnitVector.fromValues(1.0, 1.0, 1.0), col: [0.4, 0.3, 0.3, 1.0] },
     { dir: UnitVector.fromValues(1.0, 0.0, 0.0), col: [0.5, 0.5, 0.5, 0.0] },
     { dir: UnitVector.fromValues(-1.0, -1.0, -1.0), col: [0.3, 0.3, 0.3, 0.0] },
   ];
   private _pointLights: Array<PointLight> = [
-    { pos: Point.fromValues(10.0, 10.0, 10.0), col: [0.4, 0.4, 0.4, 1.0] },
-    { pos: Point.fromValues(10.0, 10.0, 10.0), col: [0.0, 0.0, 0.0, 0.0] },
+    { pos: Point.fromValues(8.0, 8.0, 8.0), col: [0.4, 0.4, 0.4, 1.0] },
+    { pos: Point.fromValues(0.0, 0.0, 4.0), col: [0.3, 0.3, 0.4, 1.0] },
     { pos: Point.fromValues(3.0, -15.0, -5.0), col: [0.2, 0.2, 0.7, 0.0] },
     { pos: Point.fromValues(13.0, 12.0, -13.0), col: [0.6, 0.1, 0.1, 0.0] },
   ];
@@ -323,7 +323,7 @@ export class Gpu implements GPUConnection {
     renderPass.setBindGroup(2, bindGroups[2]); // Model transformation
 
     if (bindGroups[3]) {
-      renderPass.setBindGroup(2, bindGroups[3]); // Texture data
+      renderPass.setBindGroup(3, bindGroups[3]); // Texture data
     }
 
     geoRenderable.buffers.forEach((buffer, idx) => {
