@@ -32,6 +32,7 @@ export class Gpu implements GPUConnection {
   readonly device: GPUDevice;
   readonly format: GPUTextureFormat;
 
+  private _vertexCount = 0;
   private _activeRenderLoop = false;
   private _pipelineMode: PipelineMode = 'default';
   private _shaderModule: GPUShaderModule | undefined;
@@ -75,6 +76,10 @@ export class Gpu implements GPUConnection {
       // TODO: handle loosing the device and recreate it
       console.log('WebGPU:device lost');
     });
+  }
+
+  get vertexCount(): number {
+    return this._vertexCount;
   }
 
   get fps(): number {
@@ -187,6 +192,10 @@ export class Gpu implements GPUConnection {
     });
   }
 
+  clearScene() {
+    this._pipelines.clear();
+  }
+
   /**
    * Enable mouse motion capture
    * @param cb - callback for mouse motion
@@ -260,7 +269,7 @@ export class Gpu implements GPUConnection {
    */
   private render = () => {
     const { device } = this;
-
+    this._vertexCount = 0;
     // 1 - We rebuild the rendering texture id needed when canvas is resized!
     let renderPassDescription: GPURenderPassDescriptor = this._renderPassDescription ?? buildRenderPassDescriptor(this);
     if (this._rebuildViewTexture) {
@@ -327,8 +336,10 @@ export class Gpu implements GPUConnection {
     }
 
     geoRenderable.buffers.forEach((buffer, idx) => {
+      const vtx = geoRenderable.getVertexCountPerStrip(idx);
+      this._vertexCount += vtx;
       renderPass.setVertexBuffer(0, buffer);
-      renderPass.draw(geoRenderable.getVertexCountPerStrip(idx));
+      renderPass.draw(vtx);
     });
   }
 
