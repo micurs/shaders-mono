@@ -5,7 +5,7 @@ import { Gpu } from '../gpu-connection';
 export const getOrbitHandlers = (gpu: Gpu, eyeStart: [number, number, number] = [10, 10, 10]): [MouseCbs, CameraTransformationHandlers] => {
   let target = Point.fromValues(0, 0, 0);
   let eye = Point.fromValues(...eyeStart);
-  let vuv = UnitVector.fromValues(0, 0, 1);
+  let vuv = eye.x === 0 && eye.y === 0 ? UnitVector.fromValues(0, 1, 0) : UnitVector.fromValues(0, 0, 1);
   let rot = [0.0, 0.0];
   let pan = [0.0, 0.0];
   let zoom = 0.0;

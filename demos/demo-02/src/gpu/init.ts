@@ -10,7 +10,7 @@ export const init = async (canvas: HTMLCanvasElement) => {
 
   const lightsPosAnim = buildLights(gpu);
 
-  const [mouseHandlers, viewHandlers] = WebGPU.getOrbitHandlers(gpu);
+  const [mouseHandlers, viewHandlers] = WebGPU.getOrbitHandlers(gpu, [0, 0, 50]);
   gpu.captureMouseMotion(mouseHandlers);
   gpu.beginRenderLoop({
     camera: viewHandlers,
