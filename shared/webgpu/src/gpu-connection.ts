@@ -32,6 +32,8 @@ export class Gpu implements GPUConnection {
   readonly device: GPUDevice;
   readonly format: GPUTextureFormat;
 
+  private _vertexCount = 0;
+  private _activeRenderLoop = false;
   private _pipelineMode: PipelineMode = 'default';
   private _shaderModule: GPUShaderModule | undefined;
   private _pipelines: Map<string, GPUPipeline> = new Map();
@@ -48,17 +50,17 @@ export class Gpu implements GPUConnection {
   private _rebuildViewTexture: ReturnType<typeof initRebuildViewTexture> | undefined = undefined;
 
   // Lights
-  private _ambientLight: RGBAColor = [0.2, 0.2, 0.2, 1.0];
+  private _ambientLight: RGBAColor = [0.1, 0.1, 0.1, 1.0];
 
   private _dirLights: Array<DirectionalLight> = [
-    { dir: UnitVector.fromValues(0.0, -1.5, -0.5), col: [0.3, 0.3, 0.3, 0.0] },
-    { dir: UnitVector.fromValues(-1.0, -1.0, 1.0), col: [0.0, 0.0, 0.0, 0.0] },
+    { dir: UnitVector.fromValues(-1.0, -1.0, -1.0), col: [0.5, 0.5, 0.5, 1.0] },
+    { dir: UnitVector.fromValues(1.0, 1.0, 1.0), col: [0.4, 0.3, 0.3, 1.0] },
     { dir: UnitVector.fromValues(1.0, 0.0, 0.0), col: [0.5, 0.5, 0.5, 0.0] },
     { dir: UnitVector.fromValues(-1.0, -1.0, -1.0), col: [0.3, 0.3, 0.3, 0.0] },
   ];
   private _pointLights: Array<PointLight> = [
-    { pos: Point.fromValues(-10.0, -10.0, -10.0), col: [0.4, 0.4, 0.4, 0.0] },
-    { pos: Point.fromValues(10.0, 10.0, 10.0), col: [0.0, 0.0, 0.0, 0.0] },
+    { pos: Point.fromValues(8.0, 8.0, 8.0), col: [0.4, 0.4, 0.4, 1.0] },
+    { pos: Point.fromValues(0.0, 0.0, 4.0), col: [0.3, 0.3, 0.4, 1.0] },
     { pos: Point.fromValues(3.0, -15.0, -5.0), col: [0.2, 0.2, 0.7, 0.0] },
     { pos: Point.fromValues(13.0, 12.0, -13.0), col: [0.6, 0.1, 0.1, 0.0] },
   ];
@@ -74,6 +76,10 @@ export class Gpu implements GPUConnection {
       // TODO: handle loosing the device and recreate it
       console.log('WebGPU:device lost');
     });
+  }
+
+  get vertexCount(): number {
+    return this._vertexCount;
   }
 
   get fps(): number {
@@ -122,7 +128,15 @@ export class Gpu implements GPUConnection {
     return [...this._pipelines.values()];
   }
 
-  async setupShaders(shaders: Shaders): Promise<void> {
+  /**
+   *
+   * @param shaders - the source code for the shaders or predefined shaders
+   * @returns
+   */
+  async setupShaders(shaders: Shaders): Promise<Gpu> {
+    if (this._shaderModule) {
+      return this;
+    }
     let shaderSource: string;
     if (isPredefinedShader(shaders)) {
       switch (shaders) {
@@ -138,6 +152,7 @@ export class Gpu implements GPUConnection {
       shaderSource = shaders.source;
     }
     this._shaderModule = await setupShaderModule(this, shaderSource);
+    return this;
   }
 
   /**
@@ -145,7 +160,7 @@ export class Gpu implements GPUConnection {
    * @param geoBuilder
    * @returns
    */
-  async setScene(scene: Scene): Promise<void> {
+  setScene(scene: Scene) {
     if (!this._shaderModule) {
       throw new Error('WebGPU:shader module is NOT available!');
     }
@@ -157,8 +172,28 @@ export class Gpu implements GPUConnection {
     // 2 - Setup the GPU pipeline with the compiled shaders
     this._pipelines = createPipelines(this, this._shaderModule, scene);
 
-    // 3 - Setup the render pass descriptor
+    // // 3 - Setup the render pass descriptor
     this._renderPassDescription = buildRenderPassDescriptor(this);
+  }
+
+  addToScene(scene: Scene) {
+    if (!this._shaderModule) {
+      throw new Error('WebGPU:shader module is NOT available!');
+    }
+    // 1 - Setup the GPU buffers for the scene
+    scene.forEach(([geo, _]) => {
+      geo.buildGpuBuffer(this);
+    });
+
+    // 2 - Update the GPU pipeline with the compiled shaders
+    const newPipelines = createPipelines(this, this._shaderModule, scene);
+    newPipelines.forEach((pipeline, key) => {
+      this._pipelines.set(key, pipeline);
+    });
+  }
+
+  clearScene() {
+    this._pipelines.clear();
   }
 
   /**
@@ -234,58 +269,79 @@ export class Gpu implements GPUConnection {
    */
   private render = () => {
     const { device } = this;
-
+    this._vertexCount = 0;
     // 1 - We rebuild the rendering texture id needed when canvas is resized!
-    let renderPassDescription = this._rebuildViewTexture
-      ? this._rebuildViewTexture(this._renderPassDescription!)
-      : this._renderPassDescription;
-    if (!renderPassDescription) {
-      console.error('WebGPU:renderPassDescription is NOT available!');
-      return;
+    let renderPassDescription: GPURenderPassDescriptor = this._renderPassDescription ?? buildRenderPassDescriptor(this);
+    if (this._rebuildViewTexture) {
+      this._renderPassDescription = this._rebuildViewTexture(renderPassDescription);
     }
 
     const commandEncoder = device.createCommandEncoder();
     const renderPass = commandEncoder.beginRenderPass(renderPassDescription);
     const timeSpan = this._fps.getLastTimeSpan();
     this.updateLights(timeSpan);
-    this.pipelines.forEach((gpuPipeLine, idx) => {
-      const { pipeline, altPipeline, uniformBuffers, bindGroups, geoRenderable } = gpuPipeLine;
-
-      // We need to send the scene data only once!
-      if (idx === 0) {
-        // Writes the Scene into the uniformBuffer ZERO...
-        this.sceneIntoBuffer(uniformBuffers[0]);
-        renderPass.setBindGroup(0, bindGroups[0]); // Scene data binding groups
-      }
-
-      const activePipeline = this._pipelineMode === 'default' ? pipeline : altPipeline;
-      renderPass.setPipeline(activePipeline);
-
-      // For each object in the scene we set the uniform buffer with the color and (potentially) the model matrix
-      const uniformColorData = new Float32Array(geoRenderable.color); // Color for the current object
-      device.queue.writeBuffer(uniformBuffers[1][0], 0, uniformColorData);
-      renderPass.setBindGroup(1, bindGroups[1]); // Color
-
-      if (this._modelHandlers[geoRenderable.id]) {
-        geoRenderable.transform(timeSpan, this._modelHandlers[geoRenderable.id]);
-      }
-
-      device.queue.writeBuffer(uniformBuffers[2][0], 0, geoRenderable.transformationData);
-      renderPass.setBindGroup(2, bindGroups[2]); // Model transformation
-
-      if (bindGroups[3]) {
-        renderPass.setBindGroup(2, bindGroups[3]); // Texture data
-      }
-
-      geoRenderable.buffers.forEach((buffer, idx) => {
-        renderPass.setVertexBuffer(0, buffer);
-        renderPass.draw(geoRenderable.getVertexCountPerStrip(idx));
+    // Render opaque objects first
+    this.pipelines
+      .filter(({ geoRenderable }) => geoRenderable.color[3] === 1.0)
+      .forEach((gpuPipeLine, idx) => {
+        this.renderPipeline(gpuPipeLine, idx, renderPass, timeSpan);
       });
-    });
+    // Render transparent objects last
+    this.pipelines
+      .filter(({ geoRenderable }) => geoRenderable.color[3] < 1.0)
+      .forEach((gpuPipeLine, idx) => {
+        this.renderPipeline(gpuPipeLine, idx, renderPass, timeSpan);
+      });
     renderPass.end();
     device.queue.submit([commandEncoder.finish()]);
     this._fps.measureFPS();
   };
+
+  /**
+   * Render a pipeline and its associated geoRenderable
+   * @param gpuPipeLine
+   * @param idx
+   * @param renderPass
+   * @param device
+   * @param timeSpan
+   */
+  private renderPipeline(gpuPipeLine: GPUPipeline, idx: number, renderPass: GPURenderPassEncoder, timeSpan: number) {
+    const { pipeline, altPipeline, uniformBuffers, bindGroups, geoRenderable } = gpuPipeLine;
+    const { device } = this;
+
+    // We need to send the scene data only once!
+    if (idx === 0) {
+      // Writes the Scene into the uniformBuffer ZERO...
+      this.sceneIntoBuffer(uniformBuffers[0]);
+      renderPass.setBindGroup(0, bindGroups[0]); // Scene data binding groups
+    }
+
+    const activePipeline = this._pipelineMode === 'default' ? pipeline : altPipeline;
+    renderPass.setPipeline(activePipeline);
+
+    // For each object in the scene we set the uniform buffer with the color and (potentially) the model matrix
+    const uniformColorData = new Float32Array(geoRenderable.color); // Color for the current object
+    device.queue.writeBuffer(uniformBuffers[1][0], 0, uniformColorData);
+    renderPass.setBindGroup(1, bindGroups[1]); // Color
+
+    if (this._modelHandlers[geoRenderable.id]) {
+      geoRenderable.transform(timeSpan, this._modelHandlers[geoRenderable.id]);
+    }
+
+    device.queue.writeBuffer(uniformBuffers[2][0], 0, geoRenderable.transformationData);
+    renderPass.setBindGroup(2, bindGroups[2]); // Model transformation
+
+    if (bindGroups[3]) {
+      renderPass.setBindGroup(3, bindGroups[3]); // Texture data
+    }
+
+    geoRenderable.buffers.forEach((buffer, idx) => {
+      const vtx = geoRenderable.getVertexCountPerStrip(idx);
+      this._vertexCount += vtx;
+      renderPass.setVertexBuffer(0, buffer);
+      renderPass.draw(vtx);
+    });
+  }
 
   private renderLoop() {
     const { width, height } = this.canvas;
@@ -293,13 +349,21 @@ export class Gpu implements GPUConnection {
     this._transformations = getTransformations(this._transformations, [width, height], this._cameraTransHandler);
 
     this.render();
-    requestAnimationFrame(this.renderLoop.bind(this));
+    this._activeRenderLoop && requestAnimationFrame(this.renderLoop.bind(this));
   }
 
   beginRenderLoop(frameHandlers?: FrameHandlers) {
+    // if (!this._renderPassDescription) {
+    //   throw new Error('WebGPU:renderPassDescription is NOT available! - Did you call setScene() ?');
+    // }
     this._cameraTransHandler = frameHandlers?.camera;
     this._lightsHandler = frameHandlers?.lights;
     this._modelHandlers = frameHandlers?.models ?? {};
+    this._activeRenderLoop = true;
     this.renderLoop();
+  }
+
+  endRenderLoop() {
+    this._activeRenderLoop = false;
   }
 }

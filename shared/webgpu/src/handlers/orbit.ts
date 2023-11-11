@@ -2,10 +2,10 @@ import { Frame, Point, Transform, UnitVector, Vector } from '@shaders-mono/geopr
 import { MouseCbs, MouseLocation, MouseMovement, CameraTransformationHandlers, MouseButton } from '../types';
 import { Gpu } from '../gpu-connection';
 
-export const getOrbitHandlers = (gpu: Gpu): [MouseCbs, CameraTransformationHandlers] => {
+export const getOrbitHandlers = (gpu: Gpu, eyeStart: [number, number, number] = [10, 10, 10]): [MouseCbs, CameraTransformationHandlers] => {
   let target = Point.fromValues(0, 0, 0);
-  let eye = Point.fromValues(0.0, 0.0, 40.0);
-  let vuv = UnitVector.fromValues(0, 1, 0);
+  let eye = Point.fromValues(...eyeStart);
+  let vuv = eye.x === 0 && eye.y === 0 ? UnitVector.fromValues(0, 1, 0) : UnitVector.fromValues(0, 0, 1);
   let rot = [0.0, 0.0];
   let pan = [0.0, 0.0];
   let zoom = 0.0;
@@ -17,7 +17,7 @@ export const getOrbitHandlers = (gpu: Gpu): [MouseCbs, CameraTransformationHandl
 
   const mouseHandler = (bt: MouseButton, r: MouseMovement, _p: MouseLocation) => {
     let maxRes = Math.min(gpu.canvas.width, gpu.canvas.height);
-    let rotSensitivity = (1.0 / maxRes) * 2;
+    let rotSensitivity = (1.0 / maxRes) * 6;
     let panSensitivity = (fov / maxRes) * 2;
     switch (bt) {
       case 'mouse-0':

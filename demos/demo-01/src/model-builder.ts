@@ -21,18 +21,13 @@ export async function init(canvasEl: HTMLCanvasElement, supportEl: HTMLParagraph
   await gpu.setupShaders('standard-3d');
 
   const scene = await buildScene(gpu, WebGPU.cubeTriMesh(Transform.scale(1.5, 1.5, 1.5), {}), 'teapot');
-  await gpu.setupGeoBuilder(scene);
+  await gpu.setScene(scene);
 
-  const [mouseHandlers, viewHandlers] = getOrbitHandlers(gpu);
+  const [mouseHandlers, viewHandlers] = getOrbitHandlers(gpu, [3, 3, 3]);
 
-  gpu.captureMouseMotion({
-    click: (bt: number, p: MouseLocation) => {
-      supportEl.innerText = `DEMO Mouse click: ${bt},  ${p} `;
-    },
-    ...mouseHandlers,
-  });
+  gpu.captureMouseMotion(mouseHandlers);
 
   gpu.beginRenderLoop({
-    ...viewHandlers,
+    camera: viewHandlers,
   });
 }

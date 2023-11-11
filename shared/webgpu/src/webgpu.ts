@@ -2,7 +2,21 @@ import { Gpu } from './gpu-connection';
 import { zeroHex } from './internal/utils';
 import { Material, RGBAColor } from './types';
 
-// export namespace WebGPU {
+// A map with the Gpu already initialized for each canvas in the page.
+// This allow us not to initialize the GPU connection more than once per canvas
+let globalGpus: Map<string, { gpu?: Gpu; initializing: boolean }> = new Map();
+
+export const shutdownGpu = (canvas: HTMLCanvasElement | null) => {
+  if (!canvas) {
+    return;
+  }
+  const { gpu, initializing } = globalGpus.get(canvas.id) ?? { initializing: false };
+  if (!initializing && gpu) {
+    console.warn('Shutting down WebGPU connection for canvas', canvas.id, '...');
+    gpu.device.destroy();
+    globalGpus.delete(canvas.id);
+  }
+};
 
 /**
  * Initialize the WebGPU connection
@@ -13,9 +27,29 @@ export const initialize = async (canvas: HTMLCanvasElement): Promise<Gpu> => {
   if (!navigator.gpu) {
     return Promise.reject(new Error('WebGPU is not supported in this browser!'));
   }
-
+  const availableGpu = globalGpus.get(canvas.id)?.gpu;
+  if (availableGpu) {
+    return Promise.resolve(availableGpu);
+  }
+  const initializing = globalGpus.get(canvas.id)?.initializing || false;
+  if (initializing) {
+    // If the GPU for this canvas is being initializing already, we wait a bit and try to get it from the global map
+    return new Promise<Gpu>((resolve, reject) => {
+      setTimeout(() => {
+        const canvasGpu = globalGpus.get(canvas.id)?.gpu;
+        if (canvasGpu) {
+          console.warn('WebGPU connection already initialized. Reusing previous connection.');
+          return resolve(canvasGpu);
+        } else {
+          reject(new Error('WebGPU already initialization is taking too long!'));
+        }
+      }, 100);
+    });
+  }
+  globalGpus.set(canvas.id, { initializing: true });
   // Connect to WebGPU and bind the connection to a given Canvas
   const gpu = await Gpu.build(canvas);
+  globalGpus.set(canvas.id, { initializing: false, gpu: gpu });
 
   return Promise.resolve(gpu);
 };
