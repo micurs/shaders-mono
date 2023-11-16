@@ -1,6 +1,5 @@
 import React from 'react';
 import * as WebGPU from '@shaders-mono/webgpu';
-import { on } from 'events';
 
 interface GpuCanvasProps {
   onError: (e: Error) => void;
