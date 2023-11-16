@@ -99,13 +99,14 @@ export const getOrbitHandlers = (gpu: Gpu, eyeStart: [number, number, number] = 
     // Reset pan, zoom and rot (for rotation do a smooth stop)
     if (!rotating) {
       rot = [rot[0] * 0.95, rot[1] * 0.95];
-      tilt *= 0.95;
-      if (Math.abs(rot[0]) < 0.001 && Math.abs(rot[1]) < 0.001 && Math.abs(tilt) < 0.001) {
+      tilt *= 0.9;
+      zoom *= 0.9;
+      if (Math.abs(rot[0]) < 0.001 && Math.abs(rot[1]) < 0.001 && Math.abs(tilt) < 0.001 && Math.abs(zoom) < 0.001) {
         rot = [0.0, 0.0];
         tilt = 0;
+        zoom = 0;
       }
     }
-    zoom = 0;
     pan = [0, 0];
     distToTarget = Vector.fromPoints(eye, target).length;
     return cameraFrame.toTransform();

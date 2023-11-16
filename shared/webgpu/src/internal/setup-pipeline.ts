@@ -42,7 +42,7 @@ const createPipelineLayout = (gpu: Gpu, material: Material | undefined): Pipelin
  * @param scene - The scene with all the object we want to render
  * @returns
  */
-export const createPipelines = (gpu: Gpu, shaderModule: GPUShaderModule, scene: Scene): Map<string, GPUPipeline> => {
+export const createPipelines = (gpu: Gpu, shaderModule: GPUShaderModule, scene: Scene<unknown>): Map<string, GPUPipeline> => {
   const { device, format } = gpu;
 
   const idGeoPairs = scene.map<[string, GPUPipeline]>(([geoRenderable, material]): [string, GPUPipeline] => {

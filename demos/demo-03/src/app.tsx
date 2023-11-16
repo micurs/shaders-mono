@@ -1,17 +1,20 @@
 import React from 'react';
 import * as WebGPU from '@shaders-mono/webgpu';
+import * as OIMO from 'oimo';
 
 import './app.css';
 import { GpuCanvas } from './components/gpu-canvas';
 import { GeoToolbar } from './components/geo-toolbar';
 import { GeoTool } from './types';
 import { addGpuGeo } from './gpu-utils/geo';
+import { createWorld, updatePhysics } from './oimo/utils';
 
 const borderClass = 'border-solid border-[1px] border-slate-800 mt-[-1px]';
 
 function App() {
   const [gpuError, setGpuError] = React.useState<string>('Initializing WebGPU...');
   const [gpu, setGpu] = React.useState<WebGPU.Gpu | null>(null);
+  const [world, setWorld] = React.useState<OIMO.World | null>(null);
 
   const handleGpuError = (e: Error) => {
     setGpuError(e.message);
@@ -20,31 +23,39 @@ function App() {
   const handleGpuConnected = (gpu: WebGPU.Gpu) => {
     setGpu(gpu);
     setGpuError('');
+    const world = createWorld();
+    setWorld(world);
+    gpu.onRender(() => {
+      if (world) {
+        updatePhysics(world, gpu);
+      }
+    });
   };
 
-  const handleToolSelection = (geoType: GeoTool) => {
-    if (!gpu) {
+  const handleGeoAdd = (geoType: GeoTool) => {
+    if (!gpu || !world) {
       setGpuError('WebGPU not initialized');
       return;
     }
-    addGpuGeo(gpu, geoType);
+    addGpuGeo(gpu, world, geoType);
   };
 
   const handleClear = () => {
-    if (!gpu) {
+    if (!gpu || !world) {
       setGpuError('WebGPU not initialized');
       return;
     }
     gpu.clearScene();
+    world.clear();
   };
 
   return (
     <>
       <div className={`flex flex-row justify-between items-center ${borderClass} h-[40px]  leading-[40px]`} id="top-bar">
-        <h1 className="mx-2">Hello demo-03</h1>
+        <h1 className="mx-2">Demo # 3 - WebGPU and Oimo.js</h1>
       </div>
       <div id="app-space" className={`flex-1 flex flex-row overflow-hidden ${borderClass} min-h-[600px] bg-gray-800`}>
-        <GeoToolbar onSelected={handleToolSelection} onClear={handleClear} />
+        <GeoToolbar onSelected={handleGeoAdd} onClear={handleClear} />
         <div className="flex-1">
           <GpuCanvas onError={handleGpuError} onConnected={handleGpuConnected} />
         </div>

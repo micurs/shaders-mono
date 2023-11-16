@@ -1,6 +1,22 @@
 {
   "vitest.debugExclude": ["<node_internals>/**", "**/node_modules/**"],
-  "cSpell.words": ["fovy", "geopro", "geos", "Renderable", "trimesh", "unmap", "unorm", "webgpu", "wireframe", "xygrid", "xyplane"],
+  "cSpell.words": [
+    "broadphase",
+    "fovy",
+    "geopro",
+    "geos",
+    "OIMO",
+    "Renderable",
+    "timestep",
+    "trimesh",
+    "unmap",
+    "unorm",
+    "webgpu",
+    "wireframe",
+    "worldscale",
+    "xygrid",
+    "xyplane"
+  ],
   "workbench.colorCustomizations": {
     "titleBar.activeBackground": "#580c0c",
     "titleBar.border": "#9fb716",

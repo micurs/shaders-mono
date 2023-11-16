@@ -3,7 +3,9 @@ import { GeoRenderable } from '../geo-renderable';
 import { computeNormals } from './utils';
 import { GeoOptions, GeoGenerator } from '../types';
 
-export const cubeTriMesh: GeoGenerator = (t: Transform, options: GeoOptions<{}>) => {
+interface CubeGenerator<B> extends GeoGenerator<B, {}> {}
+
+const cubeGen: CubeGenerator<any> = <B>(t: Transform, options: GeoOptions<{}>): GeoRenderable<B> => {
   const { color, id } = options;
 
   const points: Point[] = [
@@ -57,7 +59,7 @@ export const cubeTriMesh: GeoGenerator = (t: Transform, options: GeoOptions<{}>)
   ];
 
   const coordinates: number[] = points.flatMap((p) => p.triplet);
-  const triangleData = new GeoRenderable(id, 'triangle-list', color);
+  const triangleData = new GeoRenderable<B>(id, 'triangle-list', color);
   triangleData.addVertices(new Float32Array(coordinates));
 
   if (!color) {
@@ -101,3 +103,5 @@ export const cubeTriMesh: GeoGenerator = (t: Transform, options: GeoOptions<{}>)
 
   return triangleData;
 };
+
+export const cubeTriMesh = <B>(): CubeGenerator<B> => cubeGen;

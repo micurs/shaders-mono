@@ -1,5 +1,6 @@
 import { Point, Transform, UnitVector } from '@shaders-mono/geopro';
 import { GeoRenderable } from './geo-renderable';
+import { RotationTranslationScale } from 'shared/geopro/src/types';
 
 export type RGBAColor = [number, number, number, number];
 
@@ -38,7 +39,7 @@ export interface GPUPipeline {
   type: string;
   pipeline: GPURenderPipeline;
   altPipeline: GPURenderPipeline;
-  geoRenderable: GeoRenderable; // The geometry to render
+  geoRenderable: GeoRenderable<unknown>; // The geometry to render
   uniformBuffers: Array<Array<GPUBuffer>>;
   bindGroups: [GPUBindGroup, GPUBindGroup, GPUBindGroup, GPUBindGroup | undefined];
 }
@@ -60,7 +61,7 @@ export interface CameraTransformationHandlers {
 
 export type LightHandler<T extends DirectionalLight | PointLight> = (ts: number, prev: Array<T>) => void;
 
-export type ModelTransformHandler = (timespan: number, prev: Transform) => Transform;
+export type ModelTransformHandler = (timespan: number, prev: RotationTranslationScale) => RotationTranslationScale;
 
 export interface LightsTransformationHandlers {
   dirLights?: LightHandler<DirectionalLight>;
@@ -92,7 +93,7 @@ export interface MouseCbs {
   tilt?: MouseZoomHandler;
 }
 
-export type Scene = Array<[GeoRenderable, Material?]>;
+export type Scene<B> = Array<[GeoRenderable<B>, Material?]>;
 
 export interface DirectionalLight {
   dir: UnitVector;
@@ -110,6 +111,10 @@ export type GeoOptions<T> = T & {
   texture?: GPUTexture;
 };
 
-export type GeoGenerator<T = {}> = (t: Transform, options: GeoOptions<T>) => GeoRenderable;
+// export type GeoGenerator = <B, O = {}>(t: Transform, options: GeoOptions<O>) => GeoRenderable<B>;
+
+export interface GeoGenerator<B, O = {}> {
+  (t: Transform, options: GeoOptions<O>): GeoRenderable<B>;
+}
 
 export type MouseButton = 'none' | 'mouse-0' | 'mouse-1' | 'mouse-2' | 'ctrl-mouse-0' | 'ctrl-mouse-1' | 'ctrl-mouse-2';

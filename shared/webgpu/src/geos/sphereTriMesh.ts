@@ -108,13 +108,15 @@ interface SphereOptions {
   steps: number;
 }
 
+interface SphereGenerator<B> extends GeoGenerator<B, SphereOptions> {}
+
 /**
  * Build a sphere mesh
  * @param t
  * @param options
  * @returns
  */
-export const sphereTriMesh: GeoGenerator<SphereOptions> = (t: Transform, options: GeoOptions<SphereOptions>) => {
+export const sphereGen: SphereGenerator<any> = <B>(t: Transform, options: GeoOptions<SphereOptions>): GeoRenderable<B> => {
   const { steps, color, id } = options;
   const [sphVertices, sphIndexes] = subdivide(vertices, indices, steps);
 
@@ -124,9 +126,9 @@ export const sphereTriMesh: GeoGenerator<SphereOptions> = (t: Transform, options
   const normals: number[] = [];
   const center = Point.fromValues(0, 0, 0).map(t);
   sphIndexes.forEach((triangle) => {
-    const pt0 = Point.fromVector(sphVertices[triangle[2]]).scale(0.5).map(t);
-    const pt1 = Point.fromVector(sphVertices[triangle[1]]).scale(0.5).map(t);
-    const pt2 = Point.fromVector(sphVertices[triangle[0]]).scale(0.5).map(t);
+    const pt0 = Point.fromVector(sphVertices[triangle[2]]).scale(1).map(t);
+    const pt1 = Point.fromVector(sphVertices[triangle[1]]).scale(1).map(t);
+    const pt2 = Point.fromVector(sphVertices[triangle[0]]).scale(1).map(t);
     const n0 = UnitVector.fromVector(Vector.fromPoints(pt0, center));
     const n1 = UnitVector.fromVector(Vector.fromPoints(pt1, center));
     const n2 = UnitVector.fromVector(Vector.fromPoints(pt2, center));
@@ -137,8 +139,10 @@ export const sphereTriMesh: GeoGenerator<SphereOptions> = (t: Transform, options
     normals.push(...n1.triplet);
     normals.push(...n2.triplet);
   });
-  const triangleData = new GeoRenderable(id, 'triangle-list', color);
+  const triangleData = new GeoRenderable<B>(id, 'triangle-list', color);
   triangleData.addVertices(new Float32Array(coordinates));
   triangleData.addNormals(new Float32Array(normals));
   return triangleData;
 };
+
+export const sphereTriMesh = <B>(): SphereGenerator<B> => sphereGen;

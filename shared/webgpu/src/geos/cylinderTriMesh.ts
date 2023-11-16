@@ -66,13 +66,15 @@ interface CylinderOptions {
   steps: number;
 }
 
+// type CylGenerator = <B>(p: Parameters<GeoGenerator<{}, CylinderOptions>>) => GeoRenderable<B>;
+interface CylGenerator<B> extends GeoGenerator<B, CylinderOptions> {}
 /**
  * Build a cylinder mesh
  * @param t
  * @param options
  * @returns
  */
-export const cylinderTriMesh: GeoGenerator<CylinderOptions> = (t: Transform, options: GeoOptions<CylinderOptions>) => {
+export const cylinderGen: CylGenerator<any> = <B>(t: Transform, options: GeoOptions<CylinderOptions>): GeoRenderable<B> => {
   const { steps, color, id } = options;
   const coordinates = [];
   const normals = [];
@@ -86,8 +88,10 @@ export const cylinderTriMesh: GeoGenerator<CylinderOptions> = (t: Transform, opt
   normals.push(...n2);
   normals.push(...n3);
 
-  const triangleData = new GeoRenderable(id, 'triangle-list', color);
+  const triangleData = new GeoRenderable<B>(id, 'triangle-list', color);
   triangleData.addVertices(new Float32Array(coordinates));
   triangleData.addNormals(new Float32Array(normals));
   return triangleData;
 };
+
+export const cylinderTriMesh = <B>(): CylGenerator<B> => cylinderGen;
