@@ -14,6 +14,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
           <li>Center mouse button: pan</li>
           <li>Right mouse button: zoom</li>
           <li>Mouse wheel: dolly</li>
+          <li>CTRL Mouse wheel: tilt</li>
         </ul>
       </div>
       <div class="right">

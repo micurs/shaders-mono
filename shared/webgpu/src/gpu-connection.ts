@@ -61,10 +61,10 @@ export class Gpu implements GPUConnection {
     { dir: UnitVector.fromValues(-1.0, -1.0, -1.0), col: [0.3, 0.3, 0.3, 0.0] },
   ];
   private _pointLights: Array<PointLight> = [
-    { pos: Point.fromValues(-12.0, 12.0, 8.0), col: [0.6, 0.6, 0.2, 1.0] },
-    { pos: Point.fromValues(12.0, 12.0, 8.0), col: [0.5, 0.1, 0.1, 1.0] },
-    { pos: Point.fromValues(-12, -12.0, 8.0), col: [0.5, 0.1, 0.4, 1.0] },
-    { pos: Point.fromValues(12.0, -12.0, 8.0), col: [0.3, 0.1, 0.6, 1.0] },
+    { pos: Point.fromValues(-12.0, 12.0, 8.0), col: [0.5, 0.5, 0.2, 1.0] },
+    { pos: Point.fromValues(12.0, 12.0, 8.0), col: [0.4, 0.2, 0.2, 1.0] },
+    { pos: Point.fromValues(-12, -12.0, 8.0), col: [0.2, 0.2, 0.5, 1.0] },
+    { pos: Point.fromValues(12.0, -12.0, 8.0), col: [0.5, 0.1, 0.5, 1.0] },
   ];
 
   private constructor(canvas: HTMLCanvasElement, context: GPUCanvasContext, device: GPUDevice, format: GPUTextureFormat) {
