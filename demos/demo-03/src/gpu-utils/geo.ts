@@ -31,7 +31,7 @@ const buildPlane = (world: OIMO.World): WorldScene => {
   plane.scale(scale);
   plane.translate(position.add(Vector.fromValues(0, 0, -thickness / 2)));
 
-  const grid = WebGPU.planeGridLines(Transform.identity(), {
+  const grid = WebGPU.planeGridLines()(Transform.identity(), {
     id: `ref-xygrid-${planeCounter++}`,
     color: [0.6, 0.6, 1.0, 0.2],
     steps: 60,
