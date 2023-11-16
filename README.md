@@ -1,13 +1,20 @@
 # shaders-mono
 
-## Demo 01
+## Demo 1
 
 ![Alt text](assets/demo-01.png)
 
-## Demo 02
+## Demo 2
+
+A simple example with realtime animation of a 3D clock.
 
 ![Alt text](assets/demo-02.png)
 
+## Demo 3
+
+A simple integration with [Oimo.js 3d physics engine](https://github.com/lo-th/Oimo.js/).
+
+![Alt text](assets/demo-03.png)
 
 ## Development
 
