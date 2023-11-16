@@ -9,7 +9,7 @@ interface PlaneOptions {
 
 interface PlaneGenerator<B> extends GeoGenerator<B, PlaneOptions> {}
 
-export const planeGridLines: PlaneGenerator<any> = <B>(t: Transform, options: GeoOptions<PlaneOptions>): GeoRenderable<B> => {
+export const planeGridGenerator: PlaneGenerator<any> = <B = null>(t: Transform, options: GeoOptions<PlaneOptions>): GeoRenderable<B> => {
   const { color, steps, id } = options;
 
   // 0 - Determine the scale of the plane (x/y)
@@ -43,3 +43,5 @@ export const planeGridLines: PlaneGenerator<any> = <B>(t: Transform, options: Ge
   geo.addVertices(new Float32Array(pts.flatMap((p) => p.triplet)));
   return geo;
 };
+
+export const planeGridLines = <B = null>(): PlaneGenerator<B> => planeGridGenerator;

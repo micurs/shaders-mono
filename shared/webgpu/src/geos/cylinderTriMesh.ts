@@ -94,4 +94,4 @@ export const cylinderGen: CylGenerator<any> = <B>(t: Transform, options: GeoOpti
   return triangleData;
 };
 
-export const cylinderTriMesh = <B>(): CylGenerator<B> => cylinderGen;
+export const cylinderTriMesh = <B = null>(): CylGenerator<B> => cylinderGen;

@@ -54,5 +54,5 @@ const planGenerator: PlaneGenerator<any> = <B>(t: Transform, options: GeoOptions
     .setCullMode('none');
 };
 
-export const planeTriMesh = <B>(): PlaneGenerator<B> => planGenerator;
+export const planeTriMesh = <B = null>(): PlaneGenerator<B> => planGenerator;
 

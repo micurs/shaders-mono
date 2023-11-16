@@ -104,4 +104,4 @@ const cubeGen: CubeGenerator<any> = <B>(t: Transform, options: GeoOptions<{}>): 
   return triangleData;
 };
 
-export const cubeTriMesh = <B>(): CubeGenerator<B> => cubeGen;
+export const cubeTriMesh = <B = null>(): CubeGenerator<B> => cubeGen;

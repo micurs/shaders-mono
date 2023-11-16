@@ -13,7 +13,7 @@ export const buildLights = (gpu: Gpu): LightsTransformationHandlers => {
   gpu.setLight('directional', 0, { dir: UnitVector.fromValues(0.0, 0, 1.0), col: [0.2, 0.2, 0.2, 1.0] });
   gpu.setLight('directional', 1, { dir: UnitVector.fromValues(1.0, 0, 0.0), col: [0.2, 0.2, 0.4, 1.0] });
   gpu.setLight('point', 0, { pos: Point.fromValues(0.0, 0.0, 5), col: [0.75, 0.25, 0.25, 1.0] });
-  gpu.setLight('point', 1, { pos: posSec, col: [0.75, 0.75, 0.75, 1.0] });
+  gpu.setLight('point', 1, { pos: posSec, col: [0.3, 0.3, 0.3, 1.0] });
   gpu.setLight('point', 2, { pos: Point.fromValues(-6.0, 4.0, 4.5), col: [0.0, 0.1, 0.4, 0.0] });
   gpu.setLight('point', 3, { pos: Point.fromValues(-6.0, 14.0, 8.5), col: [0.2, 0.5, 0.0, 0.0] });
 

@@ -93,7 +93,7 @@ export interface MouseCbs {
   tilt?: MouseZoomHandler;
 }
 
-export type Scene<B> = Array<[GeoRenderable<B>, Material?]>;
+export type Scene<B = null> = Array<[GeoRenderable<B>, Material?]>;
 
 export interface DirectionalLight {
   dir: UnitVector;

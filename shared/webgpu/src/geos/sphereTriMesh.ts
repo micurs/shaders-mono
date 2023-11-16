@@ -145,4 +145,4 @@ export const sphereGen: SphereGenerator<any> = <B>(t: Transform, options: GeoOpt
   return triangleData;
 };
 
-export const sphereTriMesh = <B>(): SphereGenerator<B> => sphereGen;
+export const sphereTriMesh = <B = null>(): SphereGenerator<B> => sphereGen;
