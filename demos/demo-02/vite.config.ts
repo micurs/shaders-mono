@@ -7,9 +7,16 @@ import checker from 'vite-plugin-checker';
 export default defineConfig({
   cacheDir: '../../node_modules/.vite/demo-02',
 
+  build: {
+    rollupOptions: {
+      input: {
+        app: './demo-02.html', // default
+      },
+    },
+  },
+
   server: {
-    port: 4200,
-    host: 'localhost',
+    open: 'demo-02.html',
   },
 
   preview: {

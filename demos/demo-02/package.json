@@ -4,8 +4,9 @@
   "version": "0.0.0",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
-    "preview": "vite preview"
+    "build": "rimraf dist && tsc && vite build",
+    "preview": "vite preview",
+    "pages:deploy": "cp -r dist/* ../../pages"
   },
   "devDependencies": {
     "typescript": "^5.0.2",

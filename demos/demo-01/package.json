@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "rimraf dist && tsc && vite build",
+    "pages:deploy": "cp -r dist/* ../../pages",
     "preview": "vite preview"
   },
   "devDependencies": {
