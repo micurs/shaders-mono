@@ -11,7 +11,8 @@
   },
   "dependencies": {
     "@shaders-mono/geopro": "workspace:*",
-    "@shaders-mono/webgpu": "workspace:*"
+    "@shaders-mono/webgpu": "workspace:*",
+    "oimo": "^1.0.9"
   },
   "devDependencies": {
     "daisyui": "^3.9.4",
