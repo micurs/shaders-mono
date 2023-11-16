@@ -83,7 +83,7 @@ fn computeDiffuseColor(
   for (var i: u32 = 0; i < MAX_POINT_LIGHTS; i = i + 1) {
     if (sceneLights.pointLights[i].col.a != 0.0) {
       let dir = sceneLights.pointLights[i].pos.xyz - pos; //  - pos.xyz;
-      let attenuation = 1.0 - clamp(pow( length(dir)/40.0, 2.0), 0.0, 1.0 );
+      let attenuation = 1.0 - clamp(pow( length(dir)/20, 2.0), 0.0, 1.0 );
 
       let lightDir: vec3<f32> = normalize(dir);
       let lightColor: vec3<f32> = sceneLights.pointLights[i].col.rgb;
@@ -93,7 +93,7 @@ fn computeDiffuseColor(
       // Specular
       let V = normalize(pos - eye);
       let R = normalize(reflect(lightDir, normal));
-      let specularIntensity = pow(max(dot(V, R), 0.0), shininess * attenuation);
+      let specularIntensity = pow(max(dot(V, R), 0.0), shininess);
       let specularColor = specularIntensity * lightColor;
 
       diffuse = diffuse + (diffuseColor+ specularColor) * attenuation;
@@ -114,11 +114,7 @@ fn vertexTextureShader(
   var vertex = myModel.model * vec4<f32>(vertexPosition, 1.0);
   output.position = sceneData.projection * sceneData.view * vertex;
   output.texCoord = vec2<f32>(vertexTexCoord);
-
-  // Transform the normal with the transpose of the inverse of the model matrix
-  // (only needed if the model matrix is not identity?)
-  //  normalize(mat3x3<f32>(transpose(inverse(sceneData.model))) * vertexNormal);
-  output.normal = (myModel.model * vec4<f32>(vertexNormal, 0.0)).xyz;
+  output.normal = (myModel.modelInverseTranspose * vec4<f32>(vertexNormal, 0.0)).xyz;
   output.pos = vertex.xyz;
   output.eye = sceneData.invertView[3].xyz;
 
@@ -127,7 +123,7 @@ fn vertexTextureShader(
 
 @fragment
 fn fragmentTextureShader(in: TextFragment) -> @location(0) vec4<f32> {
-  let diffuse: vec3<f32> = computeDiffuseColor( in.eye, in.pos, in.normal, sceneLights );
+  let diffuse: vec3<f32> = computeDiffuseColor( in.eye, in.pos, normalize(in.normal), sceneLights );
   let texColor: vec4<f32> = textureSample(myTexture, mySampler, in.texCoord);
 
   return vec4<f32>(texColor.rgb * diffuse, 1.0);
@@ -153,7 +149,7 @@ fn vertexColorShader(
 
 @fragment
 fn fragmentColorShader(in: ColorFragment) -> @location(0) vec4<f32> {
-  let diffuse: vec3<f32> = computeDiffuseColor( in.eye, in.pos, in.normal, sceneLights );
+  let diffuse: vec3<f32> = computeDiffuseColor( in.eye, in.pos, normalize(in.normal), sceneLights );
   return vec4<f32>(myColor.color.rgb * diffuse.rgb, myColor.color.a);
 }
 

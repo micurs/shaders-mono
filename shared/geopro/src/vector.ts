@@ -121,6 +121,16 @@ export class Vector {
     return res;
   };
 
+  /**
+   * Component-wise multiplication
+   * @param v
+   */
+  multiply = (v: Vector): Vector => {
+    const res = new Vector();
+    vec4.multiply(res._coord, this._coord, v._coord);
+    return res;
+  };
+
   isUnitVector() {
     return false;
   }

@@ -1,8 +1,9 @@
-import { mat4 } from 'gl-matrix';
+import { mat4, vec3 } from 'gl-matrix';
 import { GeoMap } from './operations';
 import { Point } from './point';
 import { UnitVector } from './unit-vector';
 import { Vector } from './vector';
+import { Rotation } from './rotation';
 
 export class Transform {
   _direct: mat4;
@@ -26,6 +27,14 @@ export class Transform {
 
   static identity() {
     const t = new Transform();
+    return t;
+  }
+
+  static fromRotation(rot: Rotation) {
+    const t = new Transform();
+    mat4.fromQuat(t._direct, rot.quat);
+    mat4.invert(t._inverse, t._direct);
+    t._isIdentity = false;
     return t;
   }
 
@@ -110,6 +119,28 @@ export class Transform {
   static scale(tx: number, ty: number, tz: number) {
     const t = new Transform();
     mat4.scale(t._direct, t._direct, [tx, ty, tz]);
+    mat4.invert(t._inverse, t._direct);
+    t._isIdentity = false;
+    return t;
+  }
+
+  /**
+   * Create a transform that represents a rotation and then a
+   * translation to a given position
+   * @param rot - the rotation
+   * @param mv - the translation
+   */
+  static rotoTranslation(rot: Rotation, mv: Vector) {
+    const t = new Transform();
+    mat4.fromRotationTranslation(t._direct, rot.quat, mv.vec3());
+    mat4.invert(t._inverse, t._direct);
+    t._isIdentity = false;
+    return t;
+  }
+
+  static fromRotationTranslationScale(rot: Rotation, mv: Vector, scale: Vector) {
+    const t = new Transform();
+    mat4.fromRotationTranslationScale(t._direct, rot.quat, mv.vec3(), scale.vec3());
     mat4.invert(t._inverse, t._direct);
     t._isIdentity = false;
     return t;
@@ -239,7 +270,17 @@ export class Transform {
   }
 
   get scaleVector(): Vector {
-    const v = Vector.fromValues(1, 1, 1);
-    return v.map(this);
+    const t = vec3.create();
+    mat4.getScaling(t, this._direct);
+    return Vector.fromValues(t[0], t[1], t[2]);
+  }
+
+  /**
+   * Return the translation part of the transformation
+   */
+  get positionVector(): Vector {
+    const t = vec3.create();
+    mat4.getTranslation(t, this._direct);
+    return Vector.fromValues(t[0], t[1], t[2]);
   }
 }

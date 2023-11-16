@@ -46,10 +46,10 @@ h1 {
 }
 
 #gfx-canvas {
-  margin: 6px 6px 0 6px;
-  background-color: #24242490;
+  background-color: #1e1e1e90;
   border: none;
 }
+
 div.main {
   display: flex;
   flex-direction: row;

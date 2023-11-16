@@ -92,7 +92,7 @@ export function App() {
   return (
     <>
       <div className="bg-slate-900 flex flex-row justify-between items-center px-2 text-slate-400 border-b-[1px] border-slate-700">
-        <h1 className="font-bold text-xl my-2 mx-1">Demo 02</h1>
+        <h1 className="font-bold text-xl my-2 mx-1">Demo #2 - Clock animation</h1>
         <div className="m-4">{status} </div>
         <div className="m-4 w-20 text-center border-2 px-2">
           <code>FPS:{fps.toFixed(0)}</code>

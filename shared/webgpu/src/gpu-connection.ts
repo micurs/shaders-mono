@@ -24,6 +24,7 @@ import { buildRenderPassDescriptor, connectGPU, getTransformations, isPredefined
 import shader3D from './internal/shader3d.wgsl?raw';
 import shader2D from './internal/shader2d.wgsl?raw';
 import { initRebuildViewTexture } from './internal/resize-render-target';
+import { GeoRenderable } from '.';
 
 type PipelineMode = 'default' | 'alternative';
 export class Gpu implements GPUConnection {
@@ -32,6 +33,7 @@ export class Gpu implements GPUConnection {
   readonly device: GPUDevice;
   readonly format: GPUTextureFormat;
 
+  private _handleOnRender: ((gpu: GPUConnection) => void) | undefined = undefined;
   private _vertexCount = 0;
   private _activeRenderLoop = false;
   private _pipelineMode: PipelineMode = 'default';
@@ -53,16 +55,16 @@ export class Gpu implements GPUConnection {
   private _ambientLight: RGBAColor = [0.1, 0.1, 0.1, 1.0];
 
   private _dirLights: Array<DirectionalLight> = [
-    { dir: UnitVector.fromValues(-1.0, -1.0, -1.0), col: [0.5, 0.5, 0.5, 1.0] },
+    { dir: UnitVector.fromValues(-1.0, -1.0, 1.0), col: [0.3, 0.3, 0.3, 1.0] },
     { dir: UnitVector.fromValues(1.0, 1.0, 1.0), col: [0.4, 0.3, 0.3, 1.0] },
     { dir: UnitVector.fromValues(1.0, 0.0, 0.0), col: [0.5, 0.5, 0.5, 0.0] },
     { dir: UnitVector.fromValues(-1.0, -1.0, -1.0), col: [0.3, 0.3, 0.3, 0.0] },
   ];
   private _pointLights: Array<PointLight> = [
-    { pos: Point.fromValues(8.0, 8.0, 8.0), col: [0.4, 0.4, 0.4, 1.0] },
-    { pos: Point.fromValues(0.0, 0.0, 4.0), col: [0.3, 0.3, 0.4, 1.0] },
-    { pos: Point.fromValues(3.0, -15.0, -5.0), col: [0.2, 0.2, 0.7, 0.0] },
-    { pos: Point.fromValues(13.0, 12.0, -13.0), col: [0.6, 0.1, 0.1, 0.0] },
+    { pos: Point.fromValues(-12.0, 12.0, 8.0), col: [0.5, 0.5, 0.2, 1.0] },
+    { pos: Point.fromValues(12.0, 12.0, 8.0), col: [0.4, 0.2, 0.2, 1.0] },
+    { pos: Point.fromValues(-12, -12.0, 8.0), col: [0.2, 0.2, 0.5, 1.0] },
+    { pos: Point.fromValues(12.0, -12.0, 8.0), col: [0.5, 0.1, 0.5, 1.0] },
   ];
 
   private constructor(canvas: HTMLCanvasElement, context: GPUCanvasContext, device: GPUDevice, format: GPUTextureFormat) {
@@ -128,6 +130,10 @@ export class Gpu implements GPUConnection {
     return [...this._pipelines.values()];
   }
 
+  getScene<B>(): Scene<B> {
+    return [...this._pipelines.values()].map(({ geoRenderable }) => [geoRenderable as GeoRenderable<B>, undefined]);
+  }
+
   /**
    *
    * @param shaders - the source code for the shaders or predefined shaders
@@ -160,7 +166,7 @@ export class Gpu implements GPUConnection {
    * @param geoBuilder
    * @returns
    */
-  setScene(scene: Scene) {
+  setScene(scene: Scene<unknown>) {
     if (!this._shaderModule) {
       throw new Error('WebGPU:shader module is NOT available!');
     }
@@ -176,7 +182,7 @@ export class Gpu implements GPUConnection {
     this._renderPassDescription = buildRenderPassDescriptor(this);
   }
 
-  addToScene(scene: Scene) {
+  addToScene(scene: Scene<unknown>) {
     if (!this._shaderModule) {
       throw new Error('WebGPU:shader module is NOT available!');
     }
@@ -190,6 +196,10 @@ export class Gpu implements GPUConnection {
     newPipelines.forEach((pipeline, key) => {
       this._pipelines.set(key, pipeline);
     });
+  }
+
+  removeFromScene(id: string) {
+    return this._pipelines.delete(id);
   }
 
   clearScene() {
@@ -261,6 +271,10 @@ export class Gpu implements GPUConnection {
     posLights && posLights(timeSpan, this._pointLights);
   }
 
+  onRender(cb: (gpu: GPUConnection) => void) {
+    this._handleOnRender = cb;
+  }
+
   /**
    * render the scene
    * @param transf
@@ -270,6 +284,10 @@ export class Gpu implements GPUConnection {
   private render = () => {
     const { device } = this;
     this._vertexCount = 0;
+
+    // 0 - If available calls the onRender callback to update the scene
+    this._handleOnRender && this._handleOnRender(this);
+
     // 1 - We rebuild the rendering texture id needed when canvas is resized!
     let renderPassDescription: GPURenderPassDescriptor = this._renderPassDescription ?? buildRenderPassDescriptor(this);
     if (this._rebuildViewTexture) {
@@ -280,6 +298,7 @@ export class Gpu implements GPUConnection {
     const renderPass = commandEncoder.beginRenderPass(renderPassDescription);
     const timeSpan = this._fps.getLastTimeSpan();
     this.updateLights(timeSpan);
+
     // Render opaque objects first
     this.pipelines
       .filter(({ geoRenderable }) => geoRenderable.color[3] === 1.0)
@@ -294,7 +313,6 @@ export class Gpu implements GPUConnection {
       });
     renderPass.end();
     device.queue.submit([commandEncoder.finish()]);
-    this._fps.measureFPS();
   };
 
   /**
@@ -349,6 +367,7 @@ export class Gpu implements GPUConnection {
     this._transformations = getTransformations(this._transformations, [width, height], this._cameraTransHandler);
 
     this.render();
+    this._fps.measureFPS();
     this._activeRenderLoop && requestAnimationFrame(this.renderLoop.bind(this));
   }
 
@@ -356,6 +375,7 @@ export class Gpu implements GPUConnection {
     // if (!this._renderPassDescription) {
     //   throw new Error('WebGPU:renderPassDescription is NOT available! - Did you call setScene() ?');
     // }
+    this._fps = fps.init();
     this._cameraTransHandler = frameHandlers?.camera;
     this._lightsHandler = frameHandlers?.lights;
     this._modelHandlers = frameHandlers?.models ?? {};

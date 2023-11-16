@@ -1,15 +1,23 @@
 export const init = () => {
-  let lastTimeSpan = 0;
-  let lastTime = Date.now();
+  let renderingTime = 0;
+  let lastTime = performance.now();
   let lastFPSIdx = 0;
   const lastFPS: number[] = [];
+  console.log('Init FPS', lastTime);
 
   const measureFPS = () => {
-    const time = Date.now();
-    lastTimeSpan = Math.max(time - lastTime, 1);
+    const time = performance.now();
+    renderingTime = time - lastTime;
+    if (renderingTime <= 1.0) {
+      return lastFPS[lastFPSIdx];
+    }
+    // console.log('lastTimeSpan', lastTimeSpan);
     lastFPSIdx = (lastFPSIdx + 1) % 10;
-    lastFPS[lastFPSIdx] = 1000 / lastTimeSpan;
-    lastTime = time;
+    lastFPS[lastFPSIdx] = 1000 / renderingTime;
+
+    lastTime = performance.now();
+    // console.log('lastTime', lastTime.toFixed(0));
+    return renderingTime;
   };
 
   const getFPS = () => {
@@ -17,7 +25,7 @@ export const init = () => {
   };
 
   const getLastTimeSpan = () => {
-    return lastTimeSpan;
+    return renderingTime;
   };
 
   return { getFPS, measureFPS, getLastTimeSpan };

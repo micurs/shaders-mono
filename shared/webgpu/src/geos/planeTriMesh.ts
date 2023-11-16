@@ -4,12 +4,17 @@ import { computeNormals } from './utils';
 import { GeoRenderable } from '../geo-renderable';
 import { logN } from '../internal/utils';
 
+type PlaneTriMeshOptions = {
+  steps: number;
+};
+
+interface PlaneGenerator<B> extends GeoGenerator<B, PlaneTriMeshOptions> {}
 /**
  * Build a plane mesh on the XY plane
  * @param t - The transformation to orient the plane as you want
  * @param color - color or texture to apply to the plane
  */
-export const planeTriMesh: GeoGenerator<{ steps: number }> = (t: Transform, options: GeoOptions<{ steps: number }>) => {
+const planGenerator: PlaneGenerator<any> = <B>(t: Transform, options: GeoOptions<PlaneTriMeshOptions>): GeoRenderable<B> => {
   const { color, steps, id } = options;
 
   // 0 - Determine the scale of the plane (x/y)
@@ -41,10 +46,13 @@ export const planeTriMesh: GeoGenerator<{ steps: number }> = (t: Transform, opti
       const normals = computeNormals('triangle-strip', coords);
       return [new Float32Array(coords), new Float32Array(normals)];
     })
-    .reduce((triangleData: GeoRenderable, [coords, normals]) => {
+    .reduce((triangleData: GeoRenderable<B>, [coords, normals]) => {
       triangleData.addVertices(coords);
       triangleData.addNormals(normals);
       return triangleData;
-    }, new GeoRenderable(id, 'triangle-strip', color))
+    }, new GeoRenderable<B>(id, 'triangle-strip', color))
     .setCullMode('none');
 };
+
+export const planeTriMesh = <B = null>(): PlaneGenerator<B> => planGenerator;
+
