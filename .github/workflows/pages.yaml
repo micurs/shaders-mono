@@ -40,3 +40,13 @@ jobs:
       # Runs a set of commands using the runners shell
       - name: Build and deploy
         run: pnpm deploy:pages
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          path: pages
+
+      - name: Deploy to GitHub pages
+        uses: actions/deploy-pages@v2
+
+
