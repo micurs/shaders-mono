@@ -25,11 +25,14 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v3
       - uses: pnpm/action-setup@v2
-      - name: Use Node.js ${{ matrix.node-version }}
+        with:
+          version: 7
+      - name: Use Node.js 18
         uses: actions/setup-node@v3
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: 18
           cache: pnpm
+          
       # Runs a single command using the runners shell
       - name: Install Dependendencies
         run: pnpm install
