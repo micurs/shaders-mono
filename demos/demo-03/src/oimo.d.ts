@@ -1,7 +1,5 @@
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 
-import { S } from 'vitest/dist/reporters-5f784f42.js';
-
 declare module 'oimo' {
   interface Vec3 {
     x: number;

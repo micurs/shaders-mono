@@ -10,7 +10,7 @@
       "@nx/react/typings/image.d.ts"
     ]
   },
-  "include": ["src", "types/oimo.d.ts"],
+  "include": ["./src"],
   "exclude": [
     "src/**/*.spec.ts",
     "src/**/*.test.ts",
