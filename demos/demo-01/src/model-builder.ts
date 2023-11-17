@@ -12,8 +12,6 @@ export const buildScene = async (gpu: Gpu, trimesh: WebGPU.GeoRenderable, imageI
   const textureEl = document.getElementById(imageId) as HTMLImageElement;
   const image = await createImageBitmap(textureEl);
 
-  console.log('image', imageId, image.width, image.height);
-  debugger;
   const material = createTexture(gpu, image);
   return [[trimesh, material], [refGrid]];
 };
