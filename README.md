@@ -1,8 +1,12 @@
 # shaders-mono
 
+See the live [demos here](https://micurs.github.io/shaders-mono/).
+
 ## Demo 1
 
 ![Alt text](assets/demo-01.png)
+
+[Open the demo](https://micurs.github.io/shaders-mono/demo-01.html).
 
 ## Demo 2
 
@@ -10,11 +14,15 @@ A simple example with realtime animation of a 3D clock.
 
 ![Alt text](assets/demo-02.png)
 
+[Open the demo](https://micurs.github.io/shaders-mono/demo-02.html).
+
 ## Demo 3
 
 A simple integration with [Oimo.js 3d physics engine](https://github.com/lo-th/Oimo.js/).
 
 ![Alt text](assets/demo-03.png)
+
+[Open the demo](https://micurs.github.io/shaders-mono/demo-03.html).
 
 ## Development
 

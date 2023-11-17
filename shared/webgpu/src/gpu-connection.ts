@@ -52,7 +52,7 @@ export class Gpu implements GPUConnection {
   private _rebuildViewTexture: ReturnType<typeof initRebuildViewTexture> | undefined = undefined;
 
   // Lights
-  private _ambientLight: RGBAColor = [0.1, 0.1, 0.1, 1.0];
+  private _ambientLight: RGBAColor = [0.3, 0.3, 0.3, 1.0];
 
   private _dirLights: Array<DirectionalLight> = [
     { dir: UnitVector.fromValues(-1.0, -1.0, 1.0), col: [0.3, 0.3, 0.3, 1.0] },
