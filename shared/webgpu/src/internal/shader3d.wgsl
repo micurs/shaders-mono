@@ -45,6 +45,7 @@ struct ColorFragment {
   @location(0) normal: vec3<f32>,
   @location(1) pos: vec3<f32>,
   @location(2) eye: vec3<f32>,
+  @location(3) viewZ: f32,
 };
 
 struct ColorLineFragment {
@@ -114,7 +115,7 @@ fn vertexTextureShader(
   var vertex = myModel.model * vec4<f32>(vertexPosition, 1.0);
   output.position = sceneData.projection * sceneData.view * vertex;
   output.texCoord = vec2<f32>(vertexTexCoord);
-  output.normal = (myModel.modelInverseTranspose * vec4<f32>(vertexNormal, 0.0)).xyz;
+  output.normal = normalize((myModel.modelInverseTranspose * vec4<f32>(vertexNormal, 0.0)).xyz);
   output.pos = vertex.xyz;
   output.eye = sceneData.invertView[3].xyz;
 
@@ -123,7 +124,7 @@ fn vertexTextureShader(
 
 @fragment
 fn fragmentTextureShader(in: TextFragment) -> @location(0) vec4<f32> {
-  let diffuse: vec3<f32> = computeDiffuseColor( in.eye, in.pos, normalize(in.normal), sceneLights );
+  let diffuse: vec3<f32> = computeDiffuseColor( in.eye, in.pos, in.normal, sceneLights );
   let texColor: vec4<f32> = textureSample(myTexture, mySampler, in.texCoord);
 
   return vec4<f32>(texColor.rgb * diffuse, 1.0);
@@ -137,20 +138,26 @@ fn vertexColorShader(
     @location(1) vertexNormal: vec3<f32>) -> ColorFragment {
   var output: ColorFragment;
   var vertex = myModel.model * vec4<f32>(vertexPosition, 1.0);
-  output.normal = (myModel.modelInverseTranspose * vec4<f32>(vertexNormal, 0.0)).xyz;
+  var positionInViewSpace = sceneData.view * vertex;
+  var bias = 0.002 * positionInViewSpace.z;
+
+  var biasedPositionInViewSpace = positionInViewSpace - vec4<f32>(0.0, 0.0, bias, 0.0);
+
+  output.normal = normalize((myModel.modelInverseTranspose * vec4<f32>(vertexNormal, 0.0)).xyz);
   output.position = sceneData.projection * sceneData.view * vertex;
   output.pos = vertex.xyz;
   output.eye = sceneData.invertView[3].xyz;
-  // Transform the light direction in camera coordinat with the inverse of the view matrix to view space
-  // output.light =  normalize(sceneData.invertView * sceneData.light.dir);
-  // output.lightCol = sceneData.light.col;
+  output.viewZ = -biasedPositionInViewSpace.z;
+
   return output;
 }
 
 @fragment
 fn fragmentColorShader(in: ColorFragment) -> @location(0) vec4<f32> {
-  let diffuse: vec3<f32> = computeDiffuseColor( in.eye, in.pos, normalize(in.normal), sceneLights );
-  return vec4<f32>(myColor.color.rgb * diffuse.rgb, myColor.color.a);
+  let diffuse: vec3<f32> = computeDiffuseColor( in.eye, in.pos, in.normal, sceneLights );
+  let att: f32 =  1.0 - clamp(in.viewZ / 300, 0.2, 1.0); // TODO: get the 100 from the scene data
+
+  return vec4<f32>(myColor.color.rgb * diffuse.rgb * att, myColor.color.a);
 }
 
 
@@ -169,16 +176,14 @@ fn vertexLineShader(
   output.viewZ = -biasedPositionInViewSpace.z;
   output.targetZ = eyeInViewSpace.z;
   output.position = sceneData.projection * biasedPositionInViewSpace;
+
   return output;
 }
 
 
 @fragment
 fn fragmentLineShader(in: ColorLineFragment) -> @location(0) vec4<f32> {
+  let att: f32 =  1.0 - clamp(in.viewZ / 100, 0.0, 1.0); // TODO: get the 100 from the scene data
 
-  let att: f32 =  clamp(in.viewZ / 300, 0.0, 1.0);
-  let a: f32 = myColor.color.a - (myColor.color.a * att);
-
-  return vec4<f32>(myColor.color.rgb,a);
-  // return vec4<f32>(myColor.color.rgb, a);
+  return vec4<f32>(myColor.color.rgb, myColor.color.a * att);
 }

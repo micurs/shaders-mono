@@ -12,11 +12,29 @@ export const createWorld = (): OIMO.World => {
 };
 
 export const addSphere = (world: OIMO.World, pos: Vector, dim: Vector, _mass: number = 1): OIMO.Body => {
-  return world.add({ type: 'sphere', size: dim.triplet, pos: pos.triplet, move: true, density: 2, world: world, restitution: 0.9 });
+  return world.add({
+    type: 'sphere',
+    size: dim.triplet,
+    pos: pos.triplet,
+    move: true,
+    density: 2,
+    world: world,
+    restitution: 0.5,
+    friction: 0.3,
+  });
 };
 
 export const addBox = (world: OIMO.World, pos: Vector, dim: Vector, _mass: number = 1): OIMO.Body => {
-  return world.add({ type: 'box', size: dim.triplet, pos: pos.triplet, move: true, density: 1, world: world, restitution: 0.3 });
+  return world.add({
+    type: 'box',
+    size: dim.triplet,
+    pos: pos.triplet,
+    move: true,
+    density: 1,
+    world: world,
+    restitution: 0.5,
+    friction: 0.3,
+  });
 };
 
 export const addCylinder = (world: OIMO.World, pos: Vector, dim: Vector, _mass: number = 1): OIMO.Body => {
@@ -27,7 +45,8 @@ export const addCylinder = (world: OIMO.World, pos: Vector, dim: Vector, _mass: 
     move: true,
     density: 1,
     world: world,
-    restitution: 0.3,
+    restitution: 0.5,
+    friction: 0.3,
   });
 };
 
@@ -38,9 +57,9 @@ export const addStaticBox = (world: OIMO.World, pos: Vector, dim: Vector) => {
     pos: pos.triplet,
     move: false,
     world: world,
-    restitution: 0.3,
+    restitution: 0.5,
     density: 1,
-    friction: 0.4,
+    friction: 0.3,
   });
 };
 
