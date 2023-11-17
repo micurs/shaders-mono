@@ -65,7 +65,7 @@ jobs:
       - name: Deploy to GitHub pages
         uses: actions/deploy-pages@v2
         with:
-          artifact-name: pages
+          artifact_name: pages
 
 
 
