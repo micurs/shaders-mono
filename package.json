@@ -15,8 +15,8 @@
     "dev:demo1": "nx dev demo-01",
     "test:shared": "nx test @shaders-mono/geopro",
     "start:cli": "node demos/cli/dist/geopro.js",
-    "deploy:pages": "pnpm build:all && mkdir -p pages && rimraf pages/* && nx run demo-01:pages:deploy && nx run demo-02:pages:deploy && nx run demo-03:pages:deploy && cp index.html pages/index.html",
-    "serve:pages": "serve pages"
+    "deploy:pages": "pnpm build:all && mkdir -p docs && rimraf docs/* && nx run demo-01:pages:deploy && nx run demo-02:pages:deploy && nx run demo-03:pages:deploy && cp index.html docs/index.html",
+    "serve:pages": "serve docs"
   },
   "keywords": [],
   "author": "",

@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "rimraf dist && tsc && vite build",
-    "pages:deploy": "cp -r dist/* ../../pages",
+    "pages:deploy": "cp -r dist/* ../../docs",
     "preview": "vite preview"
   },
   "devDependencies": {
