@@ -6,7 +6,7 @@
     "dev": "vite",
     "build": "rimraf dist && tsc && vite build",
     "preview": "vite preview",
-    "pages:deploy": "cp -r dist/* ../../pages"
+    "pages:deploy": "cp -r dist/* ../../docs"
   },
   "devDependencies": {
     "typescript": "^5.0.2",
