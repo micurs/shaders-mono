@@ -56,13 +56,18 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           path: pages/*
+          name: pages
 
-      - name: Sleep for 15 seconds
-        run: sleep 15s
+      - name: Sleep for 2 seconds
+        run: sleep 2s
         shell: bash
 
       - name: Deploy to GitHub pages
         uses: actions/deploy-pages@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          artifact-name: pages
+
 
 
 
