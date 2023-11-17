@@ -5,6 +5,8 @@ import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
 import checker from 'vite-plugin-checker';
 
 export default defineConfig({
+  base: './',
+
   cacheDir: '../../node_modules/.vite/demo-02',
 
   build: {
