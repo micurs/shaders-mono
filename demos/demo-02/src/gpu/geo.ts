@@ -10,10 +10,10 @@ const buildTicks = (l: string, radius: number, steps: number, scale: number, col
     const y = Math.sin(angle) * radius;
     const tick = WebGPU.sphereTriMesh()(Transform.scale(scale, scale, scale).translation(x, y, 0), {
       id: `${l}-${i}`,
-      steps: 3,
+      steps: 2,
       color,
     });
-    ticks.push([tick]);
+    ticks.push(tick);
   }
   return ticks;
 };
@@ -38,7 +38,7 @@ export const buildScene = async (gpu: WebGPU.Gpu): Promise<ModelTransformationHa
 
   const plane = WebGPU.planeTriMesh()(Transform.scale(40, 40, 1).translation(0, 0, -2), {
     id: 'ref-xyplane',
-    color: [0.4, 0.4, 0.4, 0.5],
+    color: [0.1, 0.1, 0.0, 0.5],
     steps: 5,
   });
   const grid = WebGPU.planeGridLines()(Transform.scale(40, 40, 1).translation(0, 0, -2), {
@@ -68,8 +68,8 @@ export const buildScene = async (gpu: WebGPU.Gpu): Promise<ModelTransformationHa
   );
 
   const minuteTicks = buildTicks('minute-tick', 10, 60, 0.25, [0.7, 0.2, 0.9, 1.0]);
-  const fiveMinTicks = buildTicks('five-min-tick', 10, 12, 0.7, [0.1, 0.6, 0.2, 1.0]);
-  const scene: Scene = [[grid], [seconds], [sphere0], [minutes], [hour], ...minuteTicks, ...fiveMinTicks, [plane]];
+  const fiveMinTicks = buildTicks('five-min-tick', 10, 12, 0.7, [0.7, 0.7, 0.3, 1.0]);
+  const scene: Scene = [grid, seconds, sphere0, minutes, hour, ...minuteTicks, ...fiveMinTicks, plane];
   await gpu.setScene(scene);
 
   return {

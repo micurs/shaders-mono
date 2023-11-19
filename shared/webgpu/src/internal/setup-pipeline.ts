@@ -14,7 +14,7 @@ type PipelineLayoutData = [GPUPipelineLayout, PipelineBindingGroups, PipelineBuf
  * @param type - The type of pipeline to create
  * @returns
  */
-const createPipelineLayout = (gpu: Gpu, material: Material | undefined): PipelineLayoutData => {
+const createPipelineLayout = (gpu: Gpu, material: Material | null): PipelineLayoutData => {
   const { device } = gpu;
   // Group 0: Transformations
   const [layout0, group0, buffer0] = createSceneDataBindingGroup(gpu);
@@ -45,8 +45,8 @@ const createPipelineLayout = (gpu: Gpu, material: Material | undefined): Pipelin
 export const createPipelines = (gpu: Gpu, shaderModule: GPUShaderModule, scene: Scene<unknown>): Map<string, GPUPipeline> => {
   const { device, format } = gpu;
 
-  const idGeoPairs = scene.map<[string, GPUPipeline]>(([geoRenderable, material]): [string, GPUPipeline] => {
-    const [pipelineLayout, groups, buffers] = createPipelineLayout(gpu, material);
+  const idGeoPairs = scene.map<[string, GPUPipeline]>((geoRenderable): [string, GPUPipeline] => {
+    const [pipelineLayout, groups, buffers] = createPipelineLayout(gpu, geoRenderable.material);
 
     // Create the render pipeline and decide which shaders to use.
     const regPipelineData: GPURenderPipelineDescriptor = {

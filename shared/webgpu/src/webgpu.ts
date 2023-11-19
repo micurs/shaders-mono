@@ -60,7 +60,7 @@ export const initialize = async (canvas: HTMLCanvasElement): Promise<Gpu> => {
  * @param image - the image to be used as a texture
  * @returns
  */
-export const createTexture = (gpu: Gpu, image: ImageBitmap): Material => {
+export const createTextureMaterial = (gpu: Gpu, image: ImageBitmap): Material => {
   const { device } = gpu;
   const format = 'rgba8unorm';
 

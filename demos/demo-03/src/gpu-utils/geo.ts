@@ -41,7 +41,7 @@ const buildPlane = (world: OIMO.World): WorldScene => {
 
   const body = addStaticBox(world, position, scale);
   plane.setBody(body);
-  return [[plane], [grid]];
+  return [plane, grid];
 };
 
 const buildSphere = (world: OIMO.World): WorldScene => {
@@ -61,7 +61,7 @@ const buildSphere = (world: OIMO.World): WorldScene => {
 
     const body = addSphere(world, position, scale);
     sphere.setBody(body);
-    spheres.push([sphere]);
+    spheres.push(sphere);
   }
 
   return spheres;
@@ -83,7 +83,7 @@ const buildCube = (world: OIMO.World): WorldScene => {
 
     const body = addBox(world, position, scale);
     cube.setBody(body);
-    cubes.push([cube]);
+    cubes.push(cube);
   }
   return cubes;
 };
@@ -105,7 +105,7 @@ const buildCylinder = (world: OIMO.World): WorldScene => {
 
     const body = addCylinder(world, position, Vector.fromValues(1.0, 2.0, 1));
     cylinder.setBody(body);
-    cyls.push([cylinder]);
+    cyls.push(cylinder);
   }
   return cyls;
 };

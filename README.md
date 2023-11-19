@@ -13,8 +13,8 @@ Instead, the focus is on creating a more intuitive and accessible interface for 
 
 By exploring innovative approaches and prioritizing a simplified user experience, this library serves as a foundational tool for developers venturing into the intricate world of WebGPU, providing an environment where creativity and efficiency coexist.
 
-
-See the live [demos here](https://micurs.github.io/shaders-mono/).
+To test and showcase the features of these library this repo also includes a few demo applications under the `demos` folder.
+You can also run the live [demos here](https://micurs.github.io/shaders-mono/).
 
 ## Demo 1
 
