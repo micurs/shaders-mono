@@ -1,5 +1,19 @@
 # shaders-mono
 
+Welcome to the "shaders-mono" project, an evolving exploration into the realms of WebGPU API and geometric programming using TypeScript.
+
+At the heart of this project lies two core libraries housed within the shared folder: "geopro" and "webgpu."
+The "geopro" library is dedicated to 'coordinate-free' geometric programming, providing a robust toolkit for handling and manipulating geometric data and algorithms in a way that abstracts away the complexities of traditional coordinate systems.
+
+Parallel to "geopro," the "webgpu" library represents a forward-thinking endeavor in the realm of WebGPU technology.
+This library is not just an accumulation of shader programming techniques; it's an ongoing attempt to streamline WebGPU programming.
+
+We are not trying to replicate the abstractions found in other libraries built on top of low-level graphics APIs.
+Instead, the focus is on creating a more intuitive and accessible interface for WebGPU, aiming to unlock the full potential of this modern API while avoiding the complexities and limitations imposed by previous models.
+
+By exploring innovative approaches and prioritizing a simplified user experience, this library serves as a foundational tool for developers venturing into the intricate world of WebGPU, providing an environment where creativity and efficiency coexist.
+
+
 See the live [demos here](https://micurs.github.io/shaders-mono/).
 
 ## Demo 1
