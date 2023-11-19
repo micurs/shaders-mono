@@ -65,4 +65,7 @@ From the root you can run the latest demo by invoking
 pnpm dev:demo
 ```
 
-### Monorepo
+### License
+
+This project is licensed under the MIT License - see the [LICENSE](license.txt) file for details.
+
