@@ -1,7 +1,7 @@
 {
   "name": "shaders-mono",
   "version": "1.0.0",
-  "description": "",
+  "description": "An evolving exploration into the realms of WebGPU API and geometric programming using TypeScript.",
   "main": "index.js",
   "scripts": {
     "build:all": "nx run-many --all --target=build",
@@ -20,7 +20,7 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "devDependencies": {
     "@nrwl/react": "^17.0.2",
     "@nx/eslint": "17.0.2",
