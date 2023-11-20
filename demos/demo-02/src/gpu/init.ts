@@ -2,11 +2,11 @@ import * as WebGPU from '@shaders-mono/webgpu';
 import { buildScene } from './geo';
 import { buildLights } from './lights';
 
-export const init = async (canvas: HTMLCanvasElement) => {
+export const init = async (canvas: HTMLCanvasElement, texture: ImageBitmap) => {
   const gpu = await WebGPU.initialize(canvas);
   await gpu.setupShaders('standard-3d');
 
-  const modelAnimHandlers = await buildScene(gpu);
+  const modelAnimHandlers = await buildScene(gpu, texture);
 
   const lightsPosAnim = buildLights(gpu);
 

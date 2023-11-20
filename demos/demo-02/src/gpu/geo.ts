@@ -18,7 +18,7 @@ const buildTicks = (l: string, radius: number, steps: number, scale: number, col
   return ticks;
 };
 
-export const buildScene = async (gpu: WebGPU.Gpu): Promise<ModelTransformationHandlers> => {
+export const buildScene = async (gpu: WebGPU.Gpu, texture: ImageBitmap): Promise<ModelTransformationHandlers> => {
   const time = new Date();
   const s = time.getSeconds();
   const m = time.getMinutes();
@@ -64,8 +64,10 @@ export const buildScene = async (gpu: WebGPU.Gpu): Promise<ModelTransformationHa
 
   const sphere0 = WebGPU.sphereTriMesh()(
     Transform.scale(2, 2, 2), // , // Keep the sphere in the center
-    { id: 'sphere-center', steps: 3, color: [0.7, 0.7, 0.8, 0.8] }
+    { id: 'sphere-center', steps: 3, color: [0.7, 0.7, 0.8, 0.8], texture: true }
   );
+  const material = WebGPU.createTextureMaterial(gpu, texture);
+  sphere0.setMaterial(material);
 
   const minuteTicks = buildTicks('minute-tick', 10, 60, 0.25, [0.7, 0.2, 0.9, 1.0]);
   const fiveMinTicks = buildTicks('five-min-tick', 10, 12, 0.7, [0.7, 0.7, 0.3, 1.0]);

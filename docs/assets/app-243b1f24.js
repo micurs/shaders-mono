@@ -213,4 +213,4 @@ fn fragmentLineShader(in: ColorLineFragment) -> @location(0) vec4<f32> {
       </div>
     </div>
     <p id="support">Initializing...</p>
-`;const ut=document.getElementById("support"),bt=document.getElementById("gfx-canvas");!ut||!bt?alert("The app is broken! No canvas was found!"):Ee(bt).then(e=>{ut.innerText="All set!",globalThis.setWireframe=()=>{const t=document.getElementById("wireframe");console.log("setWireframe",t.checked),t.checked?e.setPipelineMode("alternative"):e.setPipelineMode("default")}}).catch(e=>{ut.innerText="Error: "+e.message});
+`;const ut=document.getElementById("support"),bt=document.getElementById("gfx-canvas");setTimeout(()=>{!ut||!bt?alert("The app is broken! No canvas was found!"):Ee(bt).then(e=>{ut.innerText="All set!",globalThis.setWireframe=()=>{const t=document.getElementById("wireframe");console.log("setWireframe",t.checked),t.checked?e.setPipelineMode("alternative"):e.setPipelineMode("default")}}).catch(e=>{ut.innerText="Error: "+e.message})},2e3);
