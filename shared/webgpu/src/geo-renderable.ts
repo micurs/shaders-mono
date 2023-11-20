@@ -1,7 +1,7 @@
 import { Transform, Vector, Rotation } from '@shaders-mono/geopro';
 import { Gpu } from './gpu-connection';
 import { createGPUBuffer } from './internal/utils';
-import { ModelTransformHandler, Renderable, RGBAColor } from './types';
+import { Material, ModelTransformHandler, Renderable, RGBAColor } from './types';
 import { RotationTranslationScale } from 'shared/geopro/src/types';
 
 const float32Size = 4;
@@ -25,6 +25,8 @@ export class GeoRenderable<T = null> implements Renderable {
   private _bufferLayout: GPUVertexBufferLayout | null = null;
   private _topology: GPUPrimitiveTopology = 'triangle-list';
   private _cullMode: GPUCullMode = 'back';
+
+  private _material: Material | null = null;
 
   private _transformation: RotationTranslationScale = {
     rotation: Rotation.identity(),
@@ -54,6 +56,10 @@ export class GeoRenderable<T = null> implements Renderable {
 
   get hasTextures() {
     return this._hasTextures;
+  }
+
+  get material(): Material | null {
+    return this._material;
   }
 
   get vertexShader() {
@@ -107,6 +113,11 @@ export class GeoRenderable<T = null> implements Renderable {
   get transformationData(): Float32Array {
     const t = this.transformation;
     return new Float32Array([...t.values, ...t.transpose().invert().values]);
+  }
+
+  setMaterial(material: Material) {
+    this._material = material;
+    return this;
   }
 
   setBody(body: T) {

@@ -16,15 +16,14 @@ export function App() {
   React.useEffect(() => {
     const intId = setInterval(() => {
       if (gpu) {
+        const time = new Date();
         setFps(gpu.fps);
+        setStatus(`${time.getHours()}:${time.getMinutes()} and ${time.getSeconds()}`);
       }
     }, 1000);
     if (!gpu && canvasRef.current) {
       init(canvasRef.current)
-        .then((gpu) => {
-          setGpu(gpu);
-          setStatus('WebGPU active and initialized');
-        })
+        .then(setGpu)
         .catch((error) => {
           console.error(error);
           setStatus(error.message);

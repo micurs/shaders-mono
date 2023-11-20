@@ -3,7 +3,7 @@ import './style.css';
 
 document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
   <div>
-    <h2>Hello WebGPU!</h2>
+    <h2>Hello World!</h2>
     <div class="main">
       <div class="left">
         <h3>Camera control test</h3>
@@ -16,6 +16,10 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
           <li>Mouse wheel: dolly</li>
           <li>CTRL Mouse wheel: tilt</li>
         </ul>
+        <div>
+          <input type="checkbox" id="wireframe" onClick="setWireframe()">
+          <label htmlFor="wireframe"}>WireFrame</label>
+        </div>
       </div>
       <div class="right">
         <canvas id="gfx-canvas" width="800" height="600"></canvas>
@@ -31,8 +35,18 @@ if (!supportEl || !canvasEl) {
   alert('The app is broken! No canvas was found!');
 } else {
   init(canvasEl, supportEl)
-    .then(() => {
+    .then((gpu) => {
       supportEl!.innerText = 'All set!';
+
+      (globalThis as any).setWireframe = () => {
+        const checkbox = document.getElementById('wireframe') as HTMLInputElement;
+        console.log('setWireframe', checkbox.checked);
+        if (checkbox.checked) {
+          gpu.setPipelineMode('alternative');
+        } else {
+          gpu.setPipelineMode('default');
+        }
+      };
     })
     .catch((err) => {
       supportEl!.innerText = 'Error: ' + err.message;

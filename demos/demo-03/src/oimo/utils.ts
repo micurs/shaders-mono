@@ -66,7 +66,7 @@ export const addStaticBox = (world: OIMO.World, pos: Vector, dim: Vector) => {
 export const updatePhysics = (world: OIMO.World, gpu: WebGPU.Gpu) => {
   const scene = gpu.getScene<OIMO.Body>();
   world.step();
-  scene.forEach(([geo, _]) => {
+  scene.forEach((geo) => {
     const body = geo.body;
     if (body && body.isDynamic) {
       const bp = body.getPosition();

@@ -5,7 +5,7 @@ import * as OIMO from 'oimo';
 import './app.css';
 import { GpuCanvas } from './components/gpu-canvas';
 import { GeoToolbar } from './components/geo-toolbar';
-import { GeoTool } from './types';
+import { GeoTool, Textures } from './types';
 import { addGpuGeo } from './gpu-utils/geo';
 import { createWorld, updatePhysics } from './oimo/utils';
 
@@ -15,6 +15,17 @@ function App() {
   const [gpuError, setGpuError] = React.useState<string>('Initializing WebGPU...');
   const [gpu, setGpu] = React.useState<WebGPU.Gpu | null>(null);
   const [world, setWorld] = React.useState<OIMO.World | null>(null);
+  const [textures, setTextures] = React.useState<Textures>({});
+
+  React.useEffect(() => {
+    const image = new Image();
+    image.src = 'soccer.png';
+    image.onload = () => {
+      createImageBitmap(image).then((sphere) => {
+        setTextures({ sphere });
+      });
+    };
+  }, []);
 
   const handleGpuError = (e: Error) => {
     setGpuError(e.message);
@@ -37,7 +48,7 @@ function App() {
       setGpuError('WebGPU not initialized');
       return;
     }
-    addGpuGeo(gpu, world, geoType);
+    addGpuGeo(gpu, world, geoType, textures);
   };
 
   const handleClear = () => {

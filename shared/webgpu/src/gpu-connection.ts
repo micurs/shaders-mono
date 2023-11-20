@@ -131,7 +131,7 @@ export class Gpu implements GPUConnection {
   }
 
   getScene<B>(): Scene<B> {
-    return [...this._pipelines.values()].map(({ geoRenderable }) => [geoRenderable as GeoRenderable<B>, undefined]);
+    return [...this._pipelines.values()].map(({ geoRenderable }) => geoRenderable as GeoRenderable<B>);
   }
 
   /**
@@ -171,7 +171,7 @@ export class Gpu implements GPUConnection {
       throw new Error('WebGPU:shader module is NOT available!');
     }
     // 1 - Setup the GPU buffers for the scene
-    scene.forEach(([geo, _]) => {
+    scene.forEach((geo) => {
       geo.buildGpuBuffer(this);
     });
 
@@ -187,7 +187,7 @@ export class Gpu implements GPUConnection {
       throw new Error('WebGPU:shader module is NOT available!');
     }
     // 1 - Setup the GPU buffers for the scene
-    scene.forEach(([geo, _]) => {
+    scene.forEach((geo) => {
       geo.buildGpuBuffer(this);
     });
 
