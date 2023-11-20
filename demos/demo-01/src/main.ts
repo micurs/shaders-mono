@@ -38,7 +38,7 @@ if (!supportEl || !canvasEl) {
     .then((gpu) => {
       supportEl!.innerText = 'All set!';
 
-      globalThis.setWireframe = () => {
+      (globalThis as any).setWireframe = () => {
         const checkbox = document.getElementById('wireframe') as HTMLInputElement;
         console.log('setWireframe', checkbox.checked);
         if (checkbox.checked) {

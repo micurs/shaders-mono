@@ -1,6 +1,6 @@
 // Constants for the icosahedron generation
 
-import { UnitVector, Vector, rad2deg } from '@shaders-mono/geopro';
+import { UnitVector, Vector } from '@shaders-mono/geopro';
 import { GeoRenderable } from '../geo-renderable';
 import { GeoOptions, GeoGenerator } from '../types';
 import { Transform } from '@shaders-mono/geopro';
