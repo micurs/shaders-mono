@@ -11,7 +11,18 @@ export function App() {
   const [wireframe, setWireframe] = React.useState<boolean>(false);
   const [, updateState] = React.useState<unknown>();
   const [fps, setFps] = React.useState<number>(0);
+  const [texture, setTexture] = React.useState<ImageBitmap | null>(null);
   const forceUpdate = React.useCallback(() => updateState({}), []);
+
+  React.useEffect(() => {
+    const image = new Image();
+    image.src = 'metal.png';
+    image.onload = () => {
+      createImageBitmap(image).then((sphere) => {
+        setTexture(sphere);
+      });
+    };
+  }, []);
 
   React.useEffect(() => {
     const intId = setInterval(() => {
@@ -21,8 +32,8 @@ export function App() {
         setStatus(`${time.getHours()}:${time.getMinutes()} and ${time.getSeconds()}`);
       }
     }, 1000);
-    if (!gpu && canvasRef.current) {
-      init(canvasRef.current)
+    if (!gpu && canvasRef.current && texture) {
+      init(canvasRef.current, texture)
         .then(setGpu)
         .catch((error) => {
           console.error(error);
@@ -34,7 +45,7 @@ export function App() {
         clearInterval(intId);
       }
     };
-  }, [gpu]);
+  }, [gpu, texture]);
 
   const onWireframe = React.useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
