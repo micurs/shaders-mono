@@ -2,7 +2,7 @@ import { Point, Transform, UnitVector } from '@shaders-mono/geopro';
 import { Gpu, createTextureMaterial, Scene, getOrbitHandlers } from '@shaders-mono/webgpu';
 import * as WebGPU from '@shaders-mono/webgpu';
 
-export const buildScene = async (gpu: Gpu, imageId: string): Promise<Scene> => {
+export const buildScene = async (gpu: Gpu, texture: ImageBitmap): Promise<Scene> => {
   const sphere = WebGPU.sphereTriMesh()(Transform.scale(1.5, 1.5, 1.5), {
     id: 'hearth-sphere',
     steps: 6,
@@ -15,10 +15,10 @@ export const buildScene = async (gpu: Gpu, imageId: string): Promise<Scene> => {
     color: [0.3, 0.3, 0.5, 0.1],
   });
 
-  const textureEl = document.getElementById(imageId) as HTMLImageElement;
-  const image = await createImageBitmap(textureEl);
+  // const textureEl = document.getElementById(imageId) as HTMLImageElement;
+  // const image = await createImageBitmap(textureEl);
 
-  const material = createTextureMaterial(gpu, image);
+  const material = createTextureMaterial(gpu, texture);
   // cube.setMaterial(material);
   sphere.setMaterial(material);
 
@@ -30,7 +30,7 @@ export const buildScene = async (gpu: Gpu, imageId: string): Promise<Scene> => {
  * @param canvasEl
  * @param supportEl
  */
-export async function init(canvasEl: HTMLCanvasElement, _supportEl: HTMLParagraphElement) {
+export async function init(canvasEl: HTMLCanvasElement, _supportEl: HTMLParagraphElement, texture: ImageBitmap) {
   const gpu = await WebGPU.initialize(canvasEl);
 
   await gpu.setupShaders('standard-3d');
@@ -41,7 +41,7 @@ export async function init(canvasEl: HTMLCanvasElement, _supportEl: HTMLParagrap
     camera: viewHandlers,
   });
 
-  const scene = await buildScene(gpu, 'earth2');
+  const scene = await buildScene(gpu, texture);
 
   gpu.setAmbientLight([0.0, 0.0, 0.0, 1.0]);
   gpu.setLight('directional', 0, { dir: UnitVector.fromValues(1.0, -1.0, 0.0), col: [0.5, 0.5, 0.5, 1.0] });

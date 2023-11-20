@@ -48,6 +48,8 @@ h1 {
 #gfx-canvas {
   background-color: #020202;
   border: none;
+  margin: 0;
+  padding: 0;
 }
 
 div.main {
@@ -61,7 +63,7 @@ div.main>div.right {
   background-color: #161616;
   padding: 0;
   max-width: 812px;
-    max-height: 612px;
+  max-height: 612px;
 }
 
 div.main>div.left {
