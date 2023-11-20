@@ -204,8 +204,6 @@ export class GeoRenderable<T = null> implements Renderable {
         if (this._textures.length > idx) {
           fragment.push(this._textures[idx][ti + 0]);
           fragment.push(this._textures[idx][ti + 1]);
-        } else {
-          console.log('No texture coordinates for vertex', idx);
         }
         if (this._normals.length > idx) {
           fragment.push(this._normals[idx][ni + 0]);

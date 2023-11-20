@@ -3,7 +3,7 @@ import { Gpu } from '@shaders-mono/webgpu';
 import { Transform, Vector, deg2rad } from '@shaders-mono/geopro';
 import * as OIMO from 'oimo';
 
-import { GeoTool, WorldScene } from '../types';
+import { GeoTool, Textures, WorldScene } from '../types';
 import { addSphere, addBox, addCylinder, addStaticBox } from '../oimo/utils';
 
 let sphereCounter = 0;
@@ -44,7 +44,7 @@ const buildPlane = (world: OIMO.World): WorldScene => {
   return [plane, grid];
 };
 
-const buildSphere = (world: OIMO.World): WorldScene => {
+const buildSphere = (gpu: Gpu, world: OIMO.World, image?: ImageBitmap): WorldScene => {
   const spheres: WorldScene = [];
 
   for (let i = 0; i < batchCount; i++) {
@@ -53,14 +53,20 @@ const buildSphere = (world: OIMO.World): WorldScene => {
 
     const sphere = WebGPU.sphereTriMesh<OIMO.Body>()(Transform.identity(), {
       id: `sphere-${sphereCounter++}`,
-      steps: 3,
-      color: [Math.random(), 0.6, Math.random(), 1.0],
+      steps: 2,
+      texture: true,
+      // texture: image,
+      // color: [Math.random(), 0.6, Math.random(), 1.0],
     });
     sphere.scale(scale);
     sphere.translate(position);
 
     const body = addSphere(world, position, scale);
     sphere.setBody(body);
+    if (image) {
+      const material = WebGPU.createTextureMaterial(gpu, image);
+      sphere.setMaterial(material);
+    }
     spheres.push(sphere);
   }
 
@@ -110,12 +116,12 @@ const buildCylinder = (world: OIMO.World): WorldScene => {
   return cyls;
 };
 
-const buildGeoTool = (geoTool: GeoTool, world: OIMO.World): WorldScene => {
+const buildGeoTool = (gpu: Gpu, geoTool: GeoTool, world: OIMO.World, textures: Textures): WorldScene => {
   switch (geoTool) {
     case 'plane':
       return buildPlane(world);
     case 'sphere':
-      return buildSphere(world);
+      return buildSphere(gpu, world, textures.sphere);
     case 'cube':
       return buildCube(world);
     case 'cylinder':
@@ -125,7 +131,7 @@ const buildGeoTool = (geoTool: GeoTool, world: OIMO.World): WorldScene => {
   }
 };
 
-export const addGpuGeo = (gpu: Gpu, world: OIMO.World, geoTool: GeoTool) => {
-  const geos = buildGeoTool(geoTool, world);
+export const addGpuGeo = (gpu: Gpu, world: OIMO.World, geoTool: GeoTool, textures: Textures) => {
+  const geos = buildGeoTool(gpu, geoTool, world, textures);
   gpu.addToScene(geos);
 };

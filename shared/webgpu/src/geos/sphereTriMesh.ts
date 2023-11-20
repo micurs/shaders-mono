@@ -129,7 +129,7 @@ const mapToTextureCoordinates = (v: UnitVector): [number, number] => {
  * @returns
  */
 export const sphereGen: SphereGenerator<any> = <B>(t: Transform, options: GeoOptions<SphereOptions>): GeoRenderable<B> => {
-  const { steps, color, id } = options;
+  const { steps, color, id, texture } = options;
   const [sphVertices, sphIndexes] = subdivide(vertices, indices, steps);
 
   // console.log(' Number of vertices', vertices.length);
@@ -151,38 +151,42 @@ export const sphereGen: SphereGenerator<any> = <B>(t: Transform, options: GeoOpt
     normals.push(...n0.triplet);
     normals.push(...n1.triplet);
     normals.push(...n2.triplet);
-    const t0 = mapToTextureCoordinates(n0);
-    const t1 = mapToTextureCoordinates(n1);
-    const t2 = mapToTextureCoordinates(n2);
-    const minT = Math.min(t0[0], t1[0], t2[0]);
-    const maxT = Math.max(t0[0], t1[0], t2[0]);
-    // "shifting" the U coordinate of the vertex that is on the opposite side of the
-    // seam by subtracting or adding 1 to it. This makes sure that all vertices of a
-    // triangle are consistently mapped, and the texture will not stretch across
-    // the sphere's surface.
-    if (Math.abs(maxT - minT) > 0.8) {
-      if (t0[0] < 0.4 && t1[0] < 0.4) {
-        t2[0] -= 1;
-      } else if (t0[0] < 0.4 && t2[0] < 0.4) {
-        t1[0] -= 1;
-      } else if (t1[0] < 0.4 && t2[0] < 0.4) {
-        t0[0] -= 1;
-      } else if (t0[0] > 0.6 && t1[0] > 0.6) {
-        t2[0] += 1;
-      } else if (t0[0] > 0.6 && t2[0] > 0.6) {
-        t1[0] += 1;
-      } else if (t1[0] > 0.6 && t2[0] > 0.6) {
-        t0[0] += 1;
+    if (texture) {
+      const t0 = mapToTextureCoordinates(n0);
+      const t1 = mapToTextureCoordinates(n1);
+      const t2 = mapToTextureCoordinates(n2);
+      const minT = Math.min(t0[0], t1[0], t2[0]);
+      const maxT = Math.max(t0[0], t1[0], t2[0]);
+      // "shifting" the U coordinate of the vertex that is on the opposite side of the
+      // seam by subtracting or adding 1 to it. This makes sure that all vertices of a
+      // triangle are consistently mapped, and the texture will not stretch across
+      // the sphere's surface.
+      if (Math.abs(maxT - minT) > 0.8) {
+        if (t0[0] < 0.4 && t1[0] < 0.4) {
+          t2[0] -= 1;
+        } else if (t0[0] < 0.4 && t2[0] < 0.4) {
+          t1[0] -= 1;
+        } else if (t1[0] < 0.4 && t2[0] < 0.4) {
+          t0[0] -= 1;
+        } else if (t0[0] > 0.6 && t1[0] > 0.6) {
+          t2[0] += 1;
+        } else if (t0[0] > 0.6 && t2[0] > 0.6) {
+          t1[0] += 1;
+        } else if (t1[0] > 0.6 && t2[0] > 0.6) {
+          t0[0] += 1;
+        }
       }
+      textureUV.push(...t0);
+      textureUV.push(...t1);
+      textureUV.push(...t2);
     }
-    textureUV.push(...t0);
-    textureUV.push(...t1);
-    textureUV.push(...t2);
   });
   const triangleData = new GeoRenderable<B>(id, 'triangle-list', color);
   triangleData.addVertices(new Float32Array(coordinates));
   triangleData.addNormals(new Float32Array(normals));
-  triangleData.addTextures(new Float32Array(textureUV));
+  if (texture) {
+    triangleData.addTextures(new Float32Array(textureUV));
+  }
   return triangleData;
 };
 

@@ -108,7 +108,7 @@ export interface PointLight {
 export type GeoOptions<T> = T & {
   id: string; // A unique ID in the scene
   color?: RGBAColor;
-  texture?: GPUTexture;
+  texture?: boolean;
 };
 
 // export type GeoGenerator = <B, O = {}>(t: Transform, options: GeoOptions<O>) => GeoRenderable<B>;

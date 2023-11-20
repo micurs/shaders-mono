@@ -40,7 +40,7 @@ export const getOrbitHandlers = (gpu: Gpu, eyeStart: [number, number, number] = 
   };
 
   const zoomHandler = (delta: number) => {
-    const sensitivity = (distToTarget * Math.atan(fov)) / 2000;
+    const sensitivity = (distToTarget * Math.atan(fov)) / 3000;
 
     zoom = delta * sensitivity;
   };

@@ -6,6 +6,7 @@ export const buildScene = async (gpu: Gpu, imageId: string): Promise<Scene> => {
   const sphere = WebGPU.sphereTriMesh()(Transform.scale(1.5, 1.5, 1.5), {
     id: 'hearth-sphere',
     steps: 6,
+    texture: true,
   });
 
   const refGrid = WebGPU.planeGridLines()(Transform.scale(50, 50, 1).translation(0, 0, 0), {
