@@ -16,9 +16,10 @@ export const getOrbitHandlers = (gpu: Gpu, eyeStart: [number, number, number] = 
   let rotating = false;
 
   const mouseHandler = (bt: MouseButton, r: MouseMovement, _p: MouseLocation) => {
-    let maxRes = Math.min(gpu.canvas.width, gpu.canvas.height);
-    let rotSensitivity = (1.0 / maxRes) * 6;
-    let panSensitivity = (fov / maxRes) * 2;
+    const minRes = Math.min(gpu.canvas.width, gpu.canvas.height);
+    const maxRes = Math.max(gpu.canvas.width, gpu.canvas.height);
+    let rotSensitivity = (1.0 / maxRes) * distToTarget * Math.atan(fov);
+    let panSensitivity = (fov / minRes) * 2;
     switch (bt) {
       case 'mouse-0':
         rot = [r.direction[0] * rotSensitivity, r.direction[1] * rotSensitivity];
@@ -39,7 +40,9 @@ export const getOrbitHandlers = (gpu: Gpu, eyeStart: [number, number, number] = 
   };
 
   const zoomHandler = (delta: number) => {
-    zoom = delta * 0.001;
+    const sensitivity = (distToTarget * Math.atan(fov)) / 2000;
+
+    zoom = delta * sensitivity;
   };
 
   const tiltHandler = (delta: number) => {
@@ -61,7 +64,7 @@ export const getOrbitHandlers = (gpu: Gpu, eyeStart: [number, number, number] = 
 
     // 0. Apply zoom
     const zoomMove = Vector.fromPoints(eye, target).scale(1.0 - zoom);
-    if (zoomMove.length > 1.2) {
+    if (zoomMove.length > 2.0) {
       eye = target.add(zoomMove);
     }
 

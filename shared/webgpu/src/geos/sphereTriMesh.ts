@@ -1,6 +1,6 @@
 // Constants for the icosahedron generation
 
-import { UnitVector, Vector } from '@shaders-mono/geopro';
+import { UnitVector, Vector, rad2deg } from '@shaders-mono/geopro';
 import { GeoRenderable } from '../geo-renderable';
 import { GeoOptions, GeoGenerator } from '../types';
 import { Transform } from '@shaders-mono/geopro';
@@ -111,6 +111,18 @@ interface SphereOptions {
 interface SphereGenerator<B> extends GeoGenerator<B, SphereOptions> {}
 
 /**
+ * Map a point on a 0 centered sphere to a texture coordinate
+ * @param v
+ */
+const mapToTextureCoordinates = (v: UnitVector): [number, number] => {
+  let latitude = Math.asin(v.z);
+  let longitude = Math.atan2(v.y, v.x) + Math.PI;
+
+  // Normalize the result to 0..1 range
+  return [longitude / (2 * Math.PI), 0.5 - latitude / Math.PI];
+};
+
+/**
  * Build a sphere mesh
  * @param t
  * @param options
@@ -124,24 +136,53 @@ export const sphereGen: SphereGenerator<any> = <B>(t: Transform, options: GeoOpt
 
   const coordinates: number[] = [];
   const normals: number[] = [];
-  const center = Point.fromValues(0, 0, 0).map(t);
+  const textureUV: number[] = [];
+  const center = Point.fromValues(0, 0, 0); //.map(t);
   sphIndexes.forEach((triangle) => {
-    const pt0 = Point.fromVector(sphVertices[triangle[2]]).scale(1).map(t);
-    const pt1 = Point.fromVector(sphVertices[triangle[1]]).scale(1).map(t);
-    const pt2 = Point.fromVector(sphVertices[triangle[0]]).scale(1).map(t);
+    const pt0 = Point.fromVector(sphVertices[triangle[2]]);
+    const pt1 = Point.fromVector(sphVertices[triangle[1]]);
+    const pt2 = Point.fromVector(sphVertices[triangle[0]]);
     const n0 = UnitVector.fromVector(Vector.fromPoints(pt0, center));
     const n1 = UnitVector.fromVector(Vector.fromPoints(pt1, center));
     const n2 = UnitVector.fromVector(Vector.fromPoints(pt2, center));
-    coordinates.push(...pt0.triplet);
-    coordinates.push(...pt1.triplet);
-    coordinates.push(...pt2.triplet);
+    coordinates.push(...pt0.map(t).triplet);
+    coordinates.push(...pt1.map(t).triplet);
+    coordinates.push(...pt2.map(t).triplet);
     normals.push(...n0.triplet);
     normals.push(...n1.triplet);
     normals.push(...n2.triplet);
+    const t0 = mapToTextureCoordinates(n0);
+    const t1 = mapToTextureCoordinates(n1);
+    const t2 = mapToTextureCoordinates(n2);
+    const minT = Math.min(t0[0], t1[0], t2[0]);
+    const maxT = Math.max(t0[0], t1[0], t2[0]);
+    // "shifting" the U coordinate of the vertex that is on the opposite side of the
+    // seam by subtracting or adding 1 to it. This makes sure that all vertices of a
+    // triangle are consistently mapped, and the texture will not stretch across
+    // the sphere's surface.
+    if (Math.abs(maxT - minT) > 0.8) {
+      if (t0[0] < 0.4 && t1[0] < 0.4) {
+        t2[0] -= 1;
+      } else if (t0[0] < 0.4 && t2[0] < 0.4) {
+        t1[0] -= 1;
+      } else if (t1[0] < 0.4 && t2[0] < 0.4) {
+        t0[0] -= 1;
+      } else if (t0[0] > 0.6 && t1[0] > 0.6) {
+        t2[0] += 1;
+      } else if (t0[0] > 0.6 && t2[0] > 0.6) {
+        t1[0] += 1;
+      } else if (t1[0] > 0.6 && t2[0] > 0.6) {
+        t0[0] += 1;
+      }
+    }
+    textureUV.push(...t0);
+    textureUV.push(...t1);
+    textureUV.push(...t2);
   });
   const triangleData = new GeoRenderable<B>(id, 'triangle-list', color);
   triangleData.addVertices(new Float32Array(coordinates));
   triangleData.addNormals(new Float32Array(normals));
+  triangleData.addTextures(new Float32Array(textureUV));
   return triangleData;
 };
 
