@@ -25,9 +25,8 @@ export interface Renderable {
 }
 
 export interface Material {
-  texture: GPUTexture | undefined;
-  view: GPUTextureView | undefined;
-  sampler: GPUSampler | undefined;
+  texture: GPUTexture;
+  view: GPUTextureView;
 }
 
 export type PredefinedShaders = 'standard-3d' | 'standard-2d';

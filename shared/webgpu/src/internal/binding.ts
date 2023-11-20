@@ -141,6 +141,19 @@ export const createColorsBindingGroup = (gpu: Gpu): [GPUBindGroupLayout, GPUBind
 
 // Group 2: texture, and sampler
 export const createTextureBindingGroup = (gpu: Gpu, material: Material): [GPUBindGroupLayout, GPUBindGroup] => {
+  const { device } = gpu;
+
+  // Create the Sampler to get the image from the texture using u,v coordinates
+  const samplerDescriptor: GPUSamplerDescriptor = {
+    addressModeU: 'repeat',
+    addressModeV: 'repeat',
+    magFilter: 'linear',
+    minFilter: 'nearest',
+    mipmapFilter: 'nearest',
+    maxAnisotropy: 1,
+  };
+  const sampler = device.createSampler(samplerDescriptor);
+
   const entries: GPUBindGroupLayoutEntry[] = [
     {
       binding: 0,
@@ -163,7 +176,7 @@ export const createTextureBindingGroup = (gpu: Gpu, material: Material): [GPUBin
     },
     {
       binding: 1,
-      resource: material.sampler!,
+      resource: sampler,
     },
   ];
 

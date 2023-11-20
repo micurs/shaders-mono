@@ -81,20 +81,9 @@ export const createTextureMaterial = (gpu: Gpu, image: ImageBitmap): Material =>
 
   const view = texture.createView(); // TODO: add texture view options
 
-  // Next, create the Sampler to get the image from the texture using u,v coordinates
-  const samplerDescriptor: GPUSamplerDescriptor = {
-    addressModeU: 'repeat',
-    addressModeV: 'repeat',
-    magFilter: 'linear',
-    minFilter: 'nearest',
-    mipmapFilter: 'nearest',
-    maxAnisotropy: 1,
-  };
-  const sampler = device.createSampler(samplerDescriptor);
   return {
     texture,
     view,
-    sampler,
   };
 };
 
