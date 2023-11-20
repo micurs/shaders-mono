@@ -3,7 +3,7 @@ import './style.css';
 
 document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
   <div>
-    <h2>Hello WebGPU!</h2>
+    <h2>Hello World!</h2>
     <div class="main">
       <div class="left">
         <h3>Camera control test</h3>

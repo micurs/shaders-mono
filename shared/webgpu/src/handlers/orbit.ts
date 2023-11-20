@@ -64,7 +64,7 @@ export const getOrbitHandlers = (gpu: Gpu, eyeStart: [number, number, number] = 
 
     // 0. Apply zoom
     const zoomMove = Vector.fromPoints(eye, target).scale(1.0 - zoom);
-    if (zoomMove.length > 2.0) {
+    if (zoomMove.length > 2.0 && zoomMove.length < 200.0) {
       eye = target.add(zoomMove);
     }
 

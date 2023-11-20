@@ -11,7 +11,7 @@ export const buildScene = async (gpu: Gpu, imageId: string): Promise<Scene> => {
   const refGrid = WebGPU.planeGridLines()(Transform.scale(50, 50, 1).translation(0, 0, 0), {
     id: 'ref-plane',
     steps: 50,
-    color: [0.4, 0.4, 0.6, 0.1],
+    color: [0.3, 0.3, 0.5, 0.1],
   });
 
   const textureEl = document.getElementById(imageId) as HTMLImageElement;
@@ -42,10 +42,10 @@ export async function init(canvasEl: HTMLCanvasElement, _supportEl: HTMLParagrap
 
   const scene = await buildScene(gpu, 'earth2');
 
-  gpu.setAmbientLight([0.05, 0.05, 0.05, 1.0]);
+  gpu.setAmbientLight([0.0, 0.0, 0.0, 1.0]);
   gpu.setLight('directional', 0, { dir: UnitVector.fromValues(1.0, -1.0, 0.0), col: [0.5, 0.5, 0.5, 1.0] });
 
-  gpu.setLight('point', 0, { pos: Point.fromValues(0.0, 0.0, 5), col: [0.55, 0.25, 0.25, 0.0] });
+  gpu.setLight('point', 0, { pos: Point.fromValues(4.0, -4.0, 0), col: [0.5, 0.5, 0.5, 1.0] });
   gpu.setLight('point', 1, { pos: Point.fromValues(0.0, 0.0, 5), col: [0.1, 0.4, 0.8, 0.0] });
   gpu.setLight('point', 2, { pos: Point.fromValues(-6.0, 4.0, 4.5), col: [0.0, 0.1, 0.4, 1.0] });
   gpu.setLight('point', 3, { pos: Point.fromValues(-6.0, 14.0, 8.5), col: [0.2, 0.5, 0.0, 0.0] });
