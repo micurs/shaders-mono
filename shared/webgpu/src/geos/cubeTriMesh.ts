@@ -1,4 +1,4 @@
-import { Frame, Point, Rotation, Transform, UnitVector, deg2rad } from '@shaders-mono/geopro';
+import { Frame, Point, Transform, UnitVector, deg2rad } from '@shaders-mono/geopro';
 import { GeoRenderable } from '../geo-renderable';
 import { createQuad, flatCoordinates } from './geo-utils';
 import { GeoOptions, GeoGenerator } from '../types';

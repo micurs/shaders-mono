@@ -32,7 +32,7 @@ export const computeNormals = (topology: GPUPrimitiveTopology, coordinates: Poin
     normals.push(normal);
     normals.push(normal);
 
-    for (let tri = 1; tri < coordinates.length; tri += 1) {
+    for (let tri = 2; tri < coordinates.length; tri += 1) {
       calculateNormalsBackwardTri(coordinates, tri);
       normals.push(normal);
     }
