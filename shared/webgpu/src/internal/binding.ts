@@ -161,8 +161,8 @@ export const createTextureBindingGroup = (gpu: Gpu, material: Material): [GPUBin
     addressModeU: 'repeat',
     addressModeV: 'repeat',
     magFilter: 'linear',
-    minFilter: 'nearest',
-    mipmapFilter: 'nearest',
+    minFilter: 'linear',
+    mipmapFilter: 'linear',
     maxAnisotropy: 1,
   };
   const sampler = device.createSampler(samplerDescriptor);

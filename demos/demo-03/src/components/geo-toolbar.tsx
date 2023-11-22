@@ -10,6 +10,7 @@ interface GeoToolbarProps {
 }
 
 export const GeoToolbar = ({ onSelected, onClear }: GeoToolbarProps) => {
+
   return (
     <ul className="flex flex-col w-[52px] items-stretch">
       <li key="1" className={`h-[45px] ${borderClass} ${flexClass}`}>
