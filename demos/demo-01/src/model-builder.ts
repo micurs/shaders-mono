@@ -1,12 +1,12 @@
-import { Point, Transform, UnitVector } from '@shaders-mono/geopro';
-import { Gpu, createTextureMaterial, Scene, getOrbitHandlers } from '@shaders-mono/webgpu';
+import { Transform } from '@shaders-mono/geopro';
+import { Scene, getOrbitHandlers } from '@shaders-mono/webgpu';
 import * as WebGPU from '@shaders-mono/webgpu';
 import { buildLights } from './lights';
 
 export const buildGlobe = (texture: WebGPU.Material): Scene => {
   const sphere = WebGPU.sphereTriMesh()(Transform.scale(1.5, 1.5, 1.5), {
     id: 'earth-sphere',
-    steps: 6,
+    steps: 4,
     textureIndexes: [0],
   });
   sphere.setMaterial(texture);
