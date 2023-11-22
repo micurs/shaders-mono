@@ -1,56 +1,63 @@
-import { init } from './model-builder';
-import './style.css';
+import { Gpu, Material, loadTextures } from '@shaders-mono/webgpu';
+import { buildCube, buildCylinder, buildGlobe, buildScene, init } from './model-builder';
 
-document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
-  <div>
-    <h2>Hello World!</h2>
-    <div class="main">
-      <div class="left">
-        <h3>Camera control test</h3>
-        <p>Click and move the mouse to rotate the camera.</p>
-        <h3>Controls</h3>
-        <ul>
-          <li>Left mouse button: rotate</li>
-          <li>Center mouse button: pan</li>
-          <li>Right mouse button: zoom</li>
-          <li>Mouse wheel: dolly</li>
-          <li>CTRL Mouse wheel: tilt</li>
-        </ul>
-        <div>
-          <input type="checkbox" id="wireframe" onClick="setWireframe()">
-          <label htmlFor="wireframe"}>WireFrame</label>
-        </div>
-      </div>
-      <div class="right">
-        <canvas id="gfx-canvas" width="800" height="600"></canvas>
-      </div>
-    </div>
-    <p id="support">Initializing...</p>
-`;
+const textures: Material[] = [];
+
+const getOnClickHandler = (gpu: Gpu, checkbox: HTMLInputElement) => {
+  return () => {
+    console.log('setWireframe', checkbox.checked);
+    if (checkbox.checked) {
+      gpu.setPipelineMode('alternative');
+    } else {
+      gpu.setPipelineMode('default');
+    }
+  };
+};
+
+const getGeoClickHandler = (gpu: Gpu, geo: 'globe' | 'cylinder' | 'cube') => {
+  return () => {
+    gpu.clearScene();
+    const refPlane = buildScene();
+    switch (geo) {
+      case 'globe':
+        const globe = buildGlobe(textures[0]);
+        gpu.setScene([...globe, ...refPlane]);
+        break;
+      case 'cylinder':
+        const cylinder = buildCylinder(textures[1]);
+        gpu.setScene([...cylinder, ...refPlane]);
+        break;
+      case 'cube':
+        const cube = buildCube(textures[2]);
+        gpu.setScene([...cube, ...refPlane]);
+        break;
+    }
+  };
+};
 
 const supportEl = document.getElementById('support') as HTMLParagraphElement | null;
 const canvasEl = document.getElementById('gfx-canvas') as HTMLCanvasElement | null;
+if (!supportEl || !canvasEl) {
+  alert('The app is broken! No canvas was found!');
+} else {
+  init(canvasEl, supportEl)
+    .then((gpu) => loadTextures(gpu, ['earth.jpg', 'metal.jpg', 'dice.png']))
+    .then(([gpu, textureMaterials]) => {
+      textures.push(...textureMaterials);
+      const checkbox = document.getElementById('wireframe') as HTMLInputElement;
+      checkbox.onclick = getOnClickHandler(gpu, checkbox);
 
-setTimeout(() => {
-  if (!supportEl || !canvasEl) {
-    alert('The app is broken! No canvas was found!');
-  } else {
-    init(canvasEl, supportEl)
-      .then((gpu) => {
-        supportEl!.innerText = 'All set!';
+      const globeRadio = document.getElementById('geo-globe') as HTMLInputElement;
+      const cylinderRadio = document.getElementById('geo-cylinder') as HTMLInputElement;
+      const cubeRadio = document.getElementById('geo-cube') as HTMLInputElement;
+      globeRadio.onclick = getGeoClickHandler(gpu, 'globe');
+      cylinderRadio.onclick = getGeoClickHandler(gpu, 'cylinder');
+      cubeRadio.onclick = getGeoClickHandler(gpu, 'cube');
 
-        (globalThis as any).setWireframe = () => {
-          const checkbox = document.getElementById('wireframe') as HTMLInputElement;
-          console.log('setWireframe', checkbox.checked);
-          if (checkbox.checked) {
-            gpu.setPipelineMode('alternative');
-          } else {
-            gpu.setPipelineMode('default');
-          }
-        };
-      })
-      .catch((err) => {
-        supportEl!.innerText = 'Error: ' + err.message;
-      });
-  }
-}, 2000);
+      globeRadio.click();
+      supportEl!.innerText = 'All set!';
+    })
+    .catch((err) => {
+      supportEl!.innerText = 'Error: ' + err.message;
+    });
+}

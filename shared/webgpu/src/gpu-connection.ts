@@ -55,16 +55,16 @@ export class Gpu implements GPUConnection {
   private _ambientLight: RGBAColor = [0.3, 0.3, 0.3, 1.0];
 
   private _dirLights: Array<DirectionalLight> = [
-    { dir: UnitVector.fromValues(-1.0, -1.0, 1.0), col: [0.3, 0.3, 0.3, 1.0] },
-    { dir: UnitVector.fromValues(1.0, 1.0, 1.0), col: [0.4, 0.3, 0.3, 1.0] },
+    { dir: UnitVector.fromValues(0.0, 0.0, 1.0), col: [0.4, 0.4, 0.4, 1.0] },
+    { dir: UnitVector.fromValues(1.0, 1.0, 1.0), col: [0.4, 0.3, 0.3, 0.0] },
     { dir: UnitVector.fromValues(1.0, 0.0, 0.0), col: [0.5, 0.5, 0.5, 0.0] },
     { dir: UnitVector.fromValues(-1.0, -1.0, -1.0), col: [0.3, 0.3, 0.3, 0.0] },
   ];
   private _pointLights: Array<PointLight> = [
-    { pos: Point.fromValues(-12.0, 12.0, 8.0), col: [0.5, 0.5, 0.2, 1.0] },
-    { pos: Point.fromValues(12.0, 12.0, 8.0), col: [0.4, 0.2, 0.2, 1.0] },
-    { pos: Point.fromValues(-12, -12.0, 8.0), col: [0.2, 0.2, 0.5, 1.0] },
-    { pos: Point.fromValues(12.0, -12.0, 8.0), col: [0.5, 0.1, 0.5, 1.0] },
+    { pos: Point.fromValues(-12.0, 12.0, 8.0), col: [0.5, 0.5, 0.2, 0.0] },
+    { pos: Point.fromValues(12.0, 12.0, 8.0), col: [0.4, 0.2, 0.2, 0.0] },
+    { pos: Point.fromValues(-12, -12.0, 8.0), col: [0.2, 0.2, 0.5, 0.0] },
+    { pos: Point.fromValues(12.0, -12.0, 8.0), col: [0.5, 0.1, 0.5, 0.0] },
   ];
 
   private constructor(canvas: HTMLCanvasElement, context: GPUCanvasContext, device: GPUDevice, format: GPUTextureFormat) {
@@ -301,13 +301,13 @@ export class Gpu implements GPUConnection {
 
     // Render opaque objects first
     this.pipelines
-      .filter(({ geoRenderable }) => geoRenderable.color[3] === 1.0)
+      .filter(({ geoRenderable }) => geoRenderable.colors[0][3] === 1.0)
       .forEach((gpuPipeLine, idx) => {
         this.renderPipeline(gpuPipeLine, idx, renderPass, timeSpan);
       });
     // Render transparent objects last
     this.pipelines
-      .filter(({ geoRenderable }) => geoRenderable.color[3] < 1.0)
+      .filter(({ geoRenderable }) => geoRenderable.colors[0][3] < 1.0)
       .forEach((gpuPipeLine, idx) => {
         this.renderPipeline(gpuPipeLine, idx, renderPass, timeSpan);
       });
@@ -330,30 +330,32 @@ export class Gpu implements GPUConnection {
     // We need to send the scene data only once!
     if (idx === 0) {
       // Writes the Scene into the uniformBuffer ZERO...
-      this.sceneIntoBuffer(uniformBuffers[0]);
-      renderPass.setBindGroup(0, bindGroups[0]); // Scene data binding groups
+      this.sceneIntoBuffer(uniformBuffers.sceneBuffers);
+      renderPass.setBindGroup(0, bindGroups.sceneGroup); // Scene data binding groups
     }
 
     const activePipeline = this._pipelineMode === 'default' ? pipeline : altPipeline;
     renderPass.setPipeline(activePipeline);
 
-    // For each object in the scene we set the uniform buffer with the color and (potentially) the model matrix
-    const uniformColorData = new Float32Array(geoRenderable.color); // Color for the current object
-    device.queue.writeBuffer(uniformBuffers[1][0], 0, uniformColorData);
-    renderPass.setBindGroup(1, bindGroups[1]); // Color
-
     if (this._modelHandlers[geoRenderable.id]) {
       geoRenderable.transform(timeSpan, this._modelHandlers[geoRenderable.id]);
     }
 
-    device.queue.writeBuffer(uniformBuffers[2][0], 0, geoRenderable.transformationData);
-    renderPass.setBindGroup(2, bindGroups[2]); // Model transformation
+    device.queue.writeBuffer(uniformBuffers.modelBuffers[0], 0, geoRenderable.transformationData);
+    renderPass.setBindGroup(2, bindGroups.modelGroup); // Model transformation
 
-    if (bindGroups[3]) {
-      renderPass.setBindGroup(3, bindGroups[3]); // Texture data
+    if (bindGroups.texturesGroup) {
+      renderPass.setBindGroup(3, bindGroups.texturesGroup); // Texture data
     }
 
     geoRenderable.buffers.forEach((buffer, idx) => {
+      // For each object in the scene we set the uniform buffer with the color and (potentially) the model matrix
+      const uniformColorData = new Float32Array(geoRenderable.colors[idx]); // Color for the current object
+      device.queue.writeBuffer(uniformBuffers.colorBuffers[0], 0, uniformColorData);
+      if (geoRenderable.textureIndexes[idx]) {
+        device.queue.writeBuffer(uniformBuffers.colorBuffers[1], 0, new Uint32Array([0]));
+      }
+      renderPass.setBindGroup(1, bindGroups.colorGroup); // Color
       const vtx = geoRenderable.getVertexCountPerStrip(idx);
       this._vertexCount += vtx;
       renderPass.setVertexBuffer(0, buffer);

@@ -129,7 +129,7 @@ const mapToTextureCoordinates = (v: UnitVector): [number, number] => {
  * @returns
  */
 export const sphereGen: SphereGenerator<any> = <B>(t: Transform, options: GeoOptions<SphereOptions>): GeoRenderable<B> => {
-  const { steps, color, id, texture } = options;
+  const { steps, colors, id, textureIndexes } = options;
   const [sphVertices, sphIndexes] = subdivide(vertices, indices, steps);
 
   // console.log(' Number of vertices', vertices.length);
@@ -151,7 +151,7 @@ export const sphereGen: SphereGenerator<any> = <B>(t: Transform, options: GeoOpt
     normals.push(...n0.triplet);
     normals.push(...n1.triplet);
     normals.push(...n2.triplet);
-    if (texture) {
+    if (textureIndexes) {
       const t0 = mapToTextureCoordinates(n0);
       const t1 = mapToTextureCoordinates(n1);
       const t2 = mapToTextureCoordinates(n2);
@@ -181,10 +181,10 @@ export const sphereGen: SphereGenerator<any> = <B>(t: Transform, options: GeoOpt
       textureUV.push(...t2);
     }
   });
-  const triangleData = new GeoRenderable<B>(id, 'triangle-list', color);
+  const triangleData = new GeoRenderable<B>(id, 'triangle-list', colors, textureIndexes);
   triangleData.addVertices(new Float32Array(coordinates));
   triangleData.addNormals(new Float32Array(normals));
-  if (texture) {
+  if (textureIndexes) {
     triangleData.addTextures(new Float32Array(textureUV));
   }
   return triangleData;

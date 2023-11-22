@@ -3,7 +3,6 @@ export const init = () => {
   let lastTime = performance.now();
   let lastFPSIdx = 0;
   const lastFPS: number[] = [];
-  console.log('Init FPS', lastTime);
 
   const measureFPS = () => {
     const time = performance.now();

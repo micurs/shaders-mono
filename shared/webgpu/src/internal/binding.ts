@@ -1,6 +1,7 @@
 import { Transform, Vector, Point } from '@shaders-mono/geopro';
 import { Gpu } from '../gpu-connection';
 import { Material } from '../types';
+import { notNull } from './utils';
 
 // Group 0 (default): Transformations
 export const createSceneDataBindingGroup = (gpu: Gpu): [GPUBindGroupLayout, GPUBindGroup, GPUBuffer[]] => {
@@ -98,15 +99,16 @@ export const createModelTransBindingGroup = (gpu: Gpu): [GPUBindGroupLayout, GPU
     entries: bindings,
   });
   return [layout, group, [transBuffer]];
-
-
 };
-
 
 // Group 1: colors
 export const createColorsBindingGroup = (gpu: Gpu): [GPUBindGroupLayout, GPUBindGroup, GPUBuffer[]] => {
-  const buffer = gpu.device.createBuffer({
+  const colorBuffer = gpu.device.createBuffer({
     size: 4 * 4, // 4 floats of 4 bytes each
+    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+  });
+  const textureIndexBuffer = gpu.device.createBuffer({
+    size: 4, //  1 32 bit integer
     usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
   });
 
@@ -119,6 +121,13 @@ export const createColorsBindingGroup = (gpu: Gpu): [GPUBindGroupLayout, GPUBind
         type: 'uniform',
       },
     },
+    {
+      binding: 1,
+      visibility: GPUShaderStage.FRAGMENT,
+      buffer: {
+        type: 'uniform',
+      },
+    },
   ];
   const layout = gpu.device.createBindGroupLayout({ label: 'color', entries });
 
@@ -126,7 +135,11 @@ export const createColorsBindingGroup = (gpu: Gpu): [GPUBindGroupLayout, GPUBind
   const bindings: GPUBindGroupEntry[] = [
     {
       binding: 0,
-      resource: { buffer },
+      resource: { buffer: colorBuffer },
+    },
+    {
+      binding: 1,
+      resource: { buffer: textureIndexBuffer },
     },
   ];
 
@@ -136,34 +149,43 @@ export const createColorsBindingGroup = (gpu: Gpu): [GPUBindGroupLayout, GPUBind
     entries: bindings,
   });
 
-  return [layout, group, [buffer]];
+  return [layout, group, [colorBuffer]];
 };
 
 // Group 2: texture, and sampler
 export const createTextureBindingGroup = (gpu: Gpu, material: Material): [GPUBindGroupLayout, GPUBindGroup] => {
+  const { device } = gpu;
+
+  // Create the Sampler to get the image from the texture using u,v coordinates
+  const samplerDescriptor: GPUSamplerDescriptor = {
+    addressModeU: 'repeat',
+    addressModeV: 'repeat',
+    magFilter: 'linear',
+    minFilter: 'linear',
+    mipmapFilter: 'linear',
+    maxAnisotropy: 1,
+  };
+  const sampler = device.createSampler(samplerDescriptor);
+  const availableViews = material.views.filter(notNull);
   const entries: GPUBindGroupLayoutEntry[] = [
-    {
-      binding: 0,
+    ...availableViews.map<GPUBindGroupLayoutEntry>((_, idx) => ({
+      binding: idx,
       visibility: GPUShaderStage.FRAGMENT,
-      texture: {},
-    },
-    {
-      binding: 1,
-      visibility: GPUShaderStage.FRAGMENT,
-      sampler: {},
-    },
+      texture: { sampleType: 'float' },
+    })),
+    { binding: 4, visibility: GPUShaderStage.FRAGMENT, sampler: { type: 'filtering' } },
   ];
   const layout = gpu.device.createBindGroupLayout({ label: 'texture', entries });
 
   // Build the group (the equivalent of the instance in the shader)
   const bindings: GPUBindGroupEntry[] = [
+    ...availableViews.map((view, idx) => ({
+      binding: idx,
+      resource: view,
+    })),
     {
-      binding: 0,
-      resource: material.view!,
-    },
-    {
-      binding: 1,
-      resource: material.sampler!,
+      binding: 4,
+      resource: sampler,
     },
   ];
 
@@ -175,3 +197,4 @@ export const createTextureBindingGroup = (gpu: Gpu, material: Material): [GPUBin
 
   return [layout, group];
 };
+

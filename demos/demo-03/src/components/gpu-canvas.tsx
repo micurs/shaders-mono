@@ -1,10 +1,22 @@
 import React from 'react';
 import * as WebGPU from '@shaders-mono/webgpu';
+import { Point, UnitVector } from '@shaders-mono/geopro';
 
 interface GpuCanvasProps {
   onError: (e: Error) => void;
   onConnected: (gpu: WebGPU.Gpu) => void;
 }
+
+const buildLights = (gpu: WebGPU.Gpu) => {
+  gpu.setAmbientLight([0.15, 0.15, 0.2, 1.0]);
+
+  gpu.setLight('directional', 0, { dir: UnitVector.fromValues(0, 10, -10), col: [0.6, 0.6, 0.6, 1.0] });
+  gpu.setLight('directional', 1, { dir: UnitVector.fromValues(-10, 0, -10), col: [0.6, 0.6, 0.5, 1.0] });
+  gpu.setLight('point', 0, { pos: Point.fromValues(10, 10, 5), col: [0.5, 0.5, 0.45, 1.0] });
+  gpu.setLight('point', 1, { pos: Point.fromValues(-10, -10, 4), col: [0.1, 0.1, 0.4, 1.0] });
+  gpu.setLight('point', 2, { pos: Point.fromValues(10, -10, 4), col: [0.4, 0.1, 0.2, 1.0] });
+  gpu.setLight('point', 3, { pos: Point.fromValues(-10, 10, 4), col: [0.5, 0.4, 0.0, 1.0] });
+};
 
 export const GpuCanvas = ({ onError, onConnected }: GpuCanvasProps) => {
   const canvasRef = React.useRef<HTMLCanvasElement>(null);
@@ -38,18 +50,20 @@ export const GpuCanvas = ({ onError, onConnected }: GpuCanvasProps) => {
   // Initialize WebGPU
   React.useEffect(() => {
     WebGPU.initialize(canvasRef.current!)
-      .then((gpuConn) => gpuConn.setupShaders('standard-3d'))
-      .then((gpuConn) => {
-        if (!gpuConn) {
+      .then((gpu) => gpu.setupShaders('standard-3d'))
+      .then((gpu) => {
+        if (!gpu) {
           return;
         }
-        const [mouseHandlers, viewHandlers] = WebGPU.getOrbitHandlers(gpuConn, [15, 15, 15]);
-        gpuConn.captureMouseMotion(mouseHandlers);
-        gpuConn.setScene([]);
-        gpuConn.beginRenderLoop({
+
+        const [mouseHandlers, viewHandlers] = WebGPU.getOrbitHandlers(gpu, [15, 15, 15]);
+        gpu.captureMouseMotion(mouseHandlers);
+        gpu.setScene([]);
+        buildLights(gpu);
+        gpu.beginRenderLoop({
           camera: viewHandlers,
         });
-        setGpu(gpuConn);
+        setGpu(gpu);
       })
       .catch((error) => {
         console.error(error);

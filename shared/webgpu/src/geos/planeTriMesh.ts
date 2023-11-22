@@ -1,6 +1,6 @@
 import { Point, Transform } from '@shaders-mono/geopro';
 import { GeoOptions, GeoGenerator } from '../types';
-import { computeNormals } from './utils';
+import { computeNormals } from './geo-utils';
 import { GeoRenderable } from '../geo-renderable';
 import { logN } from '../internal/utils';
 
@@ -15,7 +15,7 @@ interface PlaneGenerator<B> extends GeoGenerator<B, PlaneTriMeshOptions> {}
  * @param color - color or texture to apply to the plane
  */
 const planGenerator: PlaneGenerator<any> = <B>(t: Transform, options: GeoOptions<PlaneTriMeshOptions>): GeoRenderable<B> => {
-  const { color, steps, id } = options;
+  const { colors, steps, id } = options;
 
   // 0 - Determine the scale of the plane (x/y)
   const s = t.scaleVector;
@@ -41,16 +41,15 @@ const planGenerator: PlaneGenerator<any> = <B>(t: Transform, options: GeoOptions
   }
 
   return ptStrips
-    .map((strip) => strip.flatMap((p) => p.triplet))
-    .map((coords) => {
-      const normals = computeNormals('triangle-strip', coords);
-      return [new Float32Array(coords), new Float32Array(normals)];
+    .map((stripPoints) => {
+      const normals = computeNormals('triangle-strip', stripPoints);
+      return [new Float32Array(stripPoints.map((pt) => pt.triplet).flat()), new Float32Array(normals.map((n) => n.triplet).flat())];
     })
     .reduce((triangleData: GeoRenderable<B>, [coords, normals]) => {
       triangleData.addVertices(coords);
       triangleData.addNormals(normals);
       return triangleData;
-    }, new GeoRenderable<B>(id, 'triangle-strip', color))
+    }, new GeoRenderable<B>(id, 'triangle-strip', colors))
     .setCullMode('none');
 };
 
