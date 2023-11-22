@@ -14,11 +14,13 @@ export class GeoRenderable<T = null> implements Renderable {
   private _id: string;
   private _bufferData: Float32Array[] | null = null;
   private _vertices: Float32Array[] = []; // 3 coordinates per vertex - 3 points for a triangle
-  private _colors: Float32Array[] = []; // 4 color components per vertex - 3 points for a triangle
-  private _normals: Float32Array[] = []; // 3 coordinates per vertex - 3 points for a triangle
-  private _textures: Float32Array[] = []; // 2 coordinates per vertex - 3 points for a triangle
-  private _color: RGBAColor = [1.0, 1.0, 1.0, 1.0]; // 4 color components per vertex - 3 points for a triangle
-  private _hasTextures = false;
+  private _vertexColors: Float32Array[] = []; // 4 color components per vertex - 3 points for a triangle
+  private _vertexNormals: Float32Array[] = []; // 3 coordinates per vertex - 3 points for a triangle
+  private _vertexTextureCoords: Float32Array[] = []; // 2 coordinates per vertex - 3 points for a triangle
+
+  private _stripColors: RGBAColor[] = []; // [1.0, 1.0, 1.0, 1.0]; // 4 color components per vertex - 3 points for a triangle
+  private _stripTextures: number[] | null = null;
+
   private _vertexByteSize: number = 0;
 
   private _buffers: GPUBuffer[] = [];
@@ -55,7 +57,7 @@ export class GeoRenderable<T = null> implements Renderable {
   }
 
   get hasTextures() {
-    return this._hasTextures;
+    return this._stripTextures !== null;
   }
 
   get material(): Material | null {
@@ -76,8 +78,12 @@ export class GeoRenderable<T = null> implements Renderable {
     return 'fragmentLineShader';
   }
 
-  get color(): RGBAColor {
-    return this._color;
+  get colors(): RGBAColor[] {
+    return this._stripColors;
+  }
+
+  get textureIndexes(): number[] {
+    return this._stripTextures ?? [];
   }
 
   get primitives(): GPUPrimitiveTopology {
@@ -117,7 +123,9 @@ export class GeoRenderable<T = null> implements Renderable {
 
   setMaterial(material: Material) {
     this._material = material;
-    return this;
+    if (!this._stripTextures) {
+      this._stripTextures = [0];
+    }
   }
 
   setBody(body: T) {
@@ -164,9 +172,9 @@ export class GeoRenderable<T = null> implements Renderable {
   getByteSizePerStrip(strip: number = 0) {
     const size =
       this._vertices[strip].length * float32Size +
-      (this._colors.length > 0 ? this._colors[strip].length * float32Size : 0) +
-      (this._normals.length > 0 ? this._normals[strip].length * float32Size : 0) +
-      (this._textures.length > 0 ? this._textures[strip].length * float32Size : 0);
+      (this._vertexColors.length > 0 ? this._vertexColors[strip].length * float32Size : 0) +
+      (this._vertexNormals.length > 0 ? this._vertexNormals[strip].length * float32Size : 0) +
+      (this._vertexTextureCoords.length > 0 ? this._vertexTextureCoords[strip].length * float32Size : 0);
     return size;
   }
 
@@ -195,20 +203,20 @@ export class GeoRenderable<T = null> implements Renderable {
       const fragments = [];
       for (let vi = 0, ci = 0, ni = 0, ti = 0; vi < vertices.length; vi += 3, ci += 4, ni += 3, ti += 2) {
         const fragment = [vertices[vi + 0], vertices[vi + 1], vertices[vi + 2]];
-        if (this._colors.length > idx) {
-          fragment.push(this._colors[idx][ci + 0]);
-          fragment.push(this._colors[idx][ci + 1]);
-          fragment.push(this._colors[idx][ci + 2]);
-          fragment.push(this._colors[idx][ci + 3]);
+        if (this._vertexColors.length > idx) {
+          fragment.push(this._vertexColors[idx][ci + 0]);
+          fragment.push(this._vertexColors[idx][ci + 1]);
+          fragment.push(this._vertexColors[idx][ci + 2]);
+          fragment.push(this._vertexColors[idx][ci + 3]);
         }
-        if (this._textures.length > idx) {
-          fragment.push(this._textures[idx][ti + 0]);
-          fragment.push(this._textures[idx][ti + 1]);
+        if (this._vertexTextureCoords.length > idx) {
+          fragment.push(this._vertexTextureCoords[idx][ti + 0]);
+          fragment.push(this._vertexTextureCoords[idx][ti + 1]);
         }
-        if (this._normals.length > idx) {
-          fragment.push(this._normals[idx][ni + 0]);
-          fragment.push(this._normals[idx][ni + 1]);
-          fragment.push(this._normals[idx][ni + 2]);
+        if (this._vertexNormals.length > idx) {
+          fragment.push(this._vertexNormals[idx][ni + 0]);
+          fragment.push(this._vertexNormals[idx][ni + 1]);
+          fragment.push(this._vertexNormals[idx][ni + 2]);
         }
         fragments.push(...fragment);
       }
@@ -233,7 +241,7 @@ export class GeoRenderable<T = null> implements Renderable {
     offset += 3 * float32Size; // advance 3 elements for the coordinates.
 
     // Colors
-    if (this._colors.length > 0) {
+    if (this._vertexColors.length > 0) {
       layouts.push({
         shaderLocation,
         offset,
@@ -244,7 +252,7 @@ export class GeoRenderable<T = null> implements Renderable {
     }
 
     // Textures
-    if (this._textures.length > 0) {
+    if (this._vertexTextureCoords.length > 0) {
       layouts.push({
         // UV
         shaderLocation,
@@ -256,7 +264,7 @@ export class GeoRenderable<T = null> implements Renderable {
     }
 
     // Normals
-    if (this._normals.length > 0) {
+    if (this._vertexNormals.length > 0) {
       layouts.push({
         // Normal
         shaderLocation,
@@ -281,11 +289,12 @@ export class GeoRenderable<T = null> implements Renderable {
     return this._bufferLayout;
   }
 
-  constructor(id: string, topology: GPUPrimitiveTopology, color: RGBAColor = [1.0, 1.0, 1.0, 1.0]) {
+  constructor(id: string, topology: GPUPrimitiveTopology, colors: RGBAColor[] = [[1.0, 1.0, 1.0, 1.0]], texturesIndexes?: number[]) {
     this._id = id;
     this._topology = topology;
     this._vertexByteSize = 3 * 4;
-    this._color = color;
+    this._stripColors = colors;
+    this._stripTextures = texturesIndexes ?? null;
   }
 
   buildGpuBuffer(gpu: Gpu) {
@@ -297,24 +306,23 @@ export class GeoRenderable<T = null> implements Renderable {
   }
 
   addColors(colors: Float32Array) {
-    if (this._colors.length === 0) {
+    if (this._vertexColors.length === 0) {
       this._vertexByteSize += 4 * 4;
     }
-    this._colors.push(colors);
+    this._vertexColors.push(colors);
   }
 
   addNormals(normals: Float32Array) {
-    if (this._normals.length === 0) {
+    if (this._vertexNormals.length === 0) {
       this._vertexByteSize += 3 * 4;
     }
-    this._normals?.push(normals);
+    this._vertexNormals?.push(normals);
   }
 
   addTextures(textures: Float32Array) {
-    if (this._textures.length === 0) {
+    if (this._vertexTextureCoords.length === 0) {
       this._vertexByteSize += 2 * 4;
-      this._hasTextures = true;
     }
-    this._textures.push(textures);
+    this._vertexTextureCoords.push(textures);
   }
 }

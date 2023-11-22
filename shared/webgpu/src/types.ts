@@ -19,19 +19,35 @@ export interface Renderable {
   vertexCount: number;
   getByteSizePerStrip: (strip: number) => number;
   getVertexCountPerStrip(strip: number): number;
-  color: RGBAColor;
+  colors: RGBAColor[];
   primitives: GPUPrimitiveTopology;
   transformationData: Float32Array; // 2  4by4 matrices containing the transformation data (direct and inverse)
 }
 
 export interface Material {
-  texture: GPUTexture;
-  view: GPUTextureView;
+  name: string;
+  textures: Array<GPUTexture | null>;
+  views: Array<GPUTextureView | null>;
 }
 
 export type PredefinedShaders = 'standard-3d' | 'standard-2d';
 
 export type Shaders = PredefinedShaders | { source: string };
+
+export interface PipelineBuffers {
+  sceneBuffers: GPUBuffer[];
+  colorBuffers: GPUBuffer[];
+  modelBuffers: GPUBuffer[];
+}
+
+export interface PipelineBindingGroups {
+  sceneGroup: GPUBindGroup;
+  colorGroup: GPUBindGroup;
+  modelGroup: GPUBindGroup;
+  texturesGroup: GPUBindGroup | undefined;
+}
+
+export type PipelineLayoutData = [GPUPipelineLayout, PipelineBindingGroups, PipelineBuffers];
 
 export interface GPUPipeline {
   id: string;
@@ -39,8 +55,8 @@ export interface GPUPipeline {
   pipeline: GPURenderPipeline;
   altPipeline: GPURenderPipeline;
   geoRenderable: GeoRenderable<unknown>; // The geometry to render
-  uniformBuffers: Array<Array<GPUBuffer>>;
-  bindGroups: [GPUBindGroup, GPUBindGroup, GPUBindGroup, GPUBindGroup | undefined];
+  uniformBuffers: PipelineBuffers;
+  bindGroups: PipelineBindingGroups;
 }
 
 export interface CameraTransformations {
@@ -106,8 +122,8 @@ export interface PointLight {
 
 export type GeoOptions<T> = T & {
   id: string; // A unique ID in the scene
-  color?: RGBAColor;
-  texture?: boolean;
+  colors?: RGBAColor[];
+  textureIndexes?: number[];
 };
 
 // export type GeoGenerator = <B, O = {}>(t: Transform, options: GeoOptions<O>) => GeoRenderable<B>;
@@ -117,3 +133,18 @@ export interface GeoGenerator<B, O = {}> {
 }
 
 export type MouseButton = 'none' | 'mouse-0' | 'mouse-1' | 'mouse-2' | 'ctrl-mouse-0' | 'ctrl-mouse-1' | 'ctrl-mouse-2';
+
+export interface Dimension {
+  w: number;
+  h: number;
+}
+
+export interface TextureCoordinate {
+  u: number;
+  v: number;
+}
+
+export interface TextureWindow {
+  pos: TextureCoordinate;
+  size: Dimension;
+}

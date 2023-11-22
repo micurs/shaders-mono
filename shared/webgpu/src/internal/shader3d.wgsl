@@ -58,13 +58,20 @@ struct ColorData {
     color: vec4<f32>,
 };
 
+struct TextureIndex {
+    index: u32
+};
 
 @group(0) @binding(0) var<uniform> sceneData: SceneData;
 @group(0) @binding(1) var<uniform> sceneLights: SceneLights;
 @group(1) @binding(0) var<uniform> myColor: ColorData;
+@group(1) @binding(1) var<uniform> textureIndex: TextureIndex;
 @group(2) @binding(0) var<uniform> myModel: ModelData;
-@group(3) @binding(0) var myTexture: texture_2d<f32>;
-@group(3) @binding(1) var mySampler: sampler;
+@group(3) @binding(0) var myTexture0: texture_2d<f32>;
+@group(3) @binding(1) var myTexture1: texture_2d<f32>;
+@group(3) @binding(2) var myTexture2: texture_2d<f32>;
+@group(3) @binding(3) var myTexture3: texture_2d<f32>;
+@group(3) @binding(4) var mySampler: sampler;
 
 fn computeDiffuseColor(
     eye: vec3<f32>,
@@ -75,7 +82,7 @@ fn computeDiffuseColor(
   var diffuse: vec3<f32> = sceneLights.ambient.rgb;
   for (var i: u32 = 0; i < MAX_DIR_LIGHTS; i = i + 1) {
     if (sceneLights.dirLights[i].col.a != 0.0) {
-      let lightDir: vec3<f32> = normalize(sceneLights.dirLights[i].dir.xyz); //
+      let lightDir: vec3<f32> = -normalize(sceneLights.dirLights[i].dir.xyz); //
       let lightColor: vec3<f32> = sceneLights.dirLights[i].col.rgb;
       var NdotL: f32 = pow(max(dot(normal, lightDir), 0), 2);
       diffuse = diffuse + (NdotL * lightColor);
@@ -125,7 +132,7 @@ fn vertexTextureShader(
 @fragment
 fn fragmentTextureShader(in: TextFragment) -> @location(0) vec4<f32> {
   let diffuse: vec3<f32> = computeDiffuseColor( in.eye, in.pos, in.normal, sceneLights );
-  let texColor: vec4<f32> = textureSample(myTexture, mySampler, in.texCoord);
+  let texColor: vec4<f32> = textureSample(myTexture0, mySampler, in.texCoord);
 
   return vec4<f32>(texColor.rgb * diffuse, 1.0);
 }

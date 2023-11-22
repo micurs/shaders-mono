@@ -1,11 +1,6 @@
 import { Gpu } from '../gpu-connection';
-import { GPUPipeline, Material, Scene } from '../types';
+import { GPUPipeline, Material, PipelineBindingGroups, PipelineBuffers, PipelineLayoutData, Scene } from '../types';
 import { createColorsBindingGroup, createTextureBindingGroup, createSceneDataBindingGroup, createModelTransBindingGroup } from './binding';
-
-type PipelineBindingGroups = [GPUBindGroup, GPUBindGroup, GPUBindGroup, GPUBindGroup | undefined];
-type PipelineBuffers = [GPUBuffer[], GPUBuffer[], GPUBuffer[]];
-
-type PipelineLayoutData = [GPUPipelineLayout, PipelineBindingGroups, PipelineBuffers];
 
 /**
  * Create the pipeline layout for the a primitive object in the scene.
@@ -17,18 +12,28 @@ type PipelineLayoutData = [GPUPipelineLayout, PipelineBindingGroups, PipelineBuf
 const createPipelineLayout = (gpu: Gpu, material: Material | null): PipelineLayoutData => {
   const { device } = gpu;
   // Group 0: Transformations
-  const [layout0, group0, buffer0] = createSceneDataBindingGroup(gpu);
+  const [sceneLayout, sceneGroup, sceneBuffers] = createSceneDataBindingGroup(gpu);
   // Group 1: colors
-  const [layout1, group1, buffer1] = createColorsBindingGroup(gpu);
+  const [colorLayout, colorGroup, colorBuffers] = createColorsBindingGroup(gpu);
   // Group 2: model and inverse model transformation
-  const [layout2, group2, buffer2] = createModelTransBindingGroup(gpu);
+  const [modelLayout, modelGroup, modelBuffers] = createModelTransBindingGroup(gpu);
 
   // Group 3: texture, and sampler
-  const [layout3, group3] = material ? createTextureBindingGroup(gpu, material!) : [undefined, undefined];
+  const [texturesLayout, texturesGroup] = material
+    ? createTextureBindingGroup(gpu, material) // Only if we have a texture
+    : [undefined, undefined];
 
-  const bindGroupLayouts = layout3 ? [layout0, layout1, layout2, layout3] : [layout0, layout1, layout2];
-  const groups: PipelineBindingGroups = [group0, group1, group2, group3];
-  const buffers: PipelineBuffers = [buffer0, buffer1, buffer2];
+  const bindGroupLayouts = texturesLayout
+    ? [sceneLayout, colorLayout, modelLayout, texturesLayout] // If we have a texture
+    : [sceneLayout, colorLayout, modelLayout];
+
+  const groups: PipelineBindingGroups = {
+    sceneGroup,
+    colorGroup,
+    modelGroup,
+    texturesGroup,
+  };
+  const buffers: PipelineBuffers = { sceneBuffers, colorBuffers, modelBuffers };
 
   const pipelineLayout = device.createPipelineLayout({ bindGroupLayouts });
 

@@ -100,10 +100,6 @@ export const connectGPU = async (canvas: HTMLCanvasElement): Promise<GPUConnecti
     throw new Error('WebGPU:adapter is NOT available!');
   }
 
-  const info = await adapter.requestAdapterInfo();
-  console.log('WebGPU:adapter info', info);
-  console.log('WebGPU:adapter is fallback:', adapter.isFallbackAdapter);
-
   const device = await adapter.requestDevice();
   if (!device) {
     throw new Error('WebGPU:device is NOT available!');
@@ -121,6 +117,11 @@ export const connectGPU = async (canvas: HTMLCanvasElement): Promise<GPUConnecti
     usage: GPUTextureUsage.RENDER_ATTACHMENT,
     alphaMode: 'opaque', // 'premultiplied' should allow transparency, but it does not work?.
   });
+
+  const info = await adapter.requestAdapterInfo();
+  console.info('WebGPU: adapter:', info);
+  console.info('WebGPU: fallback adapter:', adapter.isFallbackAdapter);
+  console.info('WegGPU: maxBindGroups:', device.limits.maxBindGroups);
 
   return { context, device, canvas, format };
 };
@@ -164,3 +165,5 @@ export const getTransformations = (
 export const logN = (n: number, base: number) => Math.log(n) / Math.log(base);
 
 export const zeroHex = (num: number, places: number): string => num.toString(16).padStart(places, '0');
+
+export const notNull = <T>(value: T | null): value is T => value !== null;

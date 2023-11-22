@@ -60,12 +60,13 @@ export const initialize = async (canvas: HTMLCanvasElement): Promise<Gpu> => {
  * @param image - the image to be used as a texture
  * @returns
  */
-export const createTextureMaterial = (gpu: Gpu, image: ImageBitmap): Material => {
+export const createTextureMaterial = (gpu: Gpu, name: string, image: ImageBitmap): Material => {
   const { device } = gpu;
   const format = 'rgba8unorm';
 
   // 1 - Create the texture
   const textureDesc: GPUTextureDescriptor = {
+    label: name,
     size: [image.width, image.height, 1],
     format,
     usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST | GPUTextureUsage.RENDER_ATTACHMENT,
@@ -79,11 +80,12 @@ export const createTextureMaterial = (gpu: Gpu, image: ImageBitmap): Material =>
     [image.width, image.height] // The image resolution
   );
 
-  const view = texture.createView(); // TODO: add texture view options
+  const view = texture.createView({ label: `${name}-view` }); // TODO: add texture view options
 
   return {
-    texture,
-    view,
+    name,
+    textures: [texture],
+    views: [view],
   };
 };
 
@@ -156,5 +158,32 @@ export const RGBAColorToStyle = (color: RGBAColor): string => {
   return `#${zeroHex(Math.round(r * 255), 2)}${zeroHex(Math.round(g * 255), 2)}${zeroHex(Math.round(b * 255), 2)}`;
 };
 
+/**
+ * Async utility for loading an image and creating a texture material from it
+ * @param gpu - the current GPU connection
+ * @param url - the url of the image to download and use as a texture
+ * @returns
+ */
+export const loadTexture = async (gpu: Gpu, path: string): Promise<[Gpu, Material]> => {
+  const url = new URL(path, window.location.href);
+  return new Promise<[Gpu, Material]>((resolve, reject) => {
+    const image = new Image();
+    image.src = url.href;
+    image.onerror = (err) => {
+      reject(err);
+    };
+    image.onload = () => {
+      createImageBitmap(image)
+        .then((bitmap) => {
+          return createTextureMaterial(gpu, url.pathname, bitmap);
+        })
+        .then((material) => resolve([gpu, material]));
+    };
+  });
+};
 
-
+export const loadTextures = async (gpu: Gpu, paths: string[]): Promise<[Gpu, Array<Material>]> => {
+  return Promise.all(paths.map((path) => loadTexture(gpu, path))).then((textureMaterials) => {
+    return Promise.resolve([gpu, textureMaterials.map(([, texture]) => texture)]);
+  });
+};

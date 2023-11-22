@@ -67,8 +67,17 @@ div.main>div.right {
 }
 
 div.main>div.left {
-  padding: 0 2rem;
+  padding: 0;
   text-align: left;
   background-color: #161616;
   min-width: 400px;
+}
+div.left>div {
+  margin: 0 1rem;
+}
+
+div.option-section {
+  margin: 1rem 0;
+  border-top: solid 1px #222222;
+  padding: 1rem;
 }

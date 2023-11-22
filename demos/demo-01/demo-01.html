@@ -13,19 +13,35 @@
         <h2>Hello World!</h2>
         <div class="main">
           <div class="left">
-            <h3>Camera controls</h3>
-            <p>Click and drag the mouse to rotate the camera.</p>
-            <h3>Controls</h3>
-            <ul>
-              <li>Left mouse button: rotate</li>
-              <li>Center mouse button: pan</li>
-              <li>Right mouse button: zoom</li>
-              <li>Mouse wheel: dolly</li>
-              <li>CTRL Mouse wheel: tilt</li>
-            </ul>
             <div>
-              <input type="checkbox" id="wireframe" onClick="setWireframe()">
+              <h3>Camera controls</h3>
+              <p>Click and drag the mouse to rotate the camera.</p>
+              <h3>Controls</h3>
+              <ul>
+                <li>Left mouse button: rotate</li>
+                <li>Center mouse button: pan</li>
+                <li>Right mouse button: zoom</li>
+                <li>Mouse wheel: dolly</li>
+                <li>CTRL Mouse wheel: tilt</li>
+              </ul>
+            </div>
+            <div class="option-section">
+              <input type="checkbox" id="wireframe" onClick="setWireframe()" />
               <label htmlFor="wireframe">WireFrame</label>
+            </div>
+            <div class="option-section">
+              <p>
+                <input type="radio" id="geo-globe"  name="geo" />
+                <label htmlFor="wireframe">Globe</label>
+              </p>
+              <p>
+                <input type="radio" id="geo-cylinder"  name="geo" />
+                <label htmlFor="wireframe">Cylinder</label>
+              </p>
+              <p>
+                <input type="radio" id="geo-cube"  name="geo" />
+                <label htmlFor="wireframe">Cube</label>
+              </p>
             </div>
           </div>
           <div class="right">
