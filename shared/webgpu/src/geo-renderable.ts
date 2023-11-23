@@ -1,7 +1,7 @@
 import { Transform, Vector, Rotation } from '@shaders-mono/geopro';
 import { Gpu } from './gpu-connection';
 import { createGPUBuffer } from './internal/utils';
-import { Material, ModelTransformHandler, Renderable, RGBAColor } from './types';
+import { GeoOptions, Material, ModelTransformHandler, Renderable, RGBAColor } from './types';
 import { RotationTranslationScale } from 'shared/geopro/src/types';
 
 const float32Size = 4;
@@ -19,7 +19,7 @@ export class GeoRenderable<T = null> implements Renderable {
   private _vertexTextureCoords: Float32Array[] = []; // 2 coordinates per vertex - 3 points for a triangle
 
   private _stripColors: RGBAColor[] = []; // [1.0, 1.0, 1.0, 1.0]; // 4 color components per vertex - 3 points for a triangle
-  private _stripTextures: number[] | null = null;
+  private _textureAlpha: number = 1.0;
 
   private _vertexByteSize: number = 0;
 
@@ -40,6 +40,10 @@ export class GeoRenderable<T = null> implements Renderable {
     return this._id;
   }
 
+  get textureAlpha(): number {
+    return this._textureAlpha;
+  }
+
   get label(): string {
     return this._topology;
   }
@@ -57,7 +61,7 @@ export class GeoRenderable<T = null> implements Renderable {
   }
 
   get hasTextures() {
-    return this._stripTextures !== null;
+    return this._vertexTextureCoords.length > 0 && this._material !== null;
   }
 
   get material(): Material | null {
@@ -82,10 +86,6 @@ export class GeoRenderable<T = null> implements Renderable {
     return this._stripColors;
   }
 
-  get textureIndexes(): number[] {
-    return this._stripTextures ?? [];
-  }
-
   get primitives(): GPUPrimitiveTopology {
     return this._topology;
   }
@@ -107,9 +107,9 @@ export class GeoRenderable<T = null> implements Renderable {
 
   get transformation(): Transform {
     return Transform.fromRotationTranslationScale(
-      this._transformation.rotation,
-      this._transformation.translation,
-      this._transformation.scale
+      this._transformation.rotation ?? Rotation.identity(),
+      this._transformation.translation ?? Vector.fromValues(0, 0, 0),
+      this._transformation.scale ?? Vector.fromValues(1, 1, 1)
     );
   }
 
@@ -123,9 +123,6 @@ export class GeoRenderable<T = null> implements Renderable {
 
   setMaterial(material: Material) {
     this._material = material;
-    if (!this._stripTextures) {
-      this._stripTextures = [0];
-    }
   }
 
   setBody(body: T) {
@@ -289,12 +286,12 @@ export class GeoRenderable<T = null> implements Renderable {
     return this._bufferLayout;
   }
 
-  constructor(id: string, topology: GPUPrimitiveTopology, colors: RGBAColor[] = [[1.0, 1.0, 1.0, 1.0]], texturesIndexes?: number[]) {
+  constructor(id: string, topology: GPUPrimitiveTopology, options: GeoOptions<unknown>) {
     this._id = id;
     this._topology = topology;
     this._vertexByteSize = 3 * 4;
-    this._stripColors = colors;
-    this._stripTextures = texturesIndexes ?? null;
+    this._stripColors = options.colors ?? [[0.0, 0.0, 0.0, 0.0]];
+    this._textureAlpha = options.textureAlpha ?? 1.0;
   }
 
   buildGpuBuffer(gpu: Gpu) {

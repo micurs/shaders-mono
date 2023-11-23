@@ -39,7 +39,7 @@ export const planeGridGenerator: PlaneGenerator<any> = <B = null>(t: Transform, 
     pts.push(ptStart, ptEnd);
   }
 
-  const geo = new GeoRenderable<B>(id, 'line-list', colors);
+  const geo = new GeoRenderable<B>(id, 'line-list', options);
   geo.addVertices(new Float32Array(pts.flatMap((p) => p.triplet)));
   return geo;
 };

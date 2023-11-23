@@ -4,15 +4,15 @@ import { DirectionalLight, Gpu, LightsTransformationHandlers, PointLight } from 
 export const buildLights = (gpu: Gpu): LightsTransformationHandlers => {
   const one60 = -deg2rad(180 / 10);
 
-  const posSun = Point.fromValues(10.0, 0.0, 0);
-  const posMoon = Point.fromValues(-5.0, 0.0, 3);
+  const posSun = Point.fromValues(8.0, 0.0, 1);
+  const posMoon = Point.fromValues(-6.0, 0.0, -2);
 
-  gpu.setAmbientLight([0.1, 0.1, 0.2, 1.0]);
+  gpu.setAmbientLight([0.1, 0.1, 0.1, 1.0]);
 
   const dirSun = UnitVector.fromVector(Point.origin().subtract(posSun));
-  gpu.setLight('directional', 0, { dir: dirSun, col: [0.9, 0.9, 0.9, 1.0] });
-  gpu.setLight('point', 0, { pos: posSun, col: [0.5, 0.5, 0.45, 1.0] });
-  gpu.setLight('point', 1, { pos: posMoon, col: [0.1, 0.1, 0.4, 1.0] });
+  gpu.setLight('directional', 0, { dir: dirSun, col: [0.6, 0.6, 0.6, 1.0] });
+  gpu.setLight('point', 0, { pos: posSun, col: [0.8, 0.8, 0.8, 1.0] });
+  gpu.setLight('point', 1, { pos: posMoon, col: [0.1, 0.1, 0.5, 1.0] });
 
   return {
     dirLights: (msDelta: number, dirLights: DirectionalLight[]) => {
@@ -22,9 +22,10 @@ export const buildLights = (gpu: Gpu): LightsTransformationHandlers => {
     },
     posLights: (msDelta: number, ptLights: PointLight[]) => {
       const deltaSec = msDelta / 1000;
-      const rotZ = Transform.rotationZ(one60 * deltaSec);
-      ptLights[0].pos = ptLights[0].pos.map(rotZ);
-      ptLights[1].pos = ptLights[1].pos.map(rotZ);
+      const rotSunZ = Transform.rotationZ(one60 * deltaSec);
+      const rotMoonZ = Transform.rotationZ(one60 * deltaSec * 1.2);
+      ptLights[0].pos = ptLights[0].pos.map(rotSunZ);
+      ptLights[1].pos = ptLights[1].pos.map(rotMoonZ);
     },
   };
 };

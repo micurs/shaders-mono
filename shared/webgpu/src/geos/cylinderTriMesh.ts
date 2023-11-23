@@ -83,7 +83,7 @@ interface CylGenerator<B> extends GeoGenerator<B, CylinderOptions> {}
  * @returns
  */
 export const cylinderGen: CylGenerator<any> = <B>(t: Transform, options: GeoOptions<CylinderOptions>): GeoRenderable<B> => {
-  const { steps, colors, id, textureIndexes } = options;
+  const { steps, colors, id, textureCoordinates } = options;
   const coordinates = [];
   const normals = [];
   const textureUV: [number, number][] = [];
@@ -94,7 +94,7 @@ export const cylinderGen: CylGenerator<any> = <B>(t: Transform, options: GeoOpti
   coordinates.push(...discUpPts.map((v) => v.map(t)));
   coordinates.push(...discDownPts.map((v) => v.map(t)));
   coordinates.push(...pipePts.map((v) => v.map(t)));
-  if (textureIndexes) {
+  if (textureCoordinates) {
     let last1U = 0;
     let last2U = 0;
     const t1: [number, number][] = discUpPts.map((p) => [p.x + 0.5, p.y + 0.5]);
@@ -118,10 +118,10 @@ export const cylinderGen: CylGenerator<any> = <B>(t: Transform, options: GeoOpti
   normals.push(...n2);
   normals.push(...n3);
 
-  const triangleData = new GeoRenderable<B>(id, 'triangle-list', colors, textureIndexes);
+  const triangleData = new GeoRenderable<B>(id, 'triangle-list', options);
   triangleData.addVertices(new Float32Array(coordinates.map((v) => v.triplet).flat()));
   triangleData.addNormals(new Float32Array(normals.map((v) => v.triplet).flat()));
-  if (textureIndexes) {
+  if (textureCoordinates) {
     triangleData.addTextures(new Float32Array(textureUV.flat()));
   }
   return triangleData;

@@ -6,7 +6,7 @@ import { GeoOptions, GeoGenerator } from '../types';
 interface CubeGenerator<B> extends GeoGenerator<B, {}> {}
 
 const cubeGen: CubeGenerator<any> = <B>(t: Transform, options: GeoOptions<{}>): GeoRenderable<B> => {
-  const { colors, id, textureIndexes } = options;
+  const { id, textureCoordinates } = options;
 
   const rotationFront = Transform.rotationX(deg2rad(-90));
   const rotationDown = Transform.rotationX(deg2rad(180));
@@ -40,11 +40,11 @@ const cubeGen: CubeGenerator<any> = <B>(t: Transform, options: GeoOptions<{}>): 
   normals.push(...downCoords[1], ...frontCoords[1], ...backCoords[1], ...leftCoords[1], ...rightCoords[1]);
   textureUV.push(...downCoords[2], ...frontCoords[2], ...backCoords[2], ...leftCoords[2], ...rightCoords[2]);
 
-  const triangleData = new GeoRenderable<B>(id, 'triangle-list', colors, textureIndexes);
+  const triangleData = new GeoRenderable<B>(id, 'triangle-list', options);
   triangleData.addVertices(new Float32Array(coordinates));
   triangleData.addNormals(new Float32Array(normals));
 
-  if (textureIndexes) {
+  if (textureCoordinates) {
     triangleData.addTextures(new Float32Array(textureUV));
   }
 
