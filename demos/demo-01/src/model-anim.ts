@@ -3,7 +3,7 @@ import * as WebGPU from '@shaders-mono/webgpu';
 
 let angle = 0;
 
-export const buildModelAnim = (gpu: WebGPU.Gpu) => {
+export const buildModelAnim = (_gpu: WebGPU.Gpu) => {
   return {
     'earth-sphere': (msDelta: number) => {
       const deltaSec = msDelta / 1000;

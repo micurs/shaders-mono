@@ -36,10 +36,9 @@ export const buildCube = (texture: WebGPU.Material): Scene => {
 };
 
 export const buildScene = (): Scene => {
-  const refGrid = WebGPU.planeGridLines()(Transform.scale(50, 50, 1).translation(0, 0, 0), {
+  const refGrid = WebGPU.planeGridLines()(Transform.scale(40, 40, 1).translation(0, 0, 0), {
     id: 'ref-plane',
-    steps: 50,
-    colors: [[0.4, 0.4, 0.5, 0.1]],
+    colors: [[0.4, 0.3, 0.4, 0.9]],
   });
 
   return [refGrid];

@@ -9,7 +9,7 @@ export const buildLights = (gpu: Gpu): LightsTransformationHandlers => {
 
   const posSec = Point.fromValues(0.0, 9.0, 3).map(Transform.rotationZ(one60 * s));
 
-  gpu.setAmbientLight([0.15, 0.15, 0.15, 1.0]);
+  gpu.setAmbientLight([0.0, 0.0, 0.0, 1.0]);
   gpu.setLight('directional', 0, { dir: UnitVector.fromValues(0.2, 0.2, -1.0), col: [0.2, 0.2, 0.2, 1.0] });
   gpu.setLight('directional', 1, { dir: UnitVector.fromValues(1.0, 0, 0.0), col: [0.1, 0.1, 0.3, 1.0] });
   gpu.setLight('point', 0, { pos: Point.fromValues(0.0, 0.0, 5), col: [0.55, 0.25, 0.25, 1.0] });

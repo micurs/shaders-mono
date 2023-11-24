@@ -38,13 +38,12 @@ export const buildScene = async (gpu: WebGPU.Gpu, _texture: ImageBitmap): Promis
 
   const plane = WebGPU.planeTriMesh()(Transform.scale(40, 40, 1).translation(0, 0, -2), {
     id: 'ref-xyplane',
-    colors: [[0.1, 0.1, 0.0, 0.5]],
+    colors: [[0.1, 0.1, 0.2, 0.5]],
     steps: 5,
   });
   const grid = WebGPU.planeGridLines()(Transform.scale(40, 40, 1).translation(0, 0, -2), {
     id: 'ref-xygrid',
-    colors: [[0.6, 0.6, 1.0, 0.2]],
-    steps: 5,
+    colors: [[0.3, 0.2, 0.5, 0.2]],
   });
 
   const seconds = WebGPU.cubeTriMesh()(Transform.scale(0.3, 0.3, 7.0).rotationX(deg2rad(90)).translation(0.0, 5.5, 1), {

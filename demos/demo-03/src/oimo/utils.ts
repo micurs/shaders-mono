@@ -24,11 +24,13 @@ export const addSphere = (world: OIMO.World, pos: Vector, dim: Vector, _mass: nu
   });
 };
 
-export const addBox = (world: OIMO.World, pos: Vector, dim: Vector, _mass: number = 1): OIMO.Body => {
+export const addBox = (world: OIMO.World, pos: Vector, dim: Vector, rot: [number, number, number], _mass: number = 1): OIMO.Body => {
   return world.add({
     type: 'box',
     size: dim.triplet,
     pos: pos.triplet,
+    rot,
+    rotShape: rot,
     move: true,
     density: 1,
     world: world,
@@ -37,11 +39,12 @@ export const addBox = (world: OIMO.World, pos: Vector, dim: Vector, _mass: numbe
   });
 };
 
-export const addCylinder = (world: OIMO.World, pos: Vector, dim: Vector, _mass: number = 1): OIMO.Body => {
+export const addCylinder = (world: OIMO.World, pos: Vector, dim: Vector, rot: [number, number, number], _mass: number = 1): OIMO.Body => {
   return world.add({
     type: 'cylinder',
     size: dim.triplet,
     pos: pos.triplet,
+    rot,
     move: true,
     density: 1,
     world: world,
