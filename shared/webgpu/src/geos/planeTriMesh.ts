@@ -15,7 +15,7 @@ interface PlaneGenerator<B> extends GeoGenerator<B, PlaneTriMeshOptions> {}
  * @param color - color or texture to apply to the plane
  */
 const planGenerator: PlaneGenerator<any> = <B>(t: Transform, options: GeoOptions<PlaneTriMeshOptions>): GeoRenderable<B> => {
-  const { colors, steps, id } = options;
+  const { steps, id } = options;
 
   // 0 - Determine the scale of the plane (x/y)
   const s = t.scaleVector;
@@ -49,7 +49,7 @@ const planGenerator: PlaneGenerator<any> = <B>(t: Transform, options: GeoOptions
       triangleData.addVertices(coords);
       triangleData.addNormals(normals);
       return triangleData;
-    }, new GeoRenderable<B>(id, 'triangle-strip', colors))
+    }, new GeoRenderable<B>(id, 'triangle-strip', options))
     .setCullMode('none');
 };
 

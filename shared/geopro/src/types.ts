@@ -28,7 +28,7 @@ export type MatEntries = [
 ];
 
 export interface RotationTranslationScale {
-  rotation: Rotation;
-  translation: Vector;
-  scale: Vector;
+  rotation?: Rotation;
+  translation?: Vector;
+  scale?: Vector;
 }

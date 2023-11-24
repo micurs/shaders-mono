@@ -23,6 +23,13 @@ export class UnitVector {
     return uv;
   }
 
+  static fromPoints(p1: Point, p2: Point) {
+    const uv = new UnitVector();
+    uv._coord = vec4.fromValues(p1.x - p2.x, p1.y - p2.y, p1.z - p2.z, 0);
+    vec4.normalize(uv._coord, uv._coord);
+    return uv;
+  }
+
   fromPoint(p: Point) {
     const uv = UnitVector.fromValues(...p.triplet);
     return uv;

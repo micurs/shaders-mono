@@ -352,9 +352,7 @@ export class Gpu implements GPUConnection {
       // For each object in the scene we set the uniform buffer with the color and (potentially) the model matrix
       const uniformColorData = new Float32Array(geoRenderable.colors[idx]); // Color for the current object
       device.queue.writeBuffer(uniformBuffers.colorBuffers[0], 0, uniformColorData);
-      if (geoRenderable.textureIndexes[idx]) {
-        device.queue.writeBuffer(uniformBuffers.colorBuffers[1], 0, new Uint32Array([0]));
-      }
+      device.queue.writeBuffer(uniformBuffers.colorBuffers[1], 0, new Float32Array([geoRenderable.textureAlpha]));
       renderPass.setBindGroup(1, bindGroups.colorGroup); // Color
       const vtx = geoRenderable.getVertexCountPerStrip(idx);
       this._vertexCount += vtx;

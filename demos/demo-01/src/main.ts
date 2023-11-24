@@ -29,7 +29,7 @@ const getGeoClickHandler = (gpu: Gpu, geo: 'globe' | 'cylinder' | 'cube') => {
         break;
       case 'cube':
         const cube = buildCube(textures[2]);
-        gpu.setScene([...cube, ...refPlane]);
+        gpu.setScene([...refPlane, ...cube]);
         break;
     }
   };
@@ -41,7 +41,7 @@ if (!supportEl || !canvasEl) {
   alert('The app is broken! No canvas was found!');
 } else {
   init(canvasEl, supportEl)
-    .then((gpu) => loadTextures(gpu, ['earth.jpg', 'metal.jpg', 'dice.png']))
+    .then((gpu) => loadTextures(gpu, ['earth.jpg', 'metal2.jpg', 'dice.png']))
     .then(([gpu, textureMaterials]) => {
       textures.push(...textureMaterials);
       const checkbox = document.getElementById('wireframe') as HTMLInputElement;

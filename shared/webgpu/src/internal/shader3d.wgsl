@@ -52,20 +52,21 @@ struct ColorLineFragment {
   @builtin(position) position: vec4<f32>,
   @location(0) viewZ: f32,
   @location(1) targetZ: f32,
+  @location(2) color: vec4<f32>,
 };
 
 struct ColorData {
     color: vec4<f32>,
 };
 
-struct TextureIndex {
-    index: u32
+struct TextureAlpha {
+    value: f32
 };
 
 @group(0) @binding(0) var<uniform> sceneData: SceneData;
 @group(0) @binding(1) var<uniform> sceneLights: SceneLights;
 @group(1) @binding(0) var<uniform> myColor: ColorData;
-@group(1) @binding(1) var<uniform> textureIndex: TextureIndex;
+@group(1) @binding(1) var<uniform> textureAlpha: TextureAlpha;
 @group(2) @binding(0) var<uniform> myModel: ModelData;
 @group(3) @binding(0) var myTexture0: texture_2d<f32>;
 @group(3) @binding(1) var myTexture1: texture_2d<f32>;
@@ -78,7 +79,7 @@ fn computeDiffuseColor(
     pos: vec3<f32>,
     normal: vec3<f32>,
     sceneLights: SceneLights) -> vec3<f32> {
-  let shininess: f32 = 32.0;
+  let shininess: f32 = 64.0;
   var diffuse: vec3<f32> = sceneLights.ambient.rgb;
   for (var i: u32 = 0; i < MAX_DIR_LIGHTS; i = i + 1) {
     if (sceneLights.dirLights[i].col.a != 0.0) {
@@ -134,7 +135,9 @@ fn fragmentTextureShader(in: TextFragment) -> @location(0) vec4<f32> {
   let diffuse: vec3<f32> = computeDiffuseColor( in.eye, in.pos, in.normal, sceneLights );
   let texColor: vec4<f32> = textureSample(myTexture0, mySampler, in.texCoord);
 
-  return vec4<f32>(texColor.rgb * diffuse, 1.0);
+  let textMix = vec4<f32>(1-textureAlpha.value);
+  let finalColor = mix(texColor, myColor.color, textMix); // mixed the two colors based on alpha.
+  return vec4<f32>(finalColor.rgb * diffuse, max(finalColor.a, texColor.a));
 }
 
 // ----------------------------------------------------------------------------------------------- Color Shaders
@@ -162,7 +165,7 @@ fn vertexColorShader(
 @fragment
 fn fragmentColorShader(in: ColorFragment) -> @location(0) vec4<f32> {
   let diffuse: vec3<f32> = computeDiffuseColor( in.eye, in.pos, in.normal, sceneLights );
-  let att: f32 =  1.0 - clamp(in.viewZ / 300, 0.2, 1.0); // TODO: get the 100 from the scene data
+  let att: f32 =  1.0 - clamp(in.viewZ / 1000, 0.2, 1.0); // TODO: get the 100 from the scene data
 
   return vec4<f32>(myColor.color.rgb * diffuse.rgb * att, myColor.color.a);
 }
@@ -170,7 +173,9 @@ fn fragmentColorShader(in: ColorFragment) -> @location(0) vec4<f32> {
 
 @vertex
 fn vertexLineShader(
-    @location(0) vertexPosition: vec3<f32>) -> ColorLineFragment {
+  @location(0) vertexPosition: vec3<f32>,
+  @location(1) vertexColor: vec4<f32>
+) -> ColorLineFragment {
   var output: ColorLineFragment;
   var vertex = myModel.model * vec4<f32>(vertexPosition, 1.0);
 
@@ -183,6 +188,7 @@ fn vertexLineShader(
   output.viewZ = -biasedPositionInViewSpace.z;
   output.targetZ = eyeInViewSpace.z;
   output.position = sceneData.projection * biasedPositionInViewSpace;
+  output.color = vertexColor;
 
   return output;
 }
@@ -190,7 +196,7 @@ fn vertexLineShader(
 
 @fragment
 fn fragmentLineShader(in: ColorLineFragment) -> @location(0) vec4<f32> {
-  let att: f32 =  1.0 - clamp(in.viewZ / 100, 0.0, 1.0); // TODO: get the 100 from the scene data
+  let att: f32 =  1.0 - clamp(in.viewZ / 1000, 0.0, 1.0); // TODO: get the 1000 from the scene data
 
-  return vec4<f32>(myColor.color.rgb, myColor.color.a * att);
+  return vec4<f32>(in.color.rgb, in.color.a * att);
 }

@@ -123,7 +123,8 @@ export interface PointLight {
 export type GeoOptions<T> = T & {
   id: string; // A unique ID in the scene
   colors?: RGBAColor[];
-  textureIndexes?: number[];
+  textureCoordinates?: boolean; // If true, texture coordinates will be generated
+  textureAlpha?: number; // If set, the alpha channel of the texture will be set to this value (otherwise 1.0)
 };
 
 // export type GeoGenerator = <B, O = {}>(t: Transform, options: GeoOptions<O>) => GeoRenderable<B>;

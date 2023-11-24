@@ -107,8 +107,8 @@ export const createColorsBindingGroup = (gpu: Gpu): [GPUBindGroupLayout, GPUBind
     size: 4 * 4, // 4 floats of 4 bytes each
     usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
   });
-  const textureIndexBuffer = gpu.device.createBuffer({
-    size: 4, //  1 32 bit integer
+  const textureMixBuffer = gpu.device.createBuffer({
+    size: 4, //  1 32 bit float
     usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
   });
 
@@ -139,7 +139,7 @@ export const createColorsBindingGroup = (gpu: Gpu): [GPUBindGroupLayout, GPUBind
     },
     {
       binding: 1,
-      resource: { buffer: textureIndexBuffer },
+      resource: { buffer: textureMixBuffer },
     },
   ];
 
@@ -149,7 +149,7 @@ export const createColorsBindingGroup = (gpu: Gpu): [GPUBindGroupLayout, GPUBind
     entries: bindings,
   });
 
-  return [layout, group, [colorBuffer]];
+  return [layout, group, [colorBuffer, textureMixBuffer]];
 };
 
 // Group 2: texture, and sampler
@@ -161,7 +161,7 @@ export const createTextureBindingGroup = (gpu: Gpu, material: Material): [GPUBin
     addressModeU: 'repeat',
     addressModeV: 'repeat',
     magFilter: 'linear',
-    minFilter: 'linear',
+    minFilter: 'nearest',
     mipmapFilter: 'linear',
     maxAnisotropy: 1,
   };
