@@ -49,15 +49,15 @@ export class GeoRenderable<T = null> implements Renderable {
   }
 
   get translationVector(): Vector {
-    return this._transformation.translation;
+    return this._transformation.translation ?? Vector.fromValues(0, 0, 0);
   }
 
   get orientationRotation(): Rotation {
-    return this._transformation.rotation;
+    return this._transformation.rotation ?? Rotation.identity();
   }
 
   get scaleVector(): Vector {
-    return this._transformation.scale;
+    return this._transformation.scale ?? Vector.fromValues(1, 1, 1);
   }
 
   get hasTextures() {
@@ -131,17 +131,17 @@ export class GeoRenderable<T = null> implements Renderable {
   }
 
   scale(v: Vector) {
-    this._transformation.scale = this._transformation.scale.multiply(v);
+    this._transformation.scale = this.scaleVector.multiply(v);
     return this;
   }
 
   translate(v: Vector) {
-    this._transformation.translation = this._transformation.translation.add(v);
+    this._transformation.translation = this.translationVector.add(v);
     return this;
   }
 
   rotate(rt: Rotation) {
-    this._transformation.rotation = this._transformation.rotation.compose(rt);
+    this._transformation.rotation = this.orientationRotation.compose(rt);
     return this;
   }
 

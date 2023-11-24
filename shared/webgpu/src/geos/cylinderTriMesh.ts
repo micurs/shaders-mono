@@ -1,4 +1,4 @@
-import { Point, UnitVector, Vector, Transform } from '@shaders-mono/geopro';
+import { Point, UnitVector, Transform } from '@shaders-mono/geopro';
 import { GeoRenderable } from '../geo-renderable';
 import { GeoGenerator, GeoOptions } from '../types';
 
@@ -38,32 +38,32 @@ const pipe = (step: number, bottom: number, top: number): [Point[], UnitVector[]
 
   for (let alpha = 0; alpha < Math.PI * 2; alpha += alphaStep) {
     const pt1 = Point.fromValues(r * Math.cos(alpha), r * Math.sin(alpha), bottom);
-    const nm1 = UnitVector.fromVector(Vector.fromPoints(pt1, centerBottomPt));
+    const nm1 = UnitVector.fromPoints(pt1, centerBottomPt);
     coordinates.push(pt1);
     normals.push(nm1);
 
     const pt2 = Point.fromValues(r * Math.cos(alpha + alphaStep), r * Math.sin(alpha + alphaStep), bottom);
-    const nm2 = UnitVector.fromVector(Vector.fromPoints(pt2, centerBottomPt));
+    const nm2 = UnitVector.fromPoints(pt2, centerBottomPt);
     coordinates.push(pt2);
     normals.push(nm2);
 
     const pt3 = Point.fromValues(r * Math.cos(alpha), r * Math.sin(alpha), top);
-    const nm3 = UnitVector.fromVector(Vector.fromPoints(pt3, centerTopPt));
+    const nm3 = UnitVector.fromPoints(pt3, centerTopPt);
     coordinates.push(pt3);
     normals.push(nm3);
 
     const pt4 = Point.fromValues(r * Math.cos(alpha), r * Math.sin(alpha), top);
-    const nm4 = UnitVector.fromVector(Vector.fromPoints(pt4, centerTopPt));
+    const nm4 = UnitVector.fromPoints(pt4, centerTopPt);
     coordinates.push(pt4);
     normals.push(nm4);
 
     const pt5 = Point.fromValues(r * Math.cos(alpha + alphaStep), r * Math.sin(alpha + alphaStep), bottom);
-    const nm5 = UnitVector.fromVector(Vector.fromPoints(pt5, centerBottomPt));
+    const nm5 = UnitVector.fromPoints(pt5, centerBottomPt);
     coordinates.push(pt5);
     normals.push(nm5);
 
     const pt6 = Point.fromValues(r * Math.cos(alpha + alphaStep), r * Math.sin(alpha + alphaStep), top);
-    const nm6 = UnitVector.fromVector(Vector.fromPoints(pt6, centerTopPt));
+    const nm6 = UnitVector.fromPoints(pt6, centerTopPt);
     coordinates.push(pt6);
     normals.push(nm6);
   }
@@ -83,7 +83,7 @@ interface CylGenerator<B> extends GeoGenerator<B, CylinderOptions> {}
  * @returns
  */
 export const cylinderGen: CylGenerator<any> = <B>(t: Transform, options: GeoOptions<CylinderOptions>): GeoRenderable<B> => {
-  const { steps, colors, id, textureCoordinates } = options;
+  const { steps, id, textureCoordinates } = options;
   const coordinates = [];
   const normals = [];
   const textureUV: [number, number][] = [];
@@ -114,9 +114,9 @@ export const cylinderGen: CylGenerator<any> = <B>(t: Transform, options: GeoOpti
     textureUV.push(...t2);
     textureUV.push(...t3);
   }
-  normals.push(...n1);
-  normals.push(...n2);
-  normals.push(...n3);
+  normals.push(...n1.map((v) => v.map(t)));
+  normals.push(...n2.map((v) => v.map(t)));
+  normals.push(...n3.map((v) => v.map(t)));
 
   const triangleData = new GeoRenderable<B>(id, 'triangle-list', options);
   triangleData.addVertices(new Float32Array(coordinates.map((v) => v.triplet).flat()));

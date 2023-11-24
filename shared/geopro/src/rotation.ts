@@ -22,9 +22,20 @@ export class Rotation {
     return r;
   }
 
+  static fromAngles(x: number, y: number, z: number) {
+    return Rotation.rotationX(x).rotateY(y).rotateZ(z);
+  }
+
   static fromQuat(direct: quat) {
     const r = new Rotation();
     r._direct = quat.clone(direct);
+    quat.invert(r._inverse, r._direct);
+    return r;
+  }
+
+  static fromArray(direct: number[]) {
+    const r = new Rotation();
+    r._direct = quat.clone(direct as quat);
     quat.invert(r._inverse, r._direct);
     return r;
   }
@@ -56,6 +67,42 @@ export class Rotation {
     const r = new Rotation();
     quat.rotateZ(r._direct, r._direct, a);
     quat.invert(r._inverse, r._direct);
+    return r;
+  }
+
+  // get angleX(): number {
+  //   return quat.getAxisAngle([1, 0, 0], this._direct);
+  // }
+
+  // get angleY(): number {
+  //   return quat.getAxisAngle([0, 1, 0], this._direct);
+  // }
+
+  // get angleZ(): number {
+  //   return quat.getAxisAngle([0, 0, 1], this._direct);
+  // }
+
+  rotateX(a: number): Rotation {
+    const r = new Rotation();
+    r._direct = this._direct;
+    r._inverse = this._inverse;
+    r.compose(Rotation.rotationX(a));
+    return r;
+  }
+
+  rotateY(a: number): Rotation {
+    const r = new Rotation();
+    r._direct = this._direct;
+    r._inverse = this._inverse;
+    r.compose(Rotation.rotationY(a));
+    return r;
+  }
+
+  rotateZ(a: number): Rotation {
+    const r = new Rotation();
+    r._direct = this._direct;
+    r._inverse = this._inverse;
+    r.compose(Rotation.rotationZ(a));
     return r;
   }
 
