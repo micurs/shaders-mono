@@ -11,7 +11,7 @@ const buildLights = (gpu: WebGPU.Gpu) => {
   gpu.setAmbientLight([0.15, 0.15, 0.2, 1.0]);
 
   gpu.setLight('directional', 0, { dir: UnitVector.fromValues(0, 10, -10), col: [0.6, 0.6, 0.6, 1.0] });
-  gpu.setLight('directional', 1, { dir: UnitVector.fromValues(-10, 0, -10), col: [0.6, 0.6, 0.5, 1.0] });
+  gpu.setLight('directional', 1, { dir: UnitVector.fromValues(-10, 0, -10), col: [0.8, 0.6, 0.5, 1.0] });
   gpu.setLight('point', 0, { pos: Point.fromValues(10, 10, 5), col: [0.5, 0.5, 0.45, 1.0] });
   gpu.setLight('point', 1, { pos: Point.fromValues(-10, -10, 4), col: [0.1, 0.1, 0.4, 1.0] });
   gpu.setLight('point', 2, { pos: Point.fromValues(10, -10, 4), col: [0.4, 0.1, 0.2, 1.0] });

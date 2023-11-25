@@ -13,12 +13,12 @@ export const planeGridGenerator: PlaneGenerator<any> = <B = null>(t: Transform, 
 
   // 0 - Determine the scale of the plane (x/y)
   const s = t.scaleVector;
-
+  const targetAlpha = options.colors?.[0] ? options.colors[0][3] / 2 : 0.8;
   const minDim = Math.min(s.x, s.y);
 
   const base10 = Math.log10(minDim);
-  const mainAlpha = 1 - (base10 - Math.floor(base10));
-  const nextAlpha = Math.min(1, mainAlpha * 1.5);
+  const mainAlpha = Math.max(0.9 - (base10 - Math.floor(base10)), targetAlpha / 2);
+  const nextAlpha = Math.max(Math.min(0.9, mainAlpha * 2.0), targetAlpha);
   const prevAlpha = options.colors?.[0] ? options.colors[0][3] / 2 : mainAlpha * 0.5;
   const prevExpStep = Math.floor(base10) - 2;
   const mainExpStep = Math.floor(base10) - 1;
@@ -27,14 +27,13 @@ export const planeGridGenerator: PlaneGenerator<any> = <B = null>(t: Transform, 
   const nextTileDim = Math.pow(10, Math.round(nextExpStep)) / 2;
   const prevTileDim = Math.pow(10, Math.round(prevExpStep));
 
-  console.log('prev tileDim', prevTileDim, 'with alpha', prevAlpha);
-  console.log('main tileDim', mainTileDim, 'with alpha', mainAlpha);
-  console.log('next tileDim', nextTileDim, 'with alpha', nextAlpha);
+  console.log('prev tileDim', prevTileDim, 'with total grids', minDim / prevTileDim, ' with alpha', prevAlpha);
+  console.log('main tileDim', mainTileDim, 'with total grids', minDim / mainTileDim, ' with alpha', mainAlpha);
+  console.log('next tileDim', nextTileDim, 'with total grids', minDim / nextTileDim, ' with alpha', nextAlpha);
 
   // X lines
   const mainGridPts = generateGridPoints(s, mainTileDim, t);
   const nextGridPts = generateGridPoints(s, nextTileDim, t);
-  const prevGridPts = generateGridPoints(s, prevTileDim, t);
 
   // Create the GeoRenderable using 'line-list' as topology.
   const geo = new GeoRenderable<B>(id, 'line-list', options);
@@ -66,9 +65,11 @@ export const planeGridGenerator: PlaneGenerator<any> = <B = null>(t: Transform, 
   geo.addVertices(new Float32Array(mainGridPts.flatMap((p) => p.triplet)));
   geo.addColors(new Float32Array(generateVertexColors(mainGridPts, mainAlpha, options.colors?.[0])));
 
-  geo.addVertices(new Float32Array(prevGridPts.flatMap((p) => p.triplet)));
-  geo.addColors(new Float32Array(generateVertexColors(prevGridPts, prevAlpha, options.colors?.[0])));
-
+  if (minDim / prevTileDim < 100) {
+    const prevGridPts = generateGridPoints(s, prevTileDim, t);
+    geo.addVertices(new Float32Array(prevGridPts.flatMap((p) => p.triplet)));
+    geo.addColors(new Float32Array(generateVertexColors(prevGridPts, prevAlpha, options.colors?.[0])));
+  }
   return geo;
 };
 

@@ -182,7 +182,10 @@ fn computeDistanceToSegment( point: vec3<f32>, segmentStart: vec3<f32>, segmentE
 }
 
 fn computeDistanceToCameraAttenuation( d: f32 ) -> f32 {
-  return 1.0 - clamp(log(d) / log(1000), 0.0, 1.0);
+  if ( d< 50 ) {
+    return 1.0;
+  }
+  return 1 - clamp((d-49)/800 , 0.0, 1.0);
 }
 
 // ----------------------------------------------------------------------------------------------- Texture Shaders
@@ -201,7 +204,7 @@ fn vertexTextureShader(
   output.normal = normalize((myModel.modelInverseTranspose * vec4<f32>(vertexNormal, 0.0)).xyz);
   output.pos = vertex.xyz;
   output.eye = sceneData.invertView[3].xyz;
-  output.viewZ = log(-positionInViewSpace.z);
+  output.viewZ = -positionInViewSpace.z;
 
   return output;
 }
@@ -216,7 +219,7 @@ fn fragmentTextureShader(in: TextFragment) -> @location(0) vec4<f32> {
   let textMix = vec4<f32>(1-textureAlpha.value);
   let finalColor = mix(texColor, myColor.color, textMix); // mixed the two colors based on alpha.
   return clamp(
-    vec4<f32>((finalColor.rgb * diffuse + specular) * att, max(finalColor.a, texColor.a)* att),
+    vec4<f32>((finalColor.rgb * diffuse + specular) * att, max(finalColor.a, texColor.a)),
     vec4<f32>(0, 0, 0, 0.0), vec4<f32>(1.0, 1.0, 1.0, 1.0)
   );
 
