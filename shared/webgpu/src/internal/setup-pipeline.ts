@@ -99,9 +99,17 @@ export const createPipelines = (gpu: Gpu, shaderModule: GPUShaderModule, scene: 
     const pipeline = device.createRenderPipeline(regPipelineData);
     const altPipelineData: GPURenderPipelineDescriptor = {
       ...regPipelineData,
+      // vertex: {
+      //   ...regPipelineData.vertex,
+      //   entryPoint: 'vertexLineShader',
+      // },
+      // fragment: {
+      //   ...regPipelineData.fragment!,
+      //   entryPoint: 'fragmentLineShader',
+      // },
       label: `${geoRenderable.label}-alt`,
       primitive: {
-        topology: 'line-list',
+        topology: geoRenderable.primitives === 'line-list' ? geoRenderable.primitives : 'line-strip',
         cullMode: 'none',
       },
     };
