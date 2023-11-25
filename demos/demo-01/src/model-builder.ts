@@ -5,14 +5,14 @@ import { buildLights } from './lights';
 import { buildModelAnim } from './model-anim';
 
 export const buildGlobe = (earthTexture: WebGPU.Material, cloudsTexture: WebGPU.Material): Scene => {
-  const earth = WebGPU.sphereTriMesh()(Transform.scale(1.5, 1.5, 1.5), {
+  const earth = WebGPU.sphereTriMesh()(Transform.scale(2.5, 2.5, 2.5), {
     id: 'earth-sphere',
     steps: 4,
     colors: [[0.5, 0.5, 0.5, 1.0]],
     textureCoordinates: true,
   });
   earth.setMaterial(earthTexture);
-  const clouds = WebGPU.sphereTriMesh()(Transform.scale(1.502, 1.502, 1.502), {
+  const clouds = WebGPU.sphereTriMesh()(Transform.scale(2.502, 2.502, 2.502), {
     id: 'earth-clouds',
     steps: 4,
     colors: [[0.5, 0.5, 0.5, 1.0]],
@@ -44,7 +44,7 @@ export const buildCube = (texture: WebGPU.Material): Scene => {
 };
 
 export const buildGrid = (): Scene => {
-  const refGrid = WebGPU.planeGridLines()(Transform.scale(100, 100, 1).translation(0, 0, 0), {
+  const refGrid = WebGPU.planeGridLines()(Transform.scale(50, 50, 1).translation(0, 0, 0), {
     id: 'ref-plane',
     colors: [[0.2, 0.2, 0.3, 0.4]],
   });

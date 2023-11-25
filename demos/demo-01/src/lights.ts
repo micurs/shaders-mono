@@ -17,7 +17,6 @@ export const buildLights = (gpu: Gpu): LightsTransformationHandlers => {
   gpu.setLight('point', 2, { pos: posMoon, col: [0.1, 0.1, 0.4, 0.0] });
   gpu.setLight('point', 3, { pos: posMoon, col: [0.1, 0.1, 0.4, 0.0] });
 
-  let c = 0;
   return {
     dirLights: (msDelta: number, dirLights: DirectionalLight[]) => {
       const deltaSec = msDelta / 1000;
@@ -30,7 +29,6 @@ export const buildLights = (gpu: Gpu): LightsTransformationHandlers => {
       const rotMoonZ = Transform.rotationZ(one60 * deltaSec * 1.2);
       ptLights[0].pos = ptLights[0].pos.map(rotSunZ);
       ptLights[1].pos = ptLights[1].pos.map(rotMoonZ);
-      c += msDelta / 1000;
     },
   };
 };
