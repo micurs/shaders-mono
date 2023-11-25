@@ -23,11 +23,11 @@ const height = 20;
 const buildPlane = (world: OIMO.World): WorldScene => {
   const thickness = 0.1;
   const position = Vector.fromValues(0, 0, 0);
-  const scale = Vector.fromValues(98, 62, thickness);
+  const scale = Vector.fromValues(60, 60, thickness);
 
   const plane = WebGPU.planeTriMesh<OIMO.Body>()(Transform.identity(), {
     id: `ref-xyplane-${planeCounter++}`,
-    colors: [[0.5, 0.5, 0.5, 0.5]],
+    colors: [[0.3, 0.4, 0.6, 0.6]],
     steps: 4,
   });
   plane.scale(scale);
@@ -35,7 +35,7 @@ const buildPlane = (world: OIMO.World): WorldScene => {
 
   const grid = WebGPU.planeGridLines()(Transform.scale(scale.x, scale.y, scale.z), {
     id: `ref-xygrid-${planeCounter++}`,
-    colors: [[0.6, 0.6, 1.0, 0.4]],
+    colors: [[0.6, 0.6, 0.6, 1.0]],
     showAxes: true,
   });
   // grid.scale(scale);
@@ -92,9 +92,9 @@ const buildCube = (world: OIMO.World, image?: WebGPU.Material): WorldScene => {
     const rot = Rotation.fromAngles(...(rotations.map(deg2rad) as [number, number, number]));
     const cube = WebGPU.cubeTriMesh<OIMO.Body>()(Transform.identity(), {
       id: `cube-${cubeCounter++}`,
-      colors: [[0.5, Math.random(), Math.random(), 1.0]],
-      textureCoordinates: true,
-      textureAlpha: 0.4,
+      colors: [[Math.random(), Math.random(), Math.random(), 1.0]],
+      textureCoordinates: image ? true : false,
+      textureAlpha: 0.5,
     });
     cube.scale(scale);
     cube.translate(position);
@@ -127,6 +127,7 @@ const buildCylinder = (world: OIMO.World, image?: WebGPU.Material): WorldScene =
       steps: 12,
       colors: [[Math.random(), Math.random(), 0.3, 1.0]],
       textureCoordinates: true,
+      textureAlpha: 0.6,
     });
     cylinder.scale(scale);
     cylinder.translate(position);
