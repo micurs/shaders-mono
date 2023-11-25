@@ -71,7 +71,7 @@ div.main>div.left {
   padding: 0;
   text-align: left;
   background-color: #161616;
-  min-width: 400px;
+  min-width: 380px;
 }
 div.left>div {
   margin: 0 1rem;

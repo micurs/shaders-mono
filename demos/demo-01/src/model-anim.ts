@@ -1,30 +1,39 @@
 import { Rotation, deg2rad } from '@shaders-mono/geopro';
 import * as WebGPU from '@shaders-mono/webgpu';
 
-let angle = 0;
+let angleEarth = 0;
+let angleClouds = 0;
 
 export const buildModelAnim = (_gpu: WebGPU.Gpu) => {
   return {
+    'earth-clouds': (msDelta: number) => {
+      const deltaSec = -msDelta / 1000;
+      angleClouds += deltaSec * deg2rad(360 / 240);
+      const rotZ = Rotation.rotationZ(angleClouds);
+      return {
+        rotation: rotZ,
+      };
+    },
     'earth-sphere': (msDelta: number) => {
-      const deltaSec = msDelta / 1000;
-      angle += deltaSec * deg2rad(360 / 180);
-      const rotZ = Rotation.rotationZ(angle);
+      const deltaSec = -msDelta / 1000;
+      angleEarth += deltaSec * deg2rad(360 / 180);
+      const rotZ = Rotation.rotationZ(angleEarth);
       return {
         rotation: rotZ,
       };
     },
     cylinder: (msDelta: number) => {
       const deltaSec = msDelta / 1000;
-      angle += deltaSec * deg2rad(360 / 20);
-      const rotZ = Rotation.rotationZ(angle).compose(Rotation.rotationY(angle));
+      angleEarth += deltaSec * deg2rad(360 / 20);
+      const rotZ = Rotation.rotationZ(angleEarth).compose(Rotation.rotationY(angleEarth));
       return {
         rotation: rotZ,
       };
     },
     cube: (msDelta: number) => {
       const deltaSec = msDelta / 1000;
-      angle += deltaSec * deg2rad(360 / 10);
-      const rotZ = Rotation.rotationZ(angle).compose(Rotation.rotationY(angle)).compose(Rotation.rotationZ(angle));
+      angleEarth += deltaSec * deg2rad(360 / 10);
+      const rotZ = Rotation.rotationZ(angleEarth).compose(Rotation.rotationY(angleEarth)).compose(Rotation.rotationZ(angleEarth));
       return {
         rotation: rotZ,
       };
