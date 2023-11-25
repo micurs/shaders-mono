@@ -4,15 +4,23 @@ import * as WebGPU from '@shaders-mono/webgpu';
 import { buildLights } from './lights';
 import { buildModelAnim } from './model-anim';
 
-export const buildGlobe = (texture: WebGPU.Material): Scene => {
-  const sphere = WebGPU.sphereTriMesh()(Transform.scale(1.5, 1.5, 1.5), {
+export const buildGlobe = (earthTexture: WebGPU.Material, cloudsTexture: WebGPU.Material): Scene => {
+  const earth = WebGPU.sphereTriMesh()(Transform.scale(2.5, 2.5, 2.5), {
     id: 'earth-sphere',
     steps: 4,
     colors: [[0.5, 0.5, 0.5, 1.0]],
     textureCoordinates: true,
   });
-  sphere.setMaterial(texture);
-  return [sphere];
+  earth.setMaterial(earthTexture);
+  const clouds = WebGPU.sphereTriMesh()(Transform.scale(2.502, 2.502, 2.502), {
+    id: 'earth-clouds',
+    steps: 4,
+    colors: [[0.5, 0.5, 0.5, 1.0]],
+    textureCoordinates: true,
+  });
+  clouds.setMaterial(cloudsTexture);
+
+  return [earth, clouds];
 };
 
 export const buildCylinder = (texture: WebGPU.Material): Scene => {
@@ -35,10 +43,10 @@ export const buildCube = (texture: WebGPU.Material): Scene => {
   return [cyl];
 };
 
-export const buildScene = (): Scene => {
-  const refGrid = WebGPU.planeGridLines()(Transform.scale(40, 40, 1).translation(0, 0, 0), {
+export const buildGrid = (): Scene => {
+  const refGrid = WebGPU.planeGridLines()(Transform.scale(50, 50, 1).translation(0, 0, 0), {
     id: 'ref-plane',
-    colors: [[0.4, 0.3, 0.4, 0.9]],
+    colors: [[0.2, 0.2, 0.3, 0.4]],
   });
 
   return [refGrid];
@@ -66,7 +74,7 @@ export async function init(canvasEl: HTMLCanvasElement, _supportEl: HTMLParagrap
     models: modelAnimHandlers,
   });
 
-  const scene = await buildScene();
+  const scene = await buildGrid();
 
   gpu.setScene(scene);
   return gpu;

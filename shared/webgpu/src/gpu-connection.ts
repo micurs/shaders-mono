@@ -55,7 +55,7 @@ export class Gpu implements GPUConnection {
   private _ambientLight: RGBAColor = [0.3, 0.3, 0.3, 1.0];
 
   private _dirLights: Array<DirectionalLight> = [
-    { dir: UnitVector.fromValues(0.0, 0.0, 1.0), col: [0.4, 0.4, 0.4, 1.0] },
+    { dir: UnitVector.fromValues(0.0, 0.0, 1.0), col: [0.4, 0.4, 0.4, 0.0] },
     { dir: UnitVector.fromValues(1.0, 1.0, 1.0), col: [0.4, 0.3, 0.3, 0.0] },
     { dir: UnitVector.fromValues(1.0, 0.0, 0.0), col: [0.5, 0.5, 0.5, 0.0] },
     { dir: UnitVector.fromValues(-1.0, -1.0, -1.0), col: [0.3, 0.3, 0.3, 0.0] },
