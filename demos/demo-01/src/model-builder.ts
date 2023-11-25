@@ -12,7 +12,7 @@ export const buildGlobe = (earthTexture: WebGPU.Material, cloudsTexture: WebGPU.
     textureCoordinates: true,
   });
   earth.setMaterial(earthTexture);
-  const clouds = WebGPU.sphereTriMesh()(Transform.scale(2.502, 2.502, 2.502), {
+  const clouds = WebGPU.sphereTriMesh()(Transform.scale(2.505, 2.505, 2.505), {
     id: 'earth-clouds',
     steps: 4,
     colors: [[0.5, 0.5, 0.5, 1.0]],
