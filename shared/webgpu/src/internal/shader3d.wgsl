@@ -196,8 +196,8 @@ fn computeDistanceToCameraAttenuation( d: f32 ) -> f32 {
 @vertex
 fn vertexTextureShader(
     @location(0) vertexPosition: vec3<f32>,
-    @location(1) vertexTexCoord: vec2<f32>,
-    @location(2) vertexNormal: vec3<f32>) -> TextFragment {
+    @location(1) vertexNormal: vec3<f32>,
+    @location(2) vertexTexCoord: vec2<f32>) -> TextFragment {
   var output: TextFragment;
   var vertex = myModel.model * vec4<f32>(vertexPosition, 1.0);
   var positionInViewSpace = sceneData.view * vertex;
@@ -288,12 +288,12 @@ fn vertexColorShader(
 
 @fragment
 fn fragmentColorShader(in: ColorFragment) -> @location(0) vec4<f32> {
+  let att: f32 =  computeDistanceToCameraAttenuation(in.viewZ);
   let diffuse: vec3<f32> = computeDiffuseColor( in.eye, in.pos, in.normal, sceneLights );
   let specular: vec3<f32> = computeSpecularColor( in.eye, in.pos, in.normal, sceneLights, myColor.color );
-  let att: f32 =  computeDistanceToCameraAttenuation(in.viewZ);
 
   return clamp(
-    vec4<f32>((myColor.color.rgb * diffuse.rgb + specular) * att, myColor.color.a * att),
+    vec4<f32>((myColor.color.rgb * diffuse.rgb + specular) * att, myColor.color.a),
     vec4<f32>(0, 0, 0, 0.0), vec4<f32>(1.0, 1.0, 1.0, 1.0)
   );
 

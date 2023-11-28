@@ -80,10 +80,8 @@ export class GeoRenderable<T = null> implements Renderable {
   get fragmentShader() {
     if (this._topology === 'triangle-strip' || this._topology === 'triangle-list') {
       if (this._materials.length == 2) {
-        console.log('Using normal texture shader!');
         return 'fragmentTextureBumpShader'; // TODO: This should be controlled by an explicit setting when adding material
       }
-
       return this.hasTextures ? 'fragmentTextureShader' : 'fragmentColorShader';
     }
     return 'fragmentLineShader';
@@ -217,14 +215,14 @@ export class GeoRenderable<T = null> implements Renderable {
           fragment.push(this._vertexColors[idx][ci + 2]);
           fragment.push(this._vertexColors[idx][ci + 3]);
         }
-        if (this._vertexTextureCoords.length > idx) {
-          fragment.push(this._vertexTextureCoords[idx][ti + 0]);
-          fragment.push(this._vertexTextureCoords[idx][ti + 1]);
-        }
         if (this._vertexNormals.length > idx) {
           fragment.push(this._vertexNormals[idx][ni + 0]);
           fragment.push(this._vertexNormals[idx][ni + 1]);
           fragment.push(this._vertexNormals[idx][ni + 2]);
+        }
+        if (this._vertexTextureCoords.length > idx) {
+          fragment.push(this._vertexTextureCoords[idx][ti + 0]);
+          fragment.push(this._vertexTextureCoords[idx][ti + 1]);
         }
         fragments.push(...fragment);
       }
@@ -259,18 +257,6 @@ export class GeoRenderable<T = null> implements Renderable {
       offset += 4 * float32Size; // advance 4 elements for the color.
     }
 
-    // Textures
-    if (this._vertexTextureCoords.length > 0) {
-      layouts.push({
-        // UV
-        shaderLocation,
-        offset, // skip 3 elements for the coordinates.
-        format: 'float32x2',
-      });
-      shaderLocation += 1;
-      offset += 2 * float32Size; // advance 2 elements for the texture coordinates.
-    }
-
     // Normals
     if (this._vertexNormals.length > 0) {
       layouts.push({
@@ -281,6 +267,18 @@ export class GeoRenderable<T = null> implements Renderable {
       });
       shaderLocation += 1;
       offset += 3 * float32Size; // advance 3 elements for the normal.
+    }
+
+    // Textures
+    if (this._vertexTextureCoords.length > 0) {
+      layouts.push({
+        // UV
+        shaderLocation,
+        offset, // skip 3 elements for the coordinates.
+        format: 'float32x2',
+      });
+      shaderLocation += 1;
+      offset += 2 * float32Size; // advance 2 elements for the texture coordinates.
     }
 
     return layouts;
