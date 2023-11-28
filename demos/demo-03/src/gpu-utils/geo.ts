@@ -70,7 +70,7 @@ const buildSphere = (world: OIMO.World, image?: WebGPU.Material): WorldScene => 
     const body = addSphere(world, position, scale);
     sphere.setBody(body);
     if (image) {
-      sphere.setMaterial(image);
+      sphere.addMaterial(image);
     }
     spheres.unshift(sphere);
   }
@@ -102,7 +102,7 @@ const buildCube = (world: OIMO.World, image?: WebGPU.Material): WorldScene => {
     const body = addBox(world, position, scale, rotations);
     cube.setBody(body);
     if (image) {
-      cube.setMaterial(image);
+      cube.addMaterial(image);
     }
     cubes.push(cube);
   }
@@ -136,7 +136,7 @@ const buildCylinder = (world: OIMO.World, image?: WebGPU.Material): WorldScene =
     const body = addCylinder(world, position, Vector.fromValues(1.0, 2.0, 1), rotations);
     cylinder.setBody(body);
     if (image) {
-      cylinder.setMaterial(image);
+      cylinder.addMaterial(image);
     }
 
     cylinders.push(cylinder);

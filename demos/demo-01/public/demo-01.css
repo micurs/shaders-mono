@@ -47,16 +47,14 @@ h1 {
 }
 
 #gfx-canvas {
-  background-color: #020202;
+  background-color: transparent;
   border: none;
   margin: 0;
   padding: 0;
   max-width: 100%;
-    max-height: 800px;
+  max-height: 800px;
     height: 800px;
     min-height: 100%;
-    /* width: 100%;
-        min-width: 100%; */
 }
 
 div.main {
@@ -81,9 +79,59 @@ div.main>div.right {
   background-color: #161620;
   padding: 0;
   flex-grow: 1;
+  position: relative;
+    min-width: 806px;
 }
 div.option-section {
   margin: 1rem 0;
   border-top: solid 1px #222222;
   padding: 1rem;
+}
+div.option-section>p {
+  display: flex;
+}
+
+div.option-section>label {
+  display: inline-block;
+  width: 120px;
+  margin: 0 2px;
+}
+
+#support {
+  position: absolute;
+  top: calc(50% - 3em);
+  display: block;
+  text-align: center;
+  left: calc(50% - 200px);
+  width: 400px;
+  font-size: x-large;
+  height: 3em;
+  line-height: 3em;
+  border: solid 1px #f0f0f0;
+  text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.6);
+  opacity: 1;
+  transition: opacity 1s ease-out;
+}
+
+#fps {
+  position: absolute;
+  bottom: 0px;
+  right: 0px;
+  width: 0px;
+  height: 25px;
+  background-color: rgba(255, 255, 255, 0.1);
+  text-align: left;
+  padding: 2px 7px;
+  opacity: 0;
+  overflow: hidden;
+  transition: opacity 0.5s 2.0s ease-out, width 0.5s 2.0s ease-out;
+}
+
+table#controls {
+  width: 100%;
+  border-collapse: collapse;
+  border-spacing: 0;
+  margin: 0;
+  padding: 0;
+  margin-bottom: 1rem;
 }
