@@ -84,8 +84,8 @@ export const createTextureMaterial = (gpu: Gpu, name: string, image: ImageBitmap
 
   return {
     name,
-    textures: [texture],
-    views: [view],
+    texture,
+    view,
   };
 };
 

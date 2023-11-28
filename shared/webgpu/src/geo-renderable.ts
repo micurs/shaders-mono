@@ -28,13 +28,15 @@ export class GeoRenderable<T = null> implements Renderable {
   private _topology: GPUPrimitiveTopology = 'triangle-list';
   private _cullMode: GPUCullMode = 'back';
 
-  private _material: Material | null = null;
+  private _materials: Material[] = [];
 
   private _transformation: RotationTranslationScale = {
     rotation: Rotation.identity(),
     scale: Vector.fromValues(1, 1, 1),
     translation: Vector.fromValues(0, 0, 0),
   };
+
+  public display: 'none' | 'full' | 'no-texture' = 'full';
 
   get id(): string {
     return this._id;
@@ -61,11 +63,11 @@ export class GeoRenderable<T = null> implements Renderable {
   }
 
   get hasTextures() {
-    return this._vertexTextureCoords.length > 0 && this._material !== null;
+    return this._vertexTextureCoords.length > 0 && this._materials.length > 0;
   }
 
-  get material(): Material | null {
-    return this._material;
+  get materials(): Material[] {
+    return this._materials;
   }
 
   get vertexShader() {
@@ -77,6 +79,11 @@ export class GeoRenderable<T = null> implements Renderable {
 
   get fragmentShader() {
     if (this._topology === 'triangle-strip' || this._topology === 'triangle-list') {
+      if (this._materials.length == 2) {
+        console.log('Using normal texture shader!');
+        return 'fragmentTextureBumpShader'; // TODO: This should be controlled by an explicit setting when adding material
+      }
+
       return this.hasTextures ? 'fragmentTextureShader' : 'fragmentColorShader';
     }
     return 'fragmentLineShader';
@@ -121,8 +128,12 @@ export class GeoRenderable<T = null> implements Renderable {
     return new Float32Array([...t.values, ...t.transpose().invert().values]);
   }
 
-  setMaterial(material: Material) {
-    this._material = material;
+  /**
+   * Add a new material to the GeoRenderable and return its index as stored in the materials array.
+   */
+  addMaterial(material: Material): number {
+    this._materials.push(material);
+    return this.materials.length - 1;
   }
 
   setBody(body: T) {

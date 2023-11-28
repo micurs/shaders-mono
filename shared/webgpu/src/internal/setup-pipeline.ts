@@ -9,7 +9,7 @@ import { createColorsBindingGroup, createTextureBindingGroup, createSceneDataBin
  * @param type - The type of pipeline to create
  * @returns
  */
-const createPipelineLayout = (gpu: Gpu, material: Material | null): PipelineLayoutData => {
+const createPipelineLayout = (gpu: Gpu, materials: Material[]): PipelineLayoutData => {
   const { device } = gpu;
   // Group 0: Transformations
   const [sceneLayout, sceneGroup, sceneBuffers] = createSceneDataBindingGroup(gpu);
@@ -19,9 +19,10 @@ const createPipelineLayout = (gpu: Gpu, material: Material | null): PipelineLayo
   const [modelLayout, modelGroup, modelBuffers] = createModelTransBindingGroup(gpu);
 
   // Group 3: texture, and sampler
-  const [texturesLayout, texturesGroup] = material
-    ? createTextureBindingGroup(gpu, material) // Only if we have a texture
-    : [undefined, undefined];
+  const [texturesLayout, texturesGroup] =
+    materials.length > 0
+      ? createTextureBindingGroup(gpu, materials) // Only if we have a texture
+      : [undefined, undefined];
 
   const bindGroupLayouts = texturesLayout
     ? [sceneLayout, colorLayout, modelLayout, texturesLayout] // If we have a texture
@@ -51,7 +52,7 @@ export const createPipelines = (gpu: Gpu, shaderModule: GPUShaderModule, scene: 
   const { device, format } = gpu;
 
   const idGeoPairs = scene.map<[string, GPUPipeline]>((geoRenderable): [string, GPUPipeline] => {
-    const [pipelineLayout, groups, buffers] = createPipelineLayout(gpu, geoRenderable.material);
+    const [pipelineLayout, groups, buffers] = createPipelineLayout(gpu, geoRenderable.materials);
 
     // Create the render pipeline and decide which shaders to use.
     const regPipelineData: GPURenderPipelineDescriptor = {

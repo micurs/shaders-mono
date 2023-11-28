@@ -166,4 +166,4 @@ export const logN = (n: number, base: number) => Math.log(n) / Math.log(base);
 
 export const zeroHex = (num: number, places: number): string => num.toString(16).padStart(places, '0');
 
-export const notNull = <T>(value: T | null): value is T => value !== null;
+export const notNull = <T>(value: T | null | undefined): value is T => value !== null && value !== undefined;

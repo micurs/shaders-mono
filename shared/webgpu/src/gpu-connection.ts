@@ -19,7 +19,7 @@ import {
 import { setupShaderModule } from './internal/setup-shaders';
 import { createPipelines } from './internal/setup-pipeline';
 import { initMouseHandler } from './internal/mouse-capture';
-import { buildRenderPassDescriptor, connectGPU, getTransformations, isPredefinedShader } from './internal/utils';
+import { buildRenderPassDescriptor, connectGPU, getTransformations, isPredefinedShader, notNull } from './internal/utils';
 
 import shader3D from './internal/shader3d.wgsl?raw';
 import shader2D from './internal/shader2d.wgsl?raw';
@@ -94,6 +94,13 @@ export class Gpu implements GPUConnection {
 
   get pontLights(): Array<PointLight> {
     return this._pointLights;
+  }
+
+  get(...pipelines: string[]): Array<GeoRenderable<unknown>> {
+    return pipelines
+      .map((s) => this._pipelines.get(s))
+      .filter(notNull)
+      .map((p) => p.geoRenderable);
   }
 
   setAmbientLight(lightCol: RGBAColor) {
@@ -332,6 +339,10 @@ export class Gpu implements GPUConnection {
       // Writes the Scene into the uniformBuffer ZERO...
       this.sceneIntoBuffer(uniformBuffers.sceneBuffers);
       renderPass.setBindGroup(0, bindGroups.sceneGroup); // Scene data binding groups
+    }
+
+    if (geoRenderable.display === 'none') {
+      return;
     }
 
     const activePipeline = this._pipelineMode === 'default' ? pipeline : altPipeline;

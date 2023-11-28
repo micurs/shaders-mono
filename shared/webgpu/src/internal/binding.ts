@@ -1,7 +1,6 @@
 import { Transform, Vector, Point } from '@shaders-mono/geopro';
 import { Gpu } from '../gpu-connection';
 import { Material } from '../types';
-import { notNull } from './utils';
 
 // Group 0 (default): Transformations
 export const createSceneDataBindingGroup = (gpu: Gpu): [GPUBindGroupLayout, GPUBindGroup, GPUBuffer[]] => {
@@ -153,7 +152,7 @@ export const createColorsBindingGroup = (gpu: Gpu): [GPUBindGroupLayout, GPUBind
 };
 
 // Group 2: texture, and sampler
-export const createTextureBindingGroup = (gpu: Gpu, material: Material): [GPUBindGroupLayout, GPUBindGroup] => {
+export const createTextureBindingGroup = (gpu: Gpu, materials: Material[]): [GPUBindGroupLayout, GPUBindGroup] => {
   const { device } = gpu;
 
   // Create the Sampler to get the image from the texture using u,v coordinates
@@ -161,12 +160,12 @@ export const createTextureBindingGroup = (gpu: Gpu, material: Material): [GPUBin
     addressModeU: 'repeat',
     addressModeV: 'repeat',
     magFilter: 'linear',
-    minFilter: 'nearest',
+    minFilter: 'linear',
     mipmapFilter: 'linear',
     maxAnisotropy: 1,
   };
   const sampler = device.createSampler(samplerDescriptor);
-  const availableViews = material.views.filter(notNull);
+  const availableViews = materials.map((m) => m.view);
   const entries: GPUBindGroupLayoutEntry[] = [
     ...availableViews.map<GPUBindGroupLayoutEntry>((_, idx) => ({
       binding: idx,
