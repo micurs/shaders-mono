@@ -30,7 +30,7 @@ if (!supportEl || !canvasEl) {
   init(canvasEl, supportEl)
     .then((gpu) => {
       supportEl!.innerText = 'Loading textures...';
-      return loadTextures(gpu, ['earth.jpg', 'earth-bump-4k.png', 'clouds-2k.png']);
+      return loadTextures(gpu, ['earth.jpg', 'clouds-4k.png', 'earth-bump-4k.png']);
     })
     .then(([gpu, textureMaterials]) => {
       sceneOptions.globeTextures.push(...textureMaterials);

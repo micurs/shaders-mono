@@ -8,7 +8,7 @@ export const buildModelAnim = (_gpu: WebGPU.Gpu) => {
   return {
     'earth-clouds': (msDelta: number) => {
       const deltaSec = msDelta / 1000;
-      angleClouds += deltaSec * 0.014;
+      angleClouds -= deltaSec * 0.015;
       const rotZ = Rotation.rotationZ(angleClouds);
       return {
         rotation: rotZ,
@@ -16,7 +16,7 @@ export const buildModelAnim = (_gpu: WebGPU.Gpu) => {
     },
     'earth-sphere': (msDelta: number) => {
       const deltaSec = msDelta / 1000;
-      angleEarth += deltaSec * 0.01;
+      angleEarth -= deltaSec * 0.022;
       const rotZ = Rotation.rotationZ(angleEarth);
       return {
         rotation: rotZ,
