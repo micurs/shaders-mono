@@ -36,14 +36,14 @@ export const buildScene = async (gpu: WebGPU.Gpu, _texture: ImageBitmap): Promis
 
   const color3: WebGPU.RGBAColor = [0.8, 0.3, 1.0, 1.0];
 
-  const plane = WebGPU.planeTriMesh()(Transform.scale(40, 40, 1).translation(0, 0, -2), {
+  const plane = WebGPU.planeTriMesh()(Transform.scale(6, 6, 1).translation(0, 0, -2), {
     id: 'ref-xyplane',
-    colors: [[0.1, 0.1, 0.2, 0.5]],
+    colors: [[0.1, 0.1, 0.2, 0.4]],
     steps: 5,
   });
-  const grid = WebGPU.planeGridLines()(Transform.scale(40, 40, 1).translation(0, 0, -2), {
+  const grid = WebGPU.planeGridLines()(Transform.scale(60, 6, 1).translation(0, 0, -2), {
     id: 'ref-xygrid',
-    colors: [[0.3, 0.2, 0.5, 0.2]],
+    showAxes: true,
   });
 
   const seconds = WebGPU.cubeTriMesh()(Transform.scale(0.3, 0.3, 7.0).rotationX(deg2rad(90)).translation(0.0, 5.5, 1), {
@@ -68,7 +68,7 @@ export const buildScene = async (gpu: WebGPU.Gpu, _texture: ImageBitmap): Promis
   // const material = WebGPU.createTextureMaterial(gpu, texture);
   // sphere0.setMaterial(material);
 
-  const minuteTicks = buildTicks('minute-tick', 10, 60, 0.25, [0.7, 0.2, 0.9, 1.0]);
+  const minuteTicks = buildTicks('minute-tick', 10, 60, 0.2, [0.7, 0.2, 0.9, 1.0]);
   const fiveMinTicks = buildTicks('five-min-tick', 10, 12, 0.7, [0.7, 0.7, 0.3, 1.0]);
   const scene: Scene = [grid, seconds, sphere0, minutes, hour, ...minuteTicks, ...fiveMinTicks, plane];
   await gpu.setScene(scene);

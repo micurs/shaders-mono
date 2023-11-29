@@ -4,7 +4,7 @@ import { Rotation, Transform, Vector, deg2rad } from '@shaders-mono/geopro';
 import * as OIMO from 'oimo';
 
 import { GeoTool, WorldScene } from '../types';
-import { addSphere, addBox, addCylinder, addStaticBox } from '../oimo/utils';
+import { addSphere, addBox, addCylinder, addStaticBox } from './oimo-integration';
 
 let sphereCounter = 0;
 let planeCounter = 0;
@@ -20,10 +20,10 @@ const height = 20;
  * @param world
  * @returns
  */
-const buildPlane = (world: OIMO.World): WorldScene => {
+export const buildPlane = (world: OIMO.World): WorldScene => {
   const thickness = 0.1;
   const position = Vector.fromValues(0, 0, 0);
-  const scale = Vector.fromValues(60, 60, thickness);
+  const scale = Vector.fromValues(120, 120, thickness);
 
   const plane = WebGPU.planeTriMesh<OIMO.Body>()(Transform.identity(), {
     id: `ref-xyplane-${planeCounter++}`,
@@ -43,7 +43,7 @@ const buildPlane = (world: OIMO.World): WorldScene => {
 
   const body = addStaticBox(world, position, scale);
   plane.setBody(body);
-  return [grid, plane];
+  return [plane, grid];
 };
 
 const buildSphere = (world: OIMO.World, image?: WebGPU.Material): WorldScene => {
@@ -61,6 +61,7 @@ const buildSphere = (world: OIMO.World, image?: WebGPU.Material): WorldScene => 
       id: `sphere-${sphereCounter++}`,
       steps: 2,
       textureCoordinates: true,
+      colors: [[Math.random(), Math.random(), Math.random(), 1.0]],
       // texture: image,
       // color: [Math.random(), 0.6, Math.random(), 1.0],
     });
@@ -70,7 +71,7 @@ const buildSphere = (world: OIMO.World, image?: WebGPU.Material): WorldScene => 
     const body = addSphere(world, position, scale);
     sphere.setBody(body);
     if (image) {
-      sphere.setMaterial(image);
+      sphere.addMaterial(image);
     }
     spheres.unshift(sphere);
   }
@@ -102,7 +103,7 @@ const buildCube = (world: OIMO.World, image?: WebGPU.Material): WorldScene => {
     const body = addBox(world, position, scale, rotations);
     cube.setBody(body);
     if (image) {
-      cube.setMaterial(image);
+      cube.addMaterial(image);
     }
     cubes.push(cube);
   }
@@ -136,7 +137,7 @@ const buildCylinder = (world: OIMO.World, image?: WebGPU.Material): WorldScene =
     const body = addCylinder(world, position, Vector.fromValues(1.0, 2.0, 1), rotations);
     cylinder.setBody(body);
     if (image) {
-      cylinder.setMaterial(image);
+      cylinder.addMaterial(image);
     }
 
     cylinders.push(cylinder);

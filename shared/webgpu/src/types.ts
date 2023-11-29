@@ -26,8 +26,8 @@ export interface Renderable {
 
 export interface Material {
   name: string;
-  textures: Array<GPUTexture | null>;
-  views: Array<GPUTextureView | null>;
+  texture: GPUTexture;
+  view: GPUTextureView;
 }
 
 export type PredefinedShaders = 'standard-3d' | 'standard-2d';

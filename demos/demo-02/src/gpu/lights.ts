@@ -10,11 +10,11 @@ export const buildLights = (gpu: Gpu): LightsTransformationHandlers => {
   const posSec = Point.fromValues(0.0, 9.0, 3).map(Transform.rotationZ(one60 * s));
 
   gpu.setAmbientLight([0.0, 0.0, 0.0, 1.0]);
-  gpu.setLight('directional', 0, { dir: UnitVector.fromValues(0.2, 0.2, -1.0), col: [0.2, 0.2, 0.2, 1.0] });
-  gpu.setLight('directional', 1, { dir: UnitVector.fromValues(1.0, 0, 0.0), col: [0.1, 0.1, 0.3, 1.0] });
-  gpu.setLight('point', 0, { pos: Point.fromValues(0.0, 0.0, 5), col: [0.55, 0.25, 0.25, 1.0] });
-  gpu.setLight('point', 1, { pos: posSec, col: [0.35, 0.5, 0.7, 1.0] });
-  gpu.setLight('point', 2, { pos: Point.fromValues(-6.0, 4.0, 4.5), col: [0.0, 0.1, 0.4, 1.0] });
+  gpu.setLight('directional', 0, { dir: UnitVector.fromValues(1, 1, -1.0), col: [0.5, 0.1, 0.1, 1.0] });
+  gpu.setLight('directional', 1, { dir: UnitVector.fromValues(1.0, 0, 0.0), col: [0.1, 0.1, 0.3, 0.0] });
+  gpu.setLight('point', 0, { pos: Point.fromValues(0.0, 0.0, 5), col: [0.55, 0.25, 0.25, 10.0] });
+  gpu.setLight('point', 1, { pos: posSec, col: [0.35, 0.45, 0.7, 12.0] });
+  gpu.setLight('point', 2, { pos: Point.fromValues(-6.0, 4.0, 4.5), col: [0.0, 0.1, 0.4, 10.0] });
   gpu.setLight('point', 3, { pos: Point.fromValues(-6.0, 14.0, 8.5), col: [0.2, 0.5, 0.0, 0.0] });
 
   return {

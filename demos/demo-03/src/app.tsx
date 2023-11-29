@@ -6,8 +6,8 @@ import './app.css';
 import { GpuCanvas } from './components/gpu-canvas';
 import { GeoToolbar } from './components/geo-toolbar';
 import { GeoTool } from './types';
-import { addGpuGeo } from './gpu-utils/geo';
-import { createWorld, updatePhysics } from './oimo/utils';
+import { addGpuGeo, buildPlane } from './gpu-utils/geo';
+import { createWorld, updatePhysics } from './gpu-utils/oimo-integration';
 
 const borderClass = 'border-solid border-[1px] border-slate-800 mt-[-1px]';
 
@@ -37,6 +37,7 @@ function App() {
     setGpuError('');
     const world = createWorld();
     setWorld(world);
+    gpu.addToScene(buildPlane(world));
     gpu.onRender(() => {
       if (world) {
         updatePhysics(world, gpu);

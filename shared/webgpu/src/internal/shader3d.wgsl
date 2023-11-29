@@ -39,6 +39,7 @@ struct TextFragment {
   @location(2) pos: vec3<f32>,
   @location(3) eye: vec3<f32>,
   @location(4) viewZ: f32,
+  // @location(5) worldTangent: vec3<f32>,
 };
 
 struct ColorFragment {
@@ -131,16 +132,18 @@ fn computeSpecularColor(
     eye: vec3<f32>,
     pos: vec3<f32>,
     normal: vec3<f32>,
-    sceneLights: SceneLights) -> vec3<f32> {
-  let shininess: f32 = 64.0;
+    sceneLights: SceneLights,
+    surfaceColor: vec4<f32>
+    ) -> vec3<f32> {
+  var shininess: f32 = 92.0;
   var specular: vec3<f32> = vec3<f32>(0, 0, 0);
-
   for (var i: u32 = 0; i < MAX_POINT_LIGHTS; i = i + 1) {
     if (sceneLights.pointLights[i].col.a == 0.0) {
       continue;
     }
+    let power = sceneLights.pointLights[i].col.a;
     let dir = sceneLights.pointLights[i].pos.xyz - pos; //  - pos.xyz;
-    let attenuation = 1.0 - clamp(pow( length(dir)/14.0, 2.0), 0.0, 1.0 );
+    let attenuation = 1.0 - clamp(pow( length(dir)/power, 2.0), 0.0, 1.0 );
 
     let lightDir: vec3<f32> = normalize(dir);
     let lightColor: vec3<f32> = sceneLights.pointLights[i].col.rgb;
@@ -193,8 +196,8 @@ fn computeDistanceToCameraAttenuation( d: f32 ) -> f32 {
 @vertex
 fn vertexTextureShader(
     @location(0) vertexPosition: vec3<f32>,
-    @location(1) vertexTexCoord: vec2<f32>,
-    @location(2) vertexNormal: vec3<f32>) -> TextFragment {
+    @location(1) vertexNormal: vec3<f32>,
+    @location(2) vertexTexCoord: vec2<f32>) -> TextFragment {
   var output: TextFragment;
   var vertex = myModel.model * vec4<f32>(vertexPosition, 1.0);
   var positionInViewSpace = sceneData.view * vertex;
@@ -205,15 +208,51 @@ fn vertexTextureShader(
   output.pos = vertex.xyz;
   output.eye = sceneData.invertView[3].xyz;
   output.viewZ = -positionInViewSpace.z;
+  // output.worldTangent = normalize((modelMatrix * vec4(input.tangent, 0.0)).xyz);
 
   return output;
 }
 
 @fragment
 fn fragmentTextureShader(in: TextFragment) -> @location(0) vec4<f32> {
-  let diffuse: vec3<f32> = computeDiffuseColor( in.eye, in.pos, in.normal, sceneLights );
-  let specular: vec3<f32> = computeSpecularColor( in.eye, in.pos, in.normal, sceneLights );
   let texColor: vec4<f32> = textureSample(myTexture0, mySampler, in.texCoord);
+  let att: f32 = computeDistanceToCameraAttenuation(in.viewZ);
+  let diffuse: vec3<f32> = computeDiffuseColor( in.eye, in.pos, in.normal, sceneLights );
+  let specular: vec3<f32> = computeSpecularColor( in.eye, in.pos, in.normal, sceneLights, texColor );
+
+  let textMix = vec4<f32>(1-textureAlpha.value);
+  let finalColor = mix(texColor, myColor.color, textMix); // mixed the two colors based on alpha.
+  return clamp(
+    vec4<f32>((finalColor.rgb * diffuse + specular) * att, max(finalColor.a, texColor.a)),
+    vec4<f32>(0, 0, 0, 0.0), vec4<f32>(1.0, 1.0, 1.0, 1.0)
+  );
+}
+
+@fragment
+fn fragmentTextureBumpShader(in: TextFragment) -> @location(0) vec4<f32> {
+  let texColor: vec4<f32> = textureSample(myTexture0, mySampler, in.texCoord);
+
+  // Sample the bump map (just 1 channel since is a grayscale image)
+  let heightCenter = textureSample(myTexture1, mySampler, in.texCoord).r;
+
+  // Calculate the gradient of the height field
+  let prec: f32 = 12.0;
+  let textDim = textureDimensions(myTexture1, 0);
+  let texelSize = vec2<f32>(1.0 / f32(textDim.x), 1.0/ f32(textDim.y)); // Assuming mip level 0
+  let heightLeft = textureSample(myTexture1, mySampler, in.texCoord - vec2<f32>(texelSize.x*prec, 0.0)).r;
+  let heightRight = textureSample(myTexture1, mySampler, in.texCoord + vec2<f32>(texelSize.x*prec, 0.0)).r;
+  let heightUp = textureSample(myTexture1, mySampler, in.texCoord + vec2<f32>(0.0, texelSize.y*prec)).r;
+  let heightDown = textureSample(myTexture1, mySampler, in.texCoord - vec2<f32>(0.0, texelSize.y*prec)).r;
+
+
+  let dU = (heightRight - heightLeft) / (  prec * prec * texelSize.x);
+  let dV = (heightUp - heightDown) / ( prec * prec * texelSize.y) ;
+
+  let deltaVector = vec3<f32>(dU, dV, 0.0);
+  let newNormal = normalize(in.normal + deltaVector);
+  let diffuse: vec3<f32> = computeDiffuseColor( in.eye, in.pos, newNormal, sceneLights );
+  let specular: vec3<f32> = computeSpecularColor( in.eye, in.pos, newNormal, sceneLights, texColor );
+
   let att: f32 = computeDistanceToCameraAttenuation(in.viewZ);
 
   let textMix = vec4<f32>(1-textureAlpha.value);
@@ -222,8 +261,8 @@ fn fragmentTextureShader(in: TextFragment) -> @location(0) vec4<f32> {
     vec4<f32>((finalColor.rgb * diffuse + specular) * att, max(finalColor.a, texColor.a)),
     vec4<f32>(0, 0, 0, 0.0), vec4<f32>(1.0, 1.0, 1.0, 1.0)
   );
-
 }
+
 
 // ----------------------------------------------------------------------------------------------- Color Shaders
 
@@ -249,12 +288,12 @@ fn vertexColorShader(
 
 @fragment
 fn fragmentColorShader(in: ColorFragment) -> @location(0) vec4<f32> {
-  let diffuse: vec3<f32> = computeDiffuseColor( in.eye, in.pos, in.normal, sceneLights );
-  let specular: vec3<f32> = computeSpecularColor( in.eye, in.pos, in.normal, sceneLights );
   let att: f32 =  computeDistanceToCameraAttenuation(in.viewZ);
+  let diffuse: vec3<f32> = computeDiffuseColor( in.eye, in.pos, in.normal, sceneLights );
+  let specular: vec3<f32> = computeSpecularColor( in.eye, in.pos, in.normal, sceneLights, myColor.color );
 
   return clamp(
-    vec4<f32>((myColor.color.rgb * diffuse.rgb + specular) * att, myColor.color.a * att),
+    vec4<f32>((myColor.color.rgb * diffuse.rgb + specular) * att, myColor.color.a),
     vec4<f32>(0, 0, 0, 0.0), vec4<f32>(1.0, 1.0, 1.0, 1.0)
   );
 
