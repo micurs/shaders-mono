@@ -7,10 +7,10 @@ export const buildLights = (gpu: Gpu): LightsTransformationHandlers => {
   const posSun = Point.fromValues(10.0, 0.0, 0);
   const posMoon = Point.fromValues(-7.0, 0.0, -2);
 
-  gpu.setAmbientLight([0.05, 0.05, 0.05, 1.0]);
+  gpu.setAmbientLight([0.1, 0.1, 0.05, 1.0]);
 
   const dirSun = UnitVector.fromVector(Point.origin().subtract(posSun));
-  gpu.setLight('directional', 0, { dir: dirSun, col: [0.4, 0.4, 0.4, 1.0] });
+  gpu.setLight('directional', 0, { dir: dirSun, col: [0.45, 0.45, 0.45, 1.0] });
   gpu.setLight('directional', 1, { dir: UnitVector.fromValues(0, 0, 1), col: [0.6, 0.6, 0.6, 0.0] });
   gpu.setLight('point', 0, { pos: posSun, col: [0.6, 0.6, 0.55, 16.0] });
   gpu.setLight('point', 1, { pos: posMoon, col: [0.14, 0.14, 0.35, 12.0] });

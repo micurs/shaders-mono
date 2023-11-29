@@ -30,7 +30,7 @@ if (!supportEl || !canvasEl) {
   init(canvasEl, supportEl)
     .then((gpu) => {
       supportEl!.innerText = 'Loading textures...';
-      return loadTextures(gpu, ['earth.jpg', 'clouds-4k.png', 'earth-bump-4k.png']);
+      return loadTextures(gpu, ['earth.jpg', 'clouds-4k.png']);
     })
     .then(([gpu, textureMaterials]) => {
       sceneOptions.globeTextures.push(...textureMaterials);
@@ -38,7 +38,7 @@ if (!supportEl || !canvasEl) {
 
       return gpu;
     })
-    .then((gpu) => loadTextures(gpu, ['metal2.jpg', 'dice.png']))
+    .then((gpu) => loadTextures(gpu, ['metal2.jpg', 'dice.png', 'dice-bump.png']))
     .then(([gpu, textureMaterials]) => {
       sceneOptions.textures.push(...textureMaterials);
       const wireframeCheck = document.getElementById('wireframe') as HTMLInputElement;
@@ -54,7 +54,7 @@ if (!supportEl || !canvasEl) {
       cylinderRadio.onclick = selectGeoToRender(gpu, 'cylinder');
       cubeRadio.onclick = selectGeoToRender(gpu, 'cube');
 
-      globeRadio.click();
+      cubeRadio.click();
       supportEl!.innerText = 'All set!';
       supportEl!.style.opacity = '0';
       fpsEl!.style.opacity = '1';

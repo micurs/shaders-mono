@@ -13,11 +13,6 @@ export const GeoToolbar = ({ onSelected, onClear }: GeoToolbarProps) => {
 
   return (
     <ul className="flex flex-col w-[52px] items-stretch">
-      <li key="1" className={`h-[45px] ${borderClass} ${flexClass}`}>
-        <button className={buttonClass} onClick={() => onSelected('plane')}>
-          <img src="plane-48.png" alt="C" />
-        </button>
-      </li>
       <li key="2" className={`h-[45px] ${borderClass} ${flexClass}`}>
         <button className={buttonClass} onClick={() => onSelected('sphere')}>
           <img src="sphere-48.png" alt="C" />

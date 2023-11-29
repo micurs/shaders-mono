@@ -135,7 +135,7 @@ fn computeSpecularColor(
     sceneLights: SceneLights,
     surfaceColor: vec4<f32>
     ) -> vec3<f32> {
-  var shininess: f32 = 128.0;
+  var shininess: f32 = 92.0;
   var specular: vec3<f32> = vec3<f32>(0, 0, 0);
   for (var i: u32 = 0; i < MAX_POINT_LIGHTS; i = i + 1) {
     if (sceneLights.pointLights[i].col.a == 0.0) {
@@ -236,16 +236,16 @@ fn fragmentTextureBumpShader(in: TextFragment) -> @location(0) vec4<f32> {
   let heightCenter = textureSample(myTexture1, mySampler, in.texCoord).r;
 
   // Calculate the gradient of the height field
-  let prec: f32 = 28.0;
+  let prec: f32 = 12.0;
   let textDim = textureDimensions(myTexture1, 0);
   let texelSize = vec2<f32>(1.0 / f32(textDim.x), 1.0/ f32(textDim.y)); // Assuming mip level 0
   let heightLeft = textureSample(myTexture1, mySampler, in.texCoord - vec2<f32>(texelSize.x*prec, 0.0)).r;
   let heightRight = textureSample(myTexture1, mySampler, in.texCoord + vec2<f32>(texelSize.x*prec, 0.0)).r;
-  let heightUp = textureSample(myTexture1, mySampler, in.texCoord - vec2<f32>(0.0, texelSize.y*prec)).r;
-  let heightDown = textureSample(myTexture1, mySampler, in.texCoord + vec2<f32>(0.0, texelSize.y*prec)).r;
+  let heightUp = textureSample(myTexture1, mySampler, in.texCoord + vec2<f32>(0.0, texelSize.y*prec)).r;
+  let heightDown = textureSample(myTexture1, mySampler, in.texCoord - vec2<f32>(0.0, texelSize.y*prec)).r;
 
 
-  let dU = (heightRight - heightLeft) / ( prec * prec * texelSize.x);
+  let dU = (heightRight - heightLeft) / (  prec * prec * texelSize.x);
   let dV = (heightUp - heightDown) / ( prec * prec * texelSize.y) ;
 
   let deltaVector = vec3<f32>(dU, dV, 0.0);

@@ -38,28 +38,28 @@ export const buildGlobe = (globeTextures: WebGPU.Material[]): Scene => {
   return [earth, clouds];
 };
 
-export const buildCylinder = (texture: WebGPU.Material): Scene => {
+export const buildCylinder = (texture: WebGPU.Material[]): Scene => {
   const cyl = WebGPU.cylinderTriMesh()(Transform.scale(2, 2, 2), {
     id: 'cylinder',
     steps: 24,
     colors: [[1.0, 0.0, 0.0, 1.0]],
     textureCoordinates: true,
   });
-  cyl.addMaterial(texture);
+  cyl.addMaterial(texture[0]);
   return [cyl];
 };
 
-export const buildCube = (texture: WebGPU.Material): Scene => {
+export const buildCube = (textures: WebGPU.Material[]): Scene => {
   const cyl = WebGPU.cubeTriMesh()(Transform.scale(2, 2, 2), {
     id: 'cube',
     textureCoordinates: true,
   });
-  cyl.addMaterial(texture);
+  cyl.addMaterial(textures[1]);
   return [cyl];
 };
 
 export const buildGrid = (): Scene => {
-  const refGrid = WebGPU.planeGridLines()(Transform.scale(80, 80, 1).translation(0, 0, 0), {
+  const refGrid = WebGPU.planeGridLines()(Transform.scale(180, 180, 1).translation(0, 0, 0), {
     id: 'ref-plane',
     colors: [[0.2, 0.2, 0.3, 0.4]],
   });
@@ -114,7 +114,7 @@ export const selectGeoToRender = (gpu: WebGPU.Gpu, geo: 'globe' | 'cylinder' | '
         if (cylinderScene.length > 0) {
           cylinderScene.forEach((g) => (g.display = 'full'));
         } else {
-          const newCylinder = buildCylinder(sceneOptions.textures[0]);
+          const newCylinder = buildCylinder(sceneOptions.textures);
           gpu.addToScene(newCylinder);
         }
         break;
@@ -123,7 +123,7 @@ export const selectGeoToRender = (gpu: WebGPU.Gpu, geo: 'globe' | 'cylinder' | '
         if (cubeScene.length > 0) {
           cubeScene.forEach((g) => (g.display = 'full'));
         } else {
-          const newCube = buildCube(sceneOptions.textures[1]);
+          const newCube = buildCube(sceneOptions.textures);
           gpu.addToScene(newCube);
         }
         break;
