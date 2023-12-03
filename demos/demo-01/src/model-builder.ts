@@ -13,7 +13,7 @@ interface SceneOptions {
 export const sceneOptions: SceneOptions = {
   textures: [],
   globeTextures: [],
-  showGrid: false,
+  showGrid: true,
 };
 
 export const buildGlobe = (globeTextures: WebGPU.Material[]): Scene => {
@@ -41,7 +41,7 @@ export const buildGlobe = (globeTextures: WebGPU.Material[]): Scene => {
 export const buildCylinder = (texture: WebGPU.Material[]): Scene => {
   const cyl = WebGPU.cylinderTriMesh()(Transform.scale(2, 2, 2), {
     id: 'cylinder',
-    steps: 24,
+    steps: 36,
     colors: [[1.0, 0.0, 0.0, 1.0]],
     textureCoordinates: true,
   });
@@ -58,10 +58,23 @@ export const buildCube = (textures: WebGPU.Material[]): Scene => {
   return [cyl];
 };
 
+export const buildCone = (textures: WebGPU.Material[]): Scene => {
+  const cone = WebGPU.coneTriMesh()(Transform.scale(3, 3, 4.0).translation(0, 0, 1.5), {
+    id: 'cone',
+    steps: 36,
+    height: 0.8,
+    textureCoordinates: true,
+    colors: [[0.58, 0.83, 0.56, 1.0]],
+  });
+  cone.addMaterial(textures[0]);
+  return [cone];
+};
+
 export const buildGrid = (): Scene => {
   const refGrid = WebGPU.planeGridLines()(Transform.scale(180, 180, 1).translation(0, 0, 0), {
     id: 'ref-plane',
     colors: [[0.2, 0.2, 0.3, 0.4]],
+    showAxes: true,
   });
 
   return [refGrid];
@@ -95,7 +108,7 @@ export async function init(canvasEl: HTMLCanvasElement, _supportEl: HTMLParagrap
   return gpu;
 }
 
-export const selectGeoToRender = (gpu: WebGPU.Gpu, geo: 'globe' | 'cylinder' | 'cube') => {
+export const selectGeoToRender = (gpu: WebGPU.Gpu, geo: 'globe' | 'cylinder' | 'cube' | 'cone') => {
   return () => {
     gpu.getScene().forEach((g) => (g.display = 'none'));
     gpu.get('ref-plane')[0].display = sceneOptions.showGrid ? 'full' : 'none';
@@ -116,6 +129,15 @@ export const selectGeoToRender = (gpu: WebGPU.Gpu, geo: 'globe' | 'cylinder' | '
         } else {
           const newCylinder = buildCylinder(sceneOptions.textures);
           gpu.addToScene(newCylinder);
+        }
+        break;
+      case 'cone':
+        const coneScene = gpu.get('cone');
+        if (coneScene.length > 0) {
+          coneScene.forEach((g) => (g.display = 'full'));
+        } else {
+          const newCone = buildCone(sceneOptions.textures);
+          gpu.addToScene(newCone);
         }
         break;
       case 'cube':

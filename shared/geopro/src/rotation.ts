@@ -70,40 +70,16 @@ export class Rotation {
     return r;
   }
 
-  // get angleX(): number {
-  //   return quat.getAxisAngle([1, 0, 0], this._direct);
-  // }
-
-  // get angleY(): number {
-  //   return quat.getAxisAngle([0, 1, 0], this._direct);
-  // }
-
-  // get angleZ(): number {
-  //   return quat.getAxisAngle([0, 0, 1], this._direct);
-  // }
-
   rotateX(a: number): Rotation {
-    const r = new Rotation();
-    r._direct = this._direct;
-    r._inverse = this._inverse;
-    r.compose(Rotation.rotationX(a));
-    return r;
+    return this.compose(Rotation.rotationX(a));
   }
 
   rotateY(a: number): Rotation {
-    const r = new Rotation();
-    r._direct = this._direct;
-    r._inverse = this._inverse;
-    r.compose(Rotation.rotationY(a));
-    return r;
+    return this.compose(Rotation.rotationY(a));
   }
 
   rotateZ(a: number): Rotation {
-    const r = new Rotation();
-    r._direct = this._direct;
-    r._inverse = this._inverse;
-    r.compose(Rotation.rotationZ(a));
-    return r;
+    return this.compose(Rotation.rotationZ(a));
   }
 
   inverse(): Rotation {

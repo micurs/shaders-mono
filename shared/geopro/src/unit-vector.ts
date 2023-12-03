@@ -112,6 +112,10 @@ export class UnitVector {
     return Vector.fromValues(this.x * s, this.y * s, this.z * s);
   }
 
+  add(v: Vector | UnitVector): Vector {
+    return Vector.fromValues(this.x + v.x, this.y + v.y, this.z + v.z);
+  }
+
   /**
    * return tru if the object is a UnitVector
    */
