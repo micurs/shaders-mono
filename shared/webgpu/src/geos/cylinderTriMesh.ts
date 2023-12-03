@@ -1,74 +1,7 @@
-import { Point, UnitVector, Transform } from '@shaders-mono/geopro';
+import { Transform } from '@shaders-mono/geopro';
 import { GeoRenderable } from '../geo-renderable';
 import { GeoGenerator, GeoOptions } from '../types';
-
-const disc = (step: number, z: number, facing: 'up' | 'down'): [Point[], UnitVector[]] => {
-  const r = 0.5;
-  const upVector = UnitVector.fromValues(0, 0, 1);
-  const downVector = UnitVector.fromValues(0, 0, -1);
-  const normals: UnitVector[] = [];
-  const coordinates: Point[] = [];
-  const alphaStart = facing === 'up' ? 0 : Math.PI * 2;
-  const alphaStep = facing === 'up' ? Math.PI / step : -Math.PI / step;
-  const pred = facing === 'up' ? (alpha: number) => alpha < Math.PI * 2 : (alpha: number) => alpha > 0;
-  for (let alpha = alphaStart; pred(alpha); alpha += alphaStep) {
-    const pt0 = Point.fromValues(0, 0, z);
-    const pt1 = Point.fromValues(r * Math.cos(alpha), r * Math.sin(alpha), z);
-    const pt2 = Point.fromValues(r * Math.cos(alpha + alphaStep), r * Math.sin(alpha + alphaStep), z);
-    coordinates.push(pt0);
-    coordinates.push(pt1);
-    coordinates.push(pt2);
-    if (facing === 'up') {
-      normals.push(upVector, upVector, upVector);
-    } else {
-      normals.push(downVector, downVector, downVector);
-    }
-  }
-  // return [coordinates, computeNormals('triangle-list', coordinates)];
-  return [coordinates, normals];
-};
-
-const pipe = (step: number, bottom: number, top: number): [Point[], UnitVector[]] => {
-  const r = 0.5;
-  const coordinates: Point[] = [];
-  const normals: UnitVector[] = [];
-  const alphaStep = Math.PI / step;
-  const centerBottomPt = Point.fromValues(0, 0, bottom);
-  const centerTopPt = Point.fromValues(0, 0, top);
-
-  for (let alpha = 0; alpha < Math.PI * 2; alpha += alphaStep) {
-    const pt1 = Point.fromValues(r * Math.cos(alpha), r * Math.sin(alpha), bottom);
-    const nm1 = UnitVector.fromPoints(pt1, centerBottomPt);
-    coordinates.push(pt1);
-    normals.push(nm1);
-
-    const pt2 = Point.fromValues(r * Math.cos(alpha + alphaStep), r * Math.sin(alpha + alphaStep), bottom);
-    const nm2 = UnitVector.fromPoints(pt2, centerBottomPt);
-    coordinates.push(pt2);
-    normals.push(nm2);
-
-    const pt3 = Point.fromValues(r * Math.cos(alpha), r * Math.sin(alpha), top);
-    const nm3 = UnitVector.fromPoints(pt3, centerTopPt);
-    coordinates.push(pt3);
-    normals.push(nm3);
-
-    const pt4 = Point.fromValues(r * Math.cos(alpha), r * Math.sin(alpha), top);
-    const nm4 = UnitVector.fromPoints(pt4, centerTopPt);
-    coordinates.push(pt4);
-    normals.push(nm4);
-
-    const pt5 = Point.fromValues(r * Math.cos(alpha + alphaStep), r * Math.sin(alpha + alphaStep), bottom);
-    const nm5 = UnitVector.fromPoints(pt5, centerBottomPt);
-    coordinates.push(pt5);
-    normals.push(nm5);
-
-    const pt6 = Point.fromValues(r * Math.cos(alpha + alphaStep), r * Math.sin(alpha + alphaStep), top);
-    const nm6 = UnitVector.fromPoints(pt6, centerTopPt);
-    coordinates.push(pt6);
-    normals.push(nm6);
-  }
-  return [coordinates, normals];
-};
+import { disc, pipe } from './geo-utils';
 
 interface CylinderOptions {
   steps: number;
@@ -84,6 +17,8 @@ interface CylGenerator<B> extends GeoGenerator<B, CylinderOptions> {}
  */
 export const cylinderGen: CylGenerator<any> = <B>(t: Transform, options: GeoOptions<CylinderOptions>): GeoRenderable<B> => {
   const { steps, id, textureCoordinates } = options;
+  const nt = t.transpose().invert();
+
   const coordinates = [];
   const normals = [];
   const textureUV: [number, number][] = [];
@@ -114,9 +49,9 @@ export const cylinderGen: CylGenerator<any> = <B>(t: Transform, options: GeoOpti
     textureUV.push(...t2);
     textureUV.push(...t3);
   }
-  normals.push(...n1.map((v) => v.map(t)));
-  normals.push(...n2.map((v) => v.map(t)));
-  normals.push(...n3.map((v) => v.map(t)));
+  normals.push(...n1.map((v) => v.map(nt)));
+  normals.push(...n2.map((v) => v.map(nt)));
+  normals.push(...n3.map((v) => v.map(nt)));
 
   const triangleData = new GeoRenderable<B>(id, 'triangle-list', options);
   triangleData.addVertices(new Float32Array(coordinates.map((v) => v.triplet).flat()));

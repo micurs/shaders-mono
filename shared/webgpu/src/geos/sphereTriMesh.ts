@@ -5,6 +5,7 @@ import { GeoRenderable } from '../geo-renderable';
 import { GeoOptions, GeoGenerator } from '../types';
 import { Transform } from '@shaders-mono/geopro';
 import { Point } from '@shaders-mono/geopro';
+import { rolloverEdgeCoordinates, sphereMapToTextureCoordinates } from './geo-utils';
 
 type TriangleIndexes = [number, number, number];
 
@@ -111,18 +112,6 @@ interface SphereOptions {
 interface SphereGenerator<B> extends GeoGenerator<B, SphereOptions> {}
 
 /**
- * Map a point on a 0 centered sphere to a texture coordinate
- * @param v
- */
-const mapToTextureCoordinates = (v: UnitVector): [number, number] => {
-  let latitude = Math.asin(v.z);
-  let longitude = Math.atan2(v.y, v.x) + Math.PI;
-
-  // Normalize the result to 0..1 range
-  return [longitude / (2 * Math.PI), 0.5 - latitude / Math.PI];
-};
-
-/**
  * Build a sphere mesh
  * @param t
  * @param options
@@ -130,6 +119,8 @@ const mapToTextureCoordinates = (v: UnitVector): [number, number] => {
  */
 export const sphereGen: SphereGenerator<any> = <B>(t: Transform, options: GeoOptions<SphereOptions>): GeoRenderable<B> => {
   const { steps, id, textureCoordinates } = options;
+  const nt = t.transpose().invert();
+
   const [sphVertices, sphIndexes] = subdivide(vertices, indices, steps);
 
   // console.log(' Number of vertices', vertices.length);
@@ -148,34 +139,14 @@ export const sphereGen: SphereGenerator<any> = <B>(t: Transform, options: GeoOpt
     coordinates.push(...pt0.map(t).triplet);
     coordinates.push(...pt1.map(t).triplet);
     coordinates.push(...pt2.map(t).triplet);
-    normals.push(...n0.triplet);
-    normals.push(...n1.triplet);
-    normals.push(...n2.triplet);
+    normals.push(...n0.map(nt).triplet);
+    normals.push(...n1.map(nt).triplet);
+    normals.push(...n2.map(nt).triplet);
     if (textureCoordinates) {
-      const t0 = mapToTextureCoordinates(n0);
-      const t1 = mapToTextureCoordinates(n1);
-      const t2 = mapToTextureCoordinates(n2);
-      const minT = Math.min(t0[0], t1[0], t2[0]);
-      const maxT = Math.max(t0[0], t1[0], t2[0]);
-      // "shifting" the U coordinate of the vertex that is on the opposite side of the
-      // seam by subtracting or adding 1 to it. This makes sure that all vertices of a
-      // triangle are consistently mapped, and the texture will not stretch across
-      // the sphere's surface.
-      if (Math.abs(maxT - minT) > 0.8) {
-        if (t0[0] < 0.4 && t1[0] < 0.4) {
-          t2[0] -= 1;
-        } else if (t0[0] < 0.4 && t2[0] < 0.4) {
-          t1[0] -= 1;
-        } else if (t1[0] < 0.4 && t2[0] < 0.4) {
-          t0[0] -= 1;
-        } else if (t0[0] > 0.6 && t1[0] > 0.6) {
-          t2[0] += 1;
-        } else if (t0[0] > 0.6 && t2[0] > 0.6) {
-          t1[0] += 1;
-        } else if (t1[0] > 0.6 && t2[0] > 0.6) {
-          t0[0] += 1;
-        }
-      }
+      const t0 = sphereMapToTextureCoordinates(n0);
+      const t1 = sphereMapToTextureCoordinates(n1);
+      const t2 = sphereMapToTextureCoordinates(n2);
+      rolloverEdgeCoordinates(t0, t1, t2);
       textureUV.push(...t0);
       textureUV.push(...t1);
       textureUV.push(...t2);
@@ -191,3 +162,5 @@ export const sphereGen: SphereGenerator<any> = <B>(t: Transform, options: GeoOpt
 };
 
 export const sphereTriMesh = <B = null>(): SphereGenerator<B> => sphereGen;
+
+
