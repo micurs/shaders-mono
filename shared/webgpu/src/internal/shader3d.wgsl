@@ -1,5 +1,6 @@
 const MAX_DIR_LIGHTS: u32 = 4;
 const MAX_POINT_LIGHTS: u32 = 4;
+const PI = 3.1415926535897932384626433832795;
 
 struct DirectionalLight {
   dir: vec4<f32>,
@@ -36,18 +37,20 @@ struct TextFragment {
   @builtin(position) position: vec4<f32>,
   @location(0) texCoord: vec2<f32>,
   @location(1) normal: vec3<f32>,
-  @location(2) pos: vec3<f32>,
-  @location(3) eye: vec3<f32>,
-  @location(4) viewZ: f32,
+  @location(2) tangent: vec3<f32>,
+  @location(3) pos: vec3<f32>,
+  @location(4) eye: vec3<f32>,
+  @location(5) viewZ: f32,
   // @location(5) worldTangent: vec3<f32>,
 };
 
 struct ColorFragment {
   @builtin(position) position: vec4<f32>,
   @location(0) normal: vec3<f32>,
-  @location(1) pos: vec3<f32>,
-  @location(2) eye: vec3<f32>,
-  @location(3) viewZ: f32,
+  @location(1) tangent: vec3<f32>,
+  @location(2) pos: vec3<f32>,
+  @location(3) eye: vec3<f32>,
+  @location(4) viewZ: f32,
 };
 
 struct ColorLineFragment {
@@ -191,13 +194,71 @@ fn computeDistanceToCameraAttenuation( d: f32 ) -> f32 {
   return 1 - clamp((d-49)/800 , 0.0, 1.0);
 }
 
+
+fn bumpGrid(stepU: f32, stepV: f32, tc: vec2<f32>, T: vec3<f32>, B: vec3<f32>  ) -> vec3<f32> {
+  var ND = vec3<f32>(0,0,0);
+  let tileDimU: f32 = 100.0 / stepU;
+  let tileDimV: f32 = 100.0 / stepV;
+  let normalTilt = 0.2;
+  let tickness: f32 = 0.1;
+  let uGrid =  (tc[0]*100 + tickness) % tileDimU;
+  let vGrid =  (tc[1]*100 + tickness) % tileDimV;
+
+  if ( uGrid < tickness ) {
+    ND =  B * normalTilt;
+  }
+  else if ( uGrid < tickness * 2 ) {
+    ND =  B * normalTilt * -1;
+  }
+  if ( vGrid < tickness ) {
+    ND =  ND + T * normalTilt;
+  }
+  else if ( vGrid < tickness * 2 ) {
+    ND =  ND + T * normalTilt * -1;
+  }
+  return ND;
+}
+
+fn bumpWave(tc: vec2<f32>, T: vec3<f32>, B: vec3<f32>  ) -> vec3<f32> {
+  // Constants for wave calculations
+  let waveAmplitude1: f32 = 0.15;
+  let waveFrequency1: f32 = PI * 90.0;
+  let wavePhase1: f32 = 0.5;
+
+  let waveAmplitude2: f32 = 0.05;
+  let waveFrequency2: f32 = PI * 40.0;
+  let wavePhase2: f32 = 1.0;
+
+  let time: f32 = 0.0;
+
+  // Calculate two sets of waves using both U and V texture coordinates
+  let wave1U = waveAmplitude1 * sin(tc.x * waveFrequency1 + time + wavePhase1);
+  let wave1V = waveAmplitude1 * cos(tc.y * waveFrequency1 + time + wavePhase1);
+
+  let wave2U = waveAmplitude2 * sin(tc.x * waveFrequency2 + time + wavePhase2);
+  let wave2V = waveAmplitude2 * cos((tc.y+tc.x) * waveFrequency2 + time + wavePhase2);
+
+  // Combine the wave components to get the overall wave vector in the tangent space
+  // let waveVector = vec2<f32>(wave1U + wave2U, wave1V + wave2V);
+
+  return T * (wave1U + wave2U);
+
+  // const step = PI * 10;
+  // let delta = (
+  //   sin(tc[0] * step)
+  //   // (sin(tc[1] * 314) * 0.1)
+  // ) * 0.3; // + sin(tc[1]*220.0) * 0.5;
+  // return T * delta;
+}
+
 // ----------------------------------------------------------------------------------------------- Texture Shaders
 
 @vertex
 fn vertexTextureShader(
     @location(0) vertexPosition: vec3<f32>,
     @location(1) vertexNormal: vec3<f32>,
-    @location(2) vertexTexCoord: vec2<f32>) -> TextFragment {
+    @location(2) vertexTangent: vec3<f32>,
+    @location(3) vertexTexCoord: vec2<f32>) -> TextFragment {
   var output: TextFragment;
   var vertex = myModel.model * vec4<f32>(vertexPosition, 1.0);
   var positionInViewSpace = sceneData.view * vertex;
@@ -205,6 +266,7 @@ fn vertexTextureShader(
   output.position = sceneData.projection * sceneData.view * vertex;
   output.texCoord = vec2<f32>(vertexTexCoord);
   output.normal = normalize((myModel.modelInverseTranspose * vec4<f32>(vertexNormal, 0.0)).xyz);
+  output.tangent = normalize((myModel.modelInverseTranspose * vec4<f32>(vertexTangent, 0.0)).xyz);
   output.pos = vertex.xyz;
   output.eye = sceneData.invertView[3].xyz;
   output.viewZ = -positionInViewSpace.z;
@@ -215,10 +277,19 @@ fn vertexTextureShader(
 
 @fragment
 fn fragmentTextureShader(in: TextFragment) -> @location(0) vec4<f32> {
-  let texColor: vec4<f32> = textureSample(myTexture0, mySampler, in.texCoord);
+  var N = normalize(in.normal);
+  let T = normalize(in.tangent);
+  let B = normalize(cross(N, T));
+  var texColor: vec4<f32> = textureSample(myTexture0, mySampler, in.texCoord);
   let att: f32 = computeDistanceToCameraAttenuation(in.viewZ);
-  let diffuse: vec3<f32> = computeDiffuseColor( in.eye, in.pos, in.normal, sceneLights );
-  let specular: vec3<f32> = computeSpecularColor( in.eye, in.pos, in.normal, sceneLights, texColor );
+
+  // Normal mapping happen here
+  // let ND = bumpGrid(6, in.texCoord, T, B);
+  // let ND = bumpGrid(36, 18, in.texCoord, T, B);
+  // N = normalize(N + ND);
+
+  let diffuse: vec3<f32> = computeDiffuseColor( in.eye, in.pos, N, sceneLights );
+  let specular: vec3<f32> = computeSpecularColor( in.eye, in.pos, N, sceneLights, texColor );
 
   let textMix = vec4<f32>(1-textureAlpha.value);
   let finalColor = mix(texColor, myColor.color, textMix); // mixed the two colors based on alpha.
@@ -269,7 +340,9 @@ fn fragmentTextureBumpShader(in: TextFragment) -> @location(0) vec4<f32> {
 @vertex
 fn vertexColorShader(
     @location(0) vertexPosition: vec3<f32>,
-    @location(1) vertexNormal: vec3<f32>) -> ColorFragment {
+    @location(1) vertexNormal: vec3<f32>,
+    @location(2) vertexTangent: vec3<f32>,
+    ) -> ColorFragment {
   var output: ColorFragment;
   var vertex = myModel.model * vec4<f32>(vertexPosition, 1.0);
   var positionInViewSpace = sceneData.view * vertex;
@@ -278,6 +351,7 @@ fn vertexColorShader(
   var biasedPositionInViewSpace = positionInViewSpace - vec4<f32>(0.0, 0.0, bias, 0.0);
 
   output.normal = normalize((myModel.modelInverseTranspose * vec4<f32>(vertexNormal, 0.0)).xyz);
+  output.tangent = normalize((myModel.modelInverseTranspose * vec4<f32>(vertexTangent, 0.0)).xyz);
   output.position = sceneData.projection * sceneData.view * vertex;
   output.pos = vertex.xyz;
   output.eye = sceneData.invertView[3].xyz;
@@ -288,9 +362,18 @@ fn vertexColorShader(
 
 @fragment
 fn fragmentColorShader(in: ColorFragment) -> @location(0) vec4<f32> {
+  var N = normalize(in.normal);
+  let T = normalize(in.tangent);
+  let B = normalize(cross(N, T));
+
   let att: f32 =  computeDistanceToCameraAttenuation(in.viewZ);
-  let diffuse: vec3<f32> = computeDiffuseColor( in.eye, in.pos, in.normal, sceneLights );
-  let specular: vec3<f32> = computeSpecularColor( in.eye, in.pos, in.normal, sceneLights, myColor.color );
+
+  // Compute a normal delta based on a 10x10 grid
+  // let ND = bumpGrid(6, in.texCoord, T, B);
+  // N = normalize(N + ND);
+
+  let diffuse: vec3<f32> = computeDiffuseColor( in.eye, in.pos, N, sceneLights );
+  let specular: vec3<f32> = computeSpecularColor( in.eye, in.pos, N, sceneLights, myColor.color );
 
   return clamp(
     vec4<f32>((myColor.color.rgb * diffuse.rgb + specular) * att, myColor.color.a),

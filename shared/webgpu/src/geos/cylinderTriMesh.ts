@@ -1,4 +1,4 @@
-import { Transform } from '@shaders-mono/geopro';
+import { Transform, UnitVector } from '@shaders-mono/geopro';
 import { GeoRenderable } from '../geo-renderable';
 import { GeoGenerator, GeoOptions } from '../types';
 import { disc, pipe } from './geo-utils';
@@ -21,14 +21,17 @@ export const cylinderGen: CylGenerator<any> = <B>(t: Transform, options: GeoOpti
 
   const coordinates = [];
   const normals = [];
+  const tangents = [];
   const textureUV: [number, number][] = [];
 
-  const [discUpPts, n1] = disc(steps, 0.5, 'up');
-  const [discDownPts, n2] = disc(steps, -0.5, 'down');
-  const [pipePts, n3] = pipe(steps, -0.5, 0.5);
+  const [discUpPts, discUpNormals] = disc(steps, 0.5, 'up');
+  const [discDownPts, discDownNormals] = disc(steps, -0.5, 'down');
+  const [pipePts, pipeNormals, pipeTangents] = pipe(steps, -0.5, 0.5);
+
   coordinates.push(...discUpPts.map((v) => v.map(t)));
   coordinates.push(...discDownPts.map((v) => v.map(t)));
   coordinates.push(...pipePts.map((v) => v.map(t)));
+
   if (textureCoordinates) {
     let last1U = 0;
     let last2U = 0;
@@ -49,13 +52,18 @@ export const cylinderGen: CylGenerator<any> = <B>(t: Transform, options: GeoOpti
     textureUV.push(...t2);
     textureUV.push(...t3);
   }
-  normals.push(...n1.map((v) => v.map(nt)));
-  normals.push(...n2.map((v) => v.map(nt)));
-  normals.push(...n3.map((v) => v.map(nt)));
+  normals.push(...discUpNormals.map((v) => v.map(nt)));
+  normals.push(...discDownNormals.map((v) => v.map(nt)));
+  normals.push(...pipeNormals.map((v) => v.map(nt)));
+
+  tangents.push(...discUpPts.map((_) => UnitVector.fromValues(1, 0, 0).map(nt)));
+  tangents.push(...discDownPts.map((_) => UnitVector.fromValues(-1, 0, 0).map(nt)));
+  tangents.push(...pipeTangents.map((v) => v.map(nt)));
 
   const triangleData = new GeoRenderable<B>(id, 'triangle-list', options);
   triangleData.addVertices(new Float32Array(coordinates.map((v) => v.triplet).flat()));
   triangleData.addNormals(new Float32Array(normals.map((v) => v.triplet).flat()));
+  triangleData.addTangents(new Float32Array(tangents.map((v) => v.triplet).flat()));
   if (textureCoordinates) {
     triangleData.addTextures(new Float32Array(textureUV.flat()));
   }

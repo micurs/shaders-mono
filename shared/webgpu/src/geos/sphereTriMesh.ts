@@ -120,13 +120,14 @@ interface SphereGenerator<B> extends GeoGenerator<B, SphereOptions> {}
 export const sphereGen: SphereGenerator<any> = <B>(t: Transform, options: GeoOptions<SphereOptions>): GeoRenderable<B> => {
   const { steps, id, textureCoordinates } = options;
   const nt = t.transpose().invert();
-
+  const upVector = UnitVector.fromValues(0, 0, 1);
   const [sphVertices, sphIndexes] = subdivide(vertices, indices, steps);
 
   // console.log(' Number of vertices', vertices.length);
 
   const coordinates: number[] = [];
   const normals: number[] = [];
+  const tangents: number[] = [];
   const textureUV: number[] = [];
   const center = Point.fromValues(0, 0, 0); //.map(t);
   sphIndexes.forEach((triangle) => {
@@ -142,6 +143,9 @@ export const sphereGen: SphereGenerator<any> = <B>(t: Transform, options: GeoOpt
     normals.push(...n0.map(nt).triplet);
     normals.push(...n1.map(nt).triplet);
     normals.push(...n2.map(nt).triplet);
+    tangents.push(...UnitVector.fromVector(n0.crossProduct(upVector)).triplet);
+    tangents.push(...UnitVector.fromVector(n1.crossProduct(upVector)).triplet);
+    tangents.push(...UnitVector.fromVector(n2.crossProduct(upVector)).triplet);
     if (textureCoordinates) {
       const t0 = sphereMapToTextureCoordinates(n0);
       const t1 = sphereMapToTextureCoordinates(n1);
@@ -155,6 +159,7 @@ export const sphereGen: SphereGenerator<any> = <B>(t: Transform, options: GeoOpt
   const triangleData = new GeoRenderable<B>(id, 'triangle-list', options);
   triangleData.addVertices(new Float32Array(coordinates));
   triangleData.addNormals(new Float32Array(normals));
+  triangleData.addTangents(new Float32Array(tangents));
   if (textureCoordinates) {
     triangleData.addTextures(new Float32Array(textureUV));
   }

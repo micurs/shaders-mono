@@ -115,6 +115,12 @@ export class Vector {
     return vec3.dot(this.vec3(), v.vec3());
   };
 
+  crossProduct = (v2: Vector): Vector => {
+    const res = vec3.create();
+    vec3.cross(res, this.vec3(), v2.vec3());
+    return Vector.fromVec3(res);
+  };
+
   add = (v: Vector): Vector => {
     const res = new Vector();
     vec4.add(res._coord, this._coord, v._coord);

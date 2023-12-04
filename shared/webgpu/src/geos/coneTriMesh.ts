@@ -15,6 +15,7 @@ const coneGen: ConeGenerator<any> = <B>(t: Transform, options: GeoOptions<ConeOp
   const nt = t.transpose().invert();
   let coordinates: Point[] = [];
   const normals: UnitVector[] = [];
+  const tangents: UnitVector[] = [];
   const textureUV: [number, number][] = [];
 
   const alpha = Math.atan(1 / 0.5);
@@ -24,7 +25,7 @@ const coneGen: ConeGenerator<any> = <B>(t: Transform, options: GeoOptions<ConeOp
   const upBaseRadius = (hCut / Math.sin(alpha)) * Math.cos(alpha);
 
   const [basePts, baseNormals] = disc(steps, -0.5, 'down');
-  const [sidePts, sideNormals] = cone(steps, -0.5, height);
+  const [sidePts, sideNormals, sideTangents] = cone(steps, -0.5, height);
   const [topPts, topNormals] = disc(steps, -0.5 + height, 'up', upBaseRadius);
 
   coordinates.push(...topPts);
@@ -49,9 +50,14 @@ const coneGen: ConeGenerator<any> = <B>(t: Transform, options: GeoOptions<ConeOp
   normals.push(...baseNormals.map((v) => v.map(nt)));
   normals.push(...sideNormals.map((v) => v.map(nt)));
 
+  tangents.push(...topPts.map((_) => UnitVector.fromValues(1, 0, 0).map(nt)));
+  tangents.push(...basePts.map((_) => UnitVector.fromValues(-1, 0, 0).map(nt)));
+  tangents.push(...sideTangents.map((t) => t.map(nt)));
+
   const triangleData = new GeoRenderable<B>(id, 'triangle-list', options);
   triangleData.addVertices(new Float32Array(coordinates.map((v) => v.triplet).flat()));
   triangleData.addNormals(new Float32Array(normals.map((v) => v.triplet).flat()));
+  triangleData.addTangents(new Float32Array(tangents.map((v) => v.triplet).flat()));
   if (textureCoordinates) {
     triangleData.addTextures(new Float32Array(textureUV.flat()));
   }
