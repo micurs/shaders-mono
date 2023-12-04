@@ -174,7 +174,7 @@ export const cone = (step: number, z: number, h: number = 1.0): [Point[], UnitVe
   return [coordinates, normals, tangents];
 };
 
-export const disc = (step: number, z: number, facing: 'up' | 'down', radius: number = 0.5): [Point[], UnitVector[], UnitVector[]] => {
+export const disc = (step: number, z: number, facing: 'up' | 'down', radius: number = 0.5): [Point[], UnitVector[]] => {
   const r = radius;
   const upVector = UnitVector.fromValues(0, 0, 1);
   const downVector = UnitVector.fromValues(0, 0, -1);
