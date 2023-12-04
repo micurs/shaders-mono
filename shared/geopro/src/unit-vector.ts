@@ -156,6 +156,11 @@ export class UnitVector {
     return [this.x, this.y, this.z];
   }
 
+  crossProduct(v2: UnitVector | Vector): Vector {
+    const v = Vector.fromVec3(this.triplet);
+    return v.crossProduct(v2 as Vector);
+  }
+
   buffer(): ArrayBuffer {
     return new Float32Array(this.coordinates);
   }

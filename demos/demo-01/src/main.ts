@@ -38,7 +38,7 @@ if (!supportEl || !canvasEl) {
 
       return gpu;
     })
-    .then((gpu) => loadTextures(gpu, ['wood-2k.jpg', 'dice.png']))
+    .then((gpu) => loadTextures(gpu, ['wood-2k.jpg', 'dice.png', 'water.jpg', 'metal.jpg']))
     .then(([gpu, textureMaterials]) => {
       sceneOptions.textures.push(...textureMaterials);
       const wireframeCheck = document.getElementById('wireframe') as HTMLInputElement;
@@ -51,11 +51,13 @@ if (!supportEl || !canvasEl) {
       const cylinderRadio = document.getElementById('geo-cylinder') as HTMLInputElement;
       const cubeRadio = document.getElementById('geo-cube') as HTMLInputElement;
       const coneRadio = document.getElementById('geo-cone') as HTMLInputElement;
+      const planeRadio = document.getElementById('geo-plane') as HTMLInputElement;
 
       globeRadio.onclick = selectGeoToRender(gpu, 'globe');
       cylinderRadio.onclick = selectGeoToRender(gpu, 'cylinder');
       cubeRadio.onclick = selectGeoToRender(gpu, 'cube');
       coneRadio.onclick = selectGeoToRender(gpu, 'cone');
+      planeRadio.onclick = selectGeoToRender(gpu, 'plane');
 
       globeRadio.click();
       supportEl!.innerText = 'All set!';

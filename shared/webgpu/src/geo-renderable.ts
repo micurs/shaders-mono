@@ -16,6 +16,7 @@ export class GeoRenderable<T = null> implements Renderable {
   private _vertices: Float32Array[] = []; // 3 coordinates per vertex - 3 points for a triangle
   private _vertexColors: Float32Array[] = []; // 4 color components per vertex - 3 points for a triangle
   private _vertexNormals: Float32Array[] = []; // 3 coordinates per vertex - 3 points for a triangle
+  private _vertexTangents: Float32Array[] = []; // 3 coordinates per vertex - 3 points for a triangle
   private _vertexTextureCoords: Float32Array[] = []; // 2 coordinates per vertex - 3 points for a triangle
 
   private _stripColors: RGBAColor[] = []; // [1.0, 1.0, 1.0, 1.0]; // 4 color components per vertex - 3 points for a triangle
@@ -180,6 +181,7 @@ export class GeoRenderable<T = null> implements Renderable {
       this._vertices[strip].length * float32Size +
       (this._vertexColors.length > 0 ? this._vertexColors[strip].length * float32Size : 0) +
       (this._vertexNormals.length > 0 ? this._vertexNormals[strip].length * float32Size : 0) +
+      (this._vertexTangents.length > 0 ? this._vertexTangents[strip].length * float32Size : 0) +
       (this._vertexTextureCoords.length > 0 ? this._vertexTextureCoords[strip].length * float32Size : 0);
     return size;
   }
@@ -219,6 +221,11 @@ export class GeoRenderable<T = null> implements Renderable {
           fragment.push(this._vertexNormals[idx][ni + 0]);
           fragment.push(this._vertexNormals[idx][ni + 1]);
           fragment.push(this._vertexNormals[idx][ni + 2]);
+        }
+        if (this._vertexTangents.length > idx) {
+          fragment.push(this._vertexTangents[idx][ni + 0]);
+          fragment.push(this._vertexTangents[idx][ni + 1]);
+          fragment.push(this._vertexTangents[idx][ni + 2]);
         }
         if (this._vertexTextureCoords.length > idx) {
           fragment.push(this._vertexTextureCoords[idx][ti + 0]);
@@ -267,6 +274,18 @@ export class GeoRenderable<T = null> implements Renderable {
       });
       shaderLocation += 1;
       offset += 3 * float32Size; // advance 3 elements for the normal.
+    }
+
+    // Tangents
+    if (this._vertexTangents.length > 0) {
+      layouts.push({
+        // Tangent
+        shaderLocation,
+        offset,
+        format: 'float32x3',
+      });
+      shaderLocation += 1;
+      offset += 3 * float32Size; // advance 3 elements for the tangent.
     }
 
     // Textures
@@ -323,6 +342,13 @@ export class GeoRenderable<T = null> implements Renderable {
       this._vertexByteSize += 3 * 4;
     }
     this._vertexNormals?.push(normals);
+  }
+
+  addTangents(tangents: Float32Array) {
+    if (this._vertexTangents.length === 0) {
+      this._vertexByteSize += 3 * 4;
+    }
+    this._vertexTangents?.push(tangents);
   }
 
   addTextures(textures: Float32Array) {

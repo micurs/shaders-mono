@@ -30,7 +30,7 @@ const cubeGen: CubeGenerator<any> = <B>(t: Transform, options: GeoOptions<{}>): 
   const left = createQuad(leftFrame, { w: 1, h: 1 }, { pos: { u: 0 + 0.25 / 2, v: 0.25 + 0.25 / 2 }, size });
   const right = createQuad(rightFrame, { w: 1, h: 1 }, { pos: { u: 0.5 + 0.25 / 2, v: 0.25 + 0.25 / 2 }, size });
 
-  const [coordinates, normals, textureUV] = flatCoordinates(up, t);
+  const [coordinates, normals, tangents, textureUV] = flatCoordinates(up, t);
   const downCoords = flatCoordinates(down, t);
   const frontCoords = flatCoordinates(front, t);
   const backCoords = flatCoordinates(back, t);
@@ -38,11 +38,13 @@ const cubeGen: CubeGenerator<any> = <B>(t: Transform, options: GeoOptions<{}>): 
   const rightCoords = flatCoordinates(right, t);
   coordinates.push(...downCoords[0], ...frontCoords[0], ...backCoords[0], ...leftCoords[0], ...rightCoords[0]);
   normals.push(...downCoords[1], ...frontCoords[1], ...backCoords[1], ...leftCoords[1], ...rightCoords[1]);
-  textureUV.push(...downCoords[2], ...frontCoords[2], ...backCoords[2], ...leftCoords[2], ...rightCoords[2]);
+  tangents.push(...downCoords[2], ...frontCoords[2], ...backCoords[2], ...leftCoords[2], ...rightCoords[2]);
+  textureUV.push(...downCoords[3], ...frontCoords[3], ...backCoords[3], ...leftCoords[3], ...rightCoords[3]);
 
   const triangleData = new GeoRenderable<B>(id, 'triangle-list', options);
   triangleData.addVertices(new Float32Array(coordinates));
   triangleData.addNormals(new Float32Array(normals));
+  triangleData.addTangents(new Float32Array(tangents));
 
   if (textureCoordinates) {
     triangleData.addTextures(new Float32Array(textureUV));

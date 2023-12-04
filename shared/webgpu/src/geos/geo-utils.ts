@@ -54,7 +54,11 @@ export const computeNormals = (topology: GPUPrimitiveTopology, coordinates: Poin
  * @param texturePos - the position of the quad in texture space.
  * @returns
  */
-export const createQuad = (position: Frame, size: Dimension, texturePos: TextureWindow): [Point[], UnitVector[], TextureCoordinate[]] => {
+export const createQuad = (
+  position: Frame,
+  size: Dimension,
+  texturePos: TextureWindow
+): [Point[], UnitVector[], UnitVector[], TextureCoordinate[]] => {
   const { w, h } = size;
   const sw = w / 2;
   const sh = h / 2;
@@ -62,8 +66,10 @@ export const createQuad = (position: Frame, size: Dimension, texturePos: Texture
 
   const vertices: Point[] = [];
   const normals: UnitVector[] = [];
+  const tangents: UnitVector[] = [];
 
   const normalsUp = UnitVector.fromValues(0, 0, 1);
+  const tangent = UnitVector.fromValues(1, 0, 0);
 
   vertices.push(Point.fromValues(o.x - sw, o.y - sh, 0));
   vertices.push(Point.fromValues(o.x + sw, o.y - sh, 0));
@@ -74,6 +80,7 @@ export const createQuad = (position: Frame, size: Dimension, texturePos: Texture
   vertices.push(Point.fromValues(o.x + sw, o.y + sh, 0));
 
   normals.push(normalsUp, normalsUp, normalsUp, normalsUp, normalsUp, normalsUp);
+  tangents.push(tangent, tangent, tangent, tangent, tangent, tangent);
 
   const textures: TextureCoordinate[] = [];
   const { pos: tp, size: ts } = texturePos;
@@ -94,26 +101,28 @@ export const createQuad = (position: Frame, size: Dimension, texturePos: Texture
   const tVertices = vertices.map((v) => v.absolute(position));
   const tNormals = normals.map((n) => n.absolute(position));
 
-  return [tVertices, tNormals, textures];
+  return [tVertices, tNormals, tangents, textures];
 };
 
-export const flatCoordinates = (c: [Point[], UnitVector[], TextureCoordinate[]], t: Transform): [number[], number[], number[]] => {
+export const flatCoordinates = (c: [Point[], UnitVector[], UnitVector[], TextureCoordinate[]], t: Transform): [number[], number[], number[], number[]] => {
   const nt = t.transpose().invert();
   return [
     c[0].map((p) => p.map(t).triplet).flat(), // vertices
     c[1].map((p) => p.map(nt).triplet).flat(), // normals
-    c[2].map((p) => [p.u, p.v]).flat(), // textureUV
+    c[2].map((p) => p.map(nt).triplet).flat(), // tangents
+    c[3].map((p) => [p.u, p.v]).flat(), // textureUV
   ];
 };
 
-export const cone = (step: number, z: number, h: number = 1.0): [Point[], UnitVector[]] => {
+export const cone = (step: number, z: number, h: number = 1.0): [Point[], UnitVector[], UnitVector[]] => {
   const r = 0.5;
   const coordinates: Point[] = [];
   const alphaStart = 0;
   const spanAngle = Math.PI * 2;
   const alphaStep = spanAngle / step;
   const normals: UnitVector[] = [];
-
+  const tangents: UnitVector[] = [];
+  const upVector = UnitVector.fromValues(0, 0, 1);
   const alpha = Math.atan(1 / 0.5);
   const beta = Math.PI / 2 - alpha;
   const normalZ = Math.sin(beta); // Z component of the normal vector
@@ -130,6 +139,11 @@ export const cone = (step: number, z: number, h: number = 1.0): [Point[], UnitVe
       const normP2 = UnitVector.fromValues(Math.cos(ang + alphaStep), Math.sin(ang + alphaStep), normalZ);
       const normP0 = normP1; // UnitVector.fromVector(normP1.add(normP2));
       normals.push(normP0, normP1, normP2);
+
+      const tanP0 = UnitVector.fromVector(normP0.crossProduct(upVector));
+      const tanP1 = UnitVector.fromVector(normP1.crossProduct(upVector));
+      const tanP2 = UnitVector.fromVector(normP2.crossProduct(upVector));
+      tangents.push(tanP0, tanP1, tanP2);
     }
   } else {
     const upR = ((1 - h) / Math.sin(alpha)) * Math.cos(alpha);
@@ -145,15 +159,19 @@ export const cone = (step: number, z: number, h: number = 1.0): [Point[], UnitVe
       coordinates.push(pt1);
       coordinates.push(pt2);
       normals.push(normP1, normP1, normP2);
-
       coordinates.push(pt2);
       coordinates.push(pt3);
       coordinates.push(pt0);
       normals.push(normP2, normP2, normP1);
+
+      const tanP1 = UnitVector.fromVector(normP1.crossProduct(upVector));
+      const tanP2 = UnitVector.fromVector(normP2.crossProduct(upVector));
+      tangents.push(normP1, tanP1, tanP2);
+      tangents.push(normP2, tanP2, tanP1);
     }
   }
   // const normals: UnitVector[] = computeNormals('triangle-list', coordinates);
-  return [coordinates, normals];
+  return [coordinates, normals, tangents];
 };
 
 export const disc = (step: number, z: number, facing: 'up' | 'down', radius: number = 0.5): [Point[], UnitVector[]] => {
@@ -182,46 +200,55 @@ export const disc = (step: number, z: number, facing: 'up' | 'down', radius: num
   return [coordinates, normals];
 };
 
-export const pipe = (step: number, bottom: number, top: number): [Point[], UnitVector[]] => {
+export const pipe = (step: number, bottom: number, top: number): [Point[], UnitVector[], UnitVector[]] => {
   const r = 0.5;
   const coordinates: Point[] = [];
   const normals: UnitVector[] = [];
+  const tangents: UnitVector[] = [];
+
   const alphaStep = Math.PI / step;
   const centerBottomPt = Point.fromValues(0, 0, bottom);
   const centerTopPt = Point.fromValues(0, 0, top);
+  const upVector = UnitVector.fromValues(0, 0, 1);
 
   for (let alpha = 0; alpha < Math.PI * 2; alpha += alphaStep) {
     const pt1 = Point.fromValues(r * Math.cos(alpha), r * Math.sin(alpha), bottom);
     const nm1 = UnitVector.fromPoints(pt1, centerBottomPt);
     coordinates.push(pt1);
     normals.push(nm1);
+    tangents.push(UnitVector.fromVector(nm1.crossProduct(upVector)));
 
     const pt2 = Point.fromValues(r * Math.cos(alpha + alphaStep), r * Math.sin(alpha + alphaStep), bottom);
     const nm2 = UnitVector.fromPoints(pt2, centerBottomPt);
     coordinates.push(pt2);
     normals.push(nm2);
+    tangents.push(UnitVector.fromVector(nm2.crossProduct(upVector)));
 
     const pt3 = Point.fromValues(r * Math.cos(alpha), r * Math.sin(alpha), top);
     const nm3 = UnitVector.fromPoints(pt3, centerTopPt);
     coordinates.push(pt3);
     normals.push(nm3);
+    tangents.push(UnitVector.fromVector(nm3.crossProduct(upVector)));
 
     const pt4 = Point.fromValues(r * Math.cos(alpha), r * Math.sin(alpha), top);
     const nm4 = UnitVector.fromPoints(pt4, centerTopPt);
     coordinates.push(pt4);
     normals.push(nm4);
+    tangents.push(UnitVector.fromVector(nm4.crossProduct(upVector)));
 
     const pt5 = Point.fromValues(r * Math.cos(alpha + alphaStep), r * Math.sin(alpha + alphaStep), bottom);
     const nm5 = UnitVector.fromPoints(pt5, centerBottomPt);
     coordinates.push(pt5);
     normals.push(nm5);
+    tangents.push(UnitVector.fromVector(nm5.crossProduct(upVector)));
 
     const pt6 = Point.fromValues(r * Math.cos(alpha + alphaStep), r * Math.sin(alpha + alphaStep), top);
     const nm6 = UnitVector.fromPoints(pt6, centerTopPt);
     coordinates.push(pt6);
     normals.push(nm6);
+    tangents.push(UnitVector.fromVector(nm6.crossProduct(upVector)));
   }
-  return [coordinates, normals];
+  return [coordinates, normals, tangents];
 };
 
 
