@@ -8,14 +8,14 @@ interface GpuCanvasProps {
 }
 
 const buildLights = (gpu: WebGPU.Gpu) => {
-  gpu.setAmbientLight([0.15, 0.15, 0.2, 1.0]);
+  gpu.setAmbientLight([0.15, 0.15, 0.2, 0.1]);
 
-  gpu.setLight('directional', 0, { dir: UnitVector.fromValues(0, 10, -10), col: [0.3, 0.3, 0.3, 1.0] });
-  gpu.setLight('directional', 1, { dir: UnitVector.fromValues(-10, 0, -10), col: [0.4, 0.4, 0.4, 1.0] });
-  gpu.setLight('point', 0, { pos: Point.fromValues(15, 15, 20), col: [0.5, 0.5, 0.45, 15.0] });
-  gpu.setLight('point', 1, { pos: Point.fromValues(-15, -15, 20), col: [0.3, 0.3, 0.7, 15.0] });
-  gpu.setLight('point', 2, { pos: Point.fromValues(15, -15, 20), col: [0.7, 0.1, 0.2, 20.0] });
-  gpu.setLight('point', 3, { pos: Point.fromValues(-15, 15, 20), col: [0.5, 0.6, 0.0, 15.0] });
+  gpu.setLight('directional', 0, { dir: UnitVector.fromValues(0, 10, -10), col: [0.3, 0.3, 0.3, 0.3] });
+  gpu.setLight('directional', 1, { dir: UnitVector.fromValues(-10, 0, -10), col: [0.4, 0.4, 0.4, 0.4] });
+  gpu.setLight('point', 0, { pos: Point.fromValues(15, 15, 30), col: [0.5, 0.5, 0.45, 1.0] });
+  gpu.setLight('point', 1, { pos: Point.fromValues(-15, -15, 30), col: [0.3, 0.3, 0.7, 1.0] });
+  gpu.setLight('point', 2, { pos: Point.fromValues(15, -15, 30), col: [0.7, 0.1, 0.2, 1.0] });
+  gpu.setLight('point', 3, { pos: Point.fromValues(-15, 15, 30), col: [0.5, 0.6, 0.0, 1.0] });
 };
 
 export const GpuCanvas = ({ onError, onConnected }: GpuCanvasProps) => {

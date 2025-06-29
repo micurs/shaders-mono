@@ -20,11 +20,13 @@ export const initRebuildViewTexture = (gpu: Gpu) => {
     }
     canvas.width = w;
     canvas.height = h;
-    // canvas.style.width = w + 'px';
-    // canvas.style.height = h + 'px';
 
-    // New Z-buffer to hold depth values for each pixel and control the render pass.
-    const depthTexture = device.createTexture({
+    // Destroy old textures before creating new ones
+    gpu['_colorTexture']?.destroy();
+    gpu['_depthTexture']?.destroy();
+
+    // Recreate textures and assign to gpu instance
+    gpu['_depthTexture'] = device.createTexture({
       label: 'DepthTexture',
       sampleCount: 1,
       size: [w, h, 1],
@@ -32,19 +34,19 @@ export const initRebuildViewTexture = (gpu: Gpu) => {
       usage: GPUTextureUsage.RENDER_ATTACHMENT,
     });
 
-    // New Color buffer to hold color values for each pixel and control the render pass.
-    // const colorTexture = context.getCurrentTexture();
-    const colorTexture = device.createTexture({
+    gpu['_colorTexture'] = device.createTexture({
       label: 'ColorTexture',
       size: { width: w, height: h, depthOrArrayLayers: 1 },
-      sampleCount: 1, // match the sample count to the pipeline
-      format: 'bgra8unorm',
+      sampleCount: 1,
+      format: gpu.format,
       usage: GPUTextureUsage.RENDER_ATTACHMENT,
     });
+
+    // Update the render descriptor with the new texture views
     const colors = renderDescriptor.colorAttachments! as GPURenderPassColorAttachment[];
-    colors[0]!.view = colorTexture.createView({ label: 'ColorView' });
+    colors[0]!.view = gpu['_colorTexture'].createView({ label: 'ColorView' });
     const depth = renderDescriptor.depthStencilAttachment! as GPURenderPassDepthStencilAttachment;
-    depth.view = depthTexture.createView({ label: 'DepthView' });
+    depth.view = gpu['_depthTexture'].createView({ label: 'DepthView' });
 
     return renderDescriptor;
   };

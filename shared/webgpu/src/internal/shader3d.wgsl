@@ -27,6 +27,8 @@ struct SceneLights {
   dirLights: array<DirectionalLight, MAX_DIR_LIGHTS>,
   pointLights: array<PointLight, MAX_POINT_LIGHTS>,
   ambient: vec4<f32>,
+  numDirLights: u32,
+  numPointLights: u32,
 };
 
 struct ObjectData {
@@ -94,28 +96,30 @@ fn computeDiffuseColor(
     normal: vec3<f32>,
     sceneLights: SceneLights) -> vec3<f32> {
   var diffuse: vec3<f32> = sceneLights.ambient.rgb;
-  for (var i: u32 = 0; i < MAX_DIR_LIGHTS; i = i + 1) {
+  for (var i: u32 = 0; i < sceneLights.numDirLights; i = i + 1) {
     if (sceneLights.dirLights[i].col.a == 0.0) {
       continue;
     }
     let lightDir: vec3<f32> = -normalize(sceneLights.dirLights[i].dir.xyz); //
     let lightColor: vec3<f32> = sceneLights.dirLights[i].col.rgb;
     var NdotL: f32 = max(dot(normal, lightDir), 0);
-    let diffuseColor = NdotL * lightColor;
+    let diffuseColor = NdotL * lightColor * sceneLights.dirLights[i].col.a; // Multiply by intensity
 
     diffuse = diffuse + diffuseColor;
   }
-  for (var i: u32 = 0; i < MAX_POINT_LIGHTS; i = i + 1) {
+  for (var i: u32 = 0; i < sceneLights.numPointLights; i = i + 1) {
     if (sceneLights.pointLights[i].col.a == 0.0) {
         continue;
     }
-    let dir = sceneLights.pointLights[i].pos.xyz - pos; //  - pos.xyz;
-    let attenuation = 1.0 - clamp(pow( length(dir)/50, 2.0), 0.0, 1.0 );
+    let dir = sceneLights.pointLights[i].pos.xyz - pos;
+    let dist = length(dir);
+    let attenuationRadius: f32 = 50.0; // Fixed attenuation radius
+    let attenuation = 1.0 - clamp(pow( dist / attenuationRadius, 2.0), 0.0, 1.0 );
 
     let lightDir: vec3<f32> = normalize(dir);
     let lightColor: vec3<f32> = sceneLights.pointLights[i].col.rgb;
     var NdotL: f32 = pow(max(dot(normal, lightDir), 0), 2);
-    let diffuseColor = NdotL * lightColor;
+    let diffuseColor = NdotL * lightColor * sceneLights.pointLights[i].col.a; // Multiply by intensity
 
     diffuse = diffuse + diffuseColor * attenuation;
   }
@@ -140,13 +144,15 @@ fn computeSpecularColor(
     ) -> vec3<f32> {
   var shininess: f32 = 92.0;
   var specular: vec3<f32> = vec3<f32>(0, 0, 0);
-  for (var i: u32 = 0; i < MAX_POINT_LIGHTS; i = i + 1) {
+  for (var i: u32 = 0; i < sceneLights.numPointLights; i = i + 1) {
     if (sceneLights.pointLights[i].col.a == 0.0) {
       continue;
     }
-    let power = sceneLights.pointLights[i].col.a;
-    let dir = sceneLights.pointLights[i].pos.xyz - pos; //  - pos.xyz;
-    let attenuation = 1.0 - clamp(pow( length(dir)/power, 2.0), 0.0, 1.0 );
+    let intensity = sceneLights.pointLights[i].col.a; // Renamed 'power' to 'intensity' for clarity
+    let dir = sceneLights.pointLights[i].pos.xyz - pos;
+    let dist = length(dir);
+    let attenuationRadius: f32 = 50.0; // Consistent with diffuse
+    let attenuation = 1.0 - clamp(pow( dist / attenuationRadius, 2.0), 0.0, 1.0 );
 
     let lightDir: vec3<f32> = normalize(dir);
     let lightColor: vec3<f32> = sceneLights.pointLights[i].col.rgb;
@@ -155,7 +161,7 @@ fn computeSpecularColor(
     let V = normalize(pos - eye);
     let R = normalize(reflect(lightDir, normal));
     let specularIntensity = pow(max(dot(V, R), 0.0), shininess);
-    let specularColor = specularIntensity * lightColor;
+    let specularColor = specularIntensity * lightColor * intensity; // Multiply by intensity
 
     specular = specular + specularColor * attenuation;
   }

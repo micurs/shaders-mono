@@ -43,13 +43,15 @@ export class Gpu implements GPUConnection {
     projection: Transform.identity(),
     view: Transform.identity(),
   };
-  private _renderPassDescription: GPURenderPassDescriptor | undefined = undefined;
+
   private _cameraTransHandler: CameraTransformationHandlers | undefined = undefined;
   private _lightsHandler: LightsTransformationHandlers | undefined = undefined;
   private _modelHandlers: ModelTransformationHandlers = {};
   private _fps = fps.init();
 
   private _rebuildViewTexture: ReturnType<typeof initRebuildViewTexture> | undefined = undefined;
+  private _colorTexture: GPUTexture | undefined = undefined;
+  private _depthTexture: GPUTexture | undefined = undefined;
 
   // Lights
   private _ambientLight: RGBAColor = [0.3, 0.3, 0.3, 1.0];
@@ -73,6 +75,21 @@ export class Gpu implements GPUConnection {
     this.device = device;
     this.format = format;
     this._rebuildViewTexture = initRebuildViewTexture(this);
+
+    // Initialize color and depth textures
+    this._colorTexture = device.createTexture({
+      size: { width: canvas.width, height: canvas.height, depthOrArrayLayers: 1 },
+      sampleCount: 1,
+      format: this.format,
+      usage: GPUTextureUsage.RENDER_ATTACHMENT,
+    });
+    this._depthTexture = device.createTexture({
+      label: 'DepthTexture',
+      sampleCount: 1,
+      size: [canvas.width, canvas.height, 1],
+      format: 'depth24plus',
+      usage: GPUTextureUsage.RENDER_ATTACHMENT,
+    });
 
     this.device.lost.then(() => {
       // TODO: handle loosing the device and recreate it
@@ -186,7 +203,7 @@ export class Gpu implements GPUConnection {
     this._pipelines = createPipelines(this, this._shaderModule, scene);
 
     // // 3 - Setup the render pass descriptor
-    this._renderPassDescription = buildRenderPassDescriptor(this);
+    buildRenderPassDescriptor(this, this._colorTexture!.createView(), this._depthTexture!.createView());
   }
 
   addToScene(scene: Scene<unknown>) {
@@ -267,6 +284,8 @@ export class Gpu implements GPUConnection {
     lightOffset += posLightBuffer.byteLength;
     const ambientLightBuffer = new Float32Array(this._ambientLight);
     device.queue.writeBuffer(buffer[1], lightOffset, ambientLightBuffer);
+    lightOffset += ambientLightBuffer.byteLength;
+    device.queue.writeBuffer(buffer[1], lightOffset, new Uint32Array([this._dirLights.length, this._pointLights.length]));
   }
 
   updateLights(timeSpan: number) {
@@ -296,9 +315,13 @@ export class Gpu implements GPUConnection {
     this._handleOnRender && this._handleOnRender(this);
 
     // 1 - We rebuild the rendering texture id needed when canvas is resized!
-    let renderPassDescription: GPURenderPassDescriptor = this._renderPassDescription ?? buildRenderPassDescriptor(this);
+    let renderPassDescription: GPURenderPassDescriptor = buildRenderPassDescriptor(
+      this,
+      this._colorTexture!.createView(),
+      this._depthTexture!.createView()
+    );
     if (this._rebuildViewTexture) {
-      this._renderPassDescription = this._rebuildViewTexture(renderPassDescription);
+      renderPassDescription = this._rebuildViewTexture(renderPassDescription);
     }
 
     const commandEncoder = device.createCommandEncoder();
@@ -383,9 +406,6 @@ export class Gpu implements GPUConnection {
   }
 
   beginRenderLoop(frameHandlers?: FrameHandlers) {
-    // if (!this._renderPassDescription) {
-    //   throw new Error('WebGPU:renderPassDescription is NOT available! - Did you call setScene() ?');
-    // }
     this._fps = fps.init();
     this._cameraTransHandler = frameHandlers?.camera;
     this._lightsHandler = frameHandlers?.lights;

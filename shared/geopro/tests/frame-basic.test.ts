@@ -302,11 +302,51 @@ describe('Frame basic operations', () => {
 
   test('Create 2 frames and get one as relative to the other', () => {
     const f1 = Frame.from2Vectors(Point.fromValues(10, 10, 10), Vector.fromValues(0, 0, 1), Vector.fromValues(1, 0, 0));
-    const f2 = Frame.lookAt(Point.fromValues(10, 10, 10), Point.fromValues(20, 20, 0), UnitVector.fromValues(0, 1, 0));
+    const f2 = Frame.lookAt(Point.fromValues(20, 20, 0), Point.fromValues(10, 10, 10), UnitVector.fromValues(0, 1, 0));
 
     const f1f2 = f2.relative(f1);
-    expect(f1f2.o.x).toBe(0);
-    expect(f1f2.o.y).toBe(0);
-    expect(f1f2.o.z).toBe(0);
+    expect(f1f2.o.x).toBeCloseTo(10);
+    expect(f1f2.o.y).toBeCloseTo(10);
+    expect(f1f2.o.z).toBeCloseTo(-10);
+  });
+
+  test('Relative frame - simple translation', () => {
+    const f1 = Frame.translation(Point.fromValues(10, 0, 0));
+    const f2 = Frame.translation(Point.fromValues(12, 0, 0));
+    const f2_in_f1 = f2.relative(f1);
+    expect(f2_in_f1.o.x).toBeCloseTo(2);
+    expect(f2_in_f1.o.y).toBeCloseTo(0);
+    expect(f2_in_f1.o.z).toBeCloseTo(0);
+    // Check orientation
+    expect(f2_in_f1.i.x).toBeCloseTo(1);
+    expect(f2_in_f1.i.y).toBeCloseTo(0);
+    expect(f2_in_f1.i.z).toBeCloseTo(0);
+    expect(f2_in_f1.j.x).toBeCloseTo(0);
+    expect(f2_in_f1.j.y).toBeCloseTo(1);
+    expect(f2_in_f1.j.z).toBeCloseTo(0);
+    expect(f2_in_f1.k.x).toBeCloseTo(0);
+    expect(f2_in_f1.k.y).toBeCloseTo(0);
+    expect(f2_in_f1.k.z).toBeCloseTo(1);
+  });
+
+  test('Relative frame - simple rotation', () => {
+    const f1 = Frame.world();
+    const f2 = Frame.rotationY(Point.origin(), deg2rad(90));
+    const f2_in_f1 = f2.relative(f1);
+    // f1 is world, so f2_in_f1 should be f2
+    expect(f2_in_f1.o.x).toBeCloseTo(0);
+    expect(f2_in_f1.o.y).toBeCloseTo(0);
+    expect(f2_in_f1.o.z).toBeCloseTo(0);
+    // Check orientation for 90 deg rot around Y
+    // i -> (0,0,-1), j -> (0,1,0), k -> (1,0,0)
+    expect(f2_in_f1.i.x).toBeCloseTo(0);
+    expect(f2_in_f1.i.y).toBeCloseTo(0);
+    expect(f2_in_f1.i.z).toBeCloseTo(-1);
+    expect(f2_in_f1.j.x).toBeCloseTo(0);
+    expect(f2_in_f1.j.y).toBeCloseTo(1);
+    expect(f2_in_f1.j.z).toBeCloseTo(0);
+    expect(f2_in_f1.k.x).toBeCloseTo(1);
+    expect(f2_in_f1.k.y).toBeCloseTo(0);
+    expect(f2_in_f1.k.z).toBeCloseTo(0);
   });
 });

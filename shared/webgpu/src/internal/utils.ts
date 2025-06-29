@@ -40,31 +40,19 @@ export const createGPUBuffer = (
   return buffer;
 };
 
-export const buildRenderPassDescriptor = (gpu: Gpu): GPURenderPassDescriptor => {
-  const { device, canvas } = gpu;
+export const buildRenderPassDescriptor = (
+  gpu: Gpu,
+  colorTextureView: GPUTextureView,
+  depthTextureView: GPUTextureView
+): GPURenderPassDescriptor => {
+  const { canvas } = gpu;
 
-  const colorTexture = device.createTexture({
-    size: { width: canvas.width, height: canvas.height, depthOrArrayLayers: 1 },
-    sampleCount: 1, // set to 4 for MSAA multisampling
-    format: gpu.format,
-    usage: GPUTextureUsage.RENDER_ATTACHMENT,
-  });
-
-  // Create the Z-buffer to hold depth values for each pixel and control the render pass.
-  const depthTexture = device.createTexture({
-    label: 'DepthTexture',
-    sampleCount: 1,
-    size: [canvas.width, canvas.height, 1],
-    format: 'depth24plus',
-    usage: GPUTextureUsage.RENDER_ATTACHMENT,
-  });
   const clearColor = styleColorToGpu(window.getComputedStyle(canvas).backgroundColor);
-  // const colorTexture = context.getCurrentTexture();
 
   return {
     colorAttachments: [
       {
-        view: colorTexture.createView(),
+        view: colorTextureView,
         clearValue: clearColor, //background color
         //loadValue: { r: 0.2, g: 0.247, b: 0.314, a: 1.0 },
         loadOp: 'clear',
@@ -72,7 +60,7 @@ export const buildRenderPassDescriptor = (gpu: Gpu): GPURenderPassDescriptor => 
       },
     ],
     depthStencilAttachment: {
-      view: depthTexture.createView(),
+      view: depthTextureView,
       depthClearValue: 1.0,
       // depthLoadValue: 1.0,
       depthStoreOp: 'store',

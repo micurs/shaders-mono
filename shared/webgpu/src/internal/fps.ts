@@ -14,7 +14,7 @@ export const init = () => {
     lastFPSIdx = (lastFPSIdx + 1) % 10;
     lastFPS[lastFPSIdx] = 1000 / renderingTime;
 
-    lastTime = performance.now();
+    lastTime = time;
     // console.log('lastTime', lastTime.toFixed(0));
     return renderingTime;
   };

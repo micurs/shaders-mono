@@ -30,8 +30,8 @@ export class Frame {
     const f = new Frame();
     const m = mat4.create();
     mat4.translate(m, m, p.vec3());
-    f._inverse = m;
-    mat4.invert(f._direct, f._inverse);
+    f._direct = m;
+    mat4.invert(f._inverse, f._direct);
     return f;
   }
 
@@ -111,7 +111,7 @@ export class Frame {
   }
 
   unMap(t: GeoMap): Frame {
-    return this.invert().compose(t);
+    return this.compose(t.invert());
   }
 
   /**
@@ -198,11 +198,10 @@ export class Frame {
 
   relative<T extends { relative: (f: Frame) => T }>(x: T): T {
     if (x && isFrame(x)) {
-      const ro = this.origin.relative(x);
-      const rz = this.k.relative(x);
-      const rx = this.i.relative(x);
-      const rf = Frame.from2Vectors(ro, rz, rx);
-      return rf as any as T;
+      const f = new Frame();
+      mat4.multiply(f._direct, x.inverseMatrix, this.directMatrix);
+      mat4.invert(f._inverse, f._direct);
+      return f as any as T;
     }
     return x.relative(this);
   }
