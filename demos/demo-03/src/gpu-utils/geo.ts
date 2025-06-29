@@ -27,7 +27,7 @@ export const buildPlane = (world: OIMO.World): WorldScene => {
 
   const plane = WebGPU.planeTriMesh<OIMO.Body>()(Transform.identity(), {
     id: `ref-xyplane-${planeCounter++}`,
-    colors: [[0.3, 0.4, 0.6, 0.6]],
+    colors: [[0.3, 0.3, 0.3, 0.9]],
     steps: 4,
   });
   plane.scale(scale);
@@ -35,7 +35,11 @@ export const buildPlane = (world: OIMO.World): WorldScene => {
 
   const grid = WebGPU.planeGridLines()(Transform.scale(scale.x, scale.y, scale.z), {
     id: `ref-xygrid-${planeCounter++}`,
-    colors: [[0.6, 0.6, 0.6, 1.0]],
+    colors: [
+      [1.0, 1.0, 1.0, 0.8],
+      [1.0, 1.0, 1.0, 0.4],
+      [1.0, 1.0, 1.0, 0.1],
+    ],
     showAxes: true,
   });
   // grid.scale(scale);
