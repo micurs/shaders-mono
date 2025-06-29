@@ -118,9 +118,6 @@ export const connectGPU = async (canvas: HTMLCanvasElement): Promise<GPUConnecti
     alphaMode: 'opaque', // 'premultiplied' should allow transparency, but it does not work?.
   });
 
-  const info = await adapter.requestAdapterInfo();
-  console.info('WebGPU: adapter:', info);
-  console.info('WebGPU: fallback adapter:', adapter.isFallbackAdapter);
   console.info('WegGPU: maxBindGroups:', device.limits.maxBindGroups);
 
   return { context, device, canvas, format };
