@@ -82,15 +82,15 @@ export const getOrbitHandlers = (gpu: Gpu, eyeStart: [number, number, number] = 
     const eyeInRotationFrame = cameraMoveFrame.relative(eye);
     let vuvInRotationFrame = cameraMoveFrame.relative(vuv);
 
-    // 2. Perform the tilt
-    const tiltRotation = Transform.rotationZ(tilt);
-    vuvInRotationFrame = tiltRotation.apply(vuvInRotationFrame);
+   // 2. Perform the tilt
+   const tiltRotation = Transform.rotationZ(tilt);
+   vuvInRotationFrame = tiltRotation.apply(vuvInRotationFrame);
 
-    // 3. Rotate the view frame
-    const rotation = Transform.rotationX(-rot[1]).compose(Transform.rotationY(-rot[0]));
-    eye = rotation.apply(eyeInRotationFrame).absolute(cameraMoveFrame);
-    vuv = rotation.apply(vuvInRotationFrame).absolute(cameraMoveFrame);
-    const move = Transform.move(moveVector);
+   // 3. Rotate the view frame
+   const rotation = Transform.rotationX(-rot[1]).compose(Transform.rotationY(-rot[0]));
+   eye = rotation.apply(eyeInRotationFrame).absolute(cameraMoveFrame);
+   vuv = rotation.apply(vuvInRotationFrame).absolute(cameraMoveFrame);
+   const move = Transform.move(moveVector);
 
     target = move.apply(target);
     eye = move.apply(eye);

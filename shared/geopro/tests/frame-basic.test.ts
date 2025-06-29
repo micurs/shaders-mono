@@ -349,4 +349,15 @@ describe('Frame basic operations', () => {
     expect(f2_in_f1.k.y).toBeCloseTo(0);
     expect(f2_in_f1.k.z).toBeCloseTo(0);
   });
+
+  test('Create a frame and get the absolute of a relative frame', () => {
+    const f1 = Frame.from2Vectors(Point.fromValues(10, 10, 10), Vector.fromValues(0, 0, 1), Vector.fromValues(1, 0, 0));
+    const f2 = Frame.from2Vectors(Point.fromValues(1, 1, 1), Vector.fromValues(0, 1, 0), Vector.fromValues(0, 0, 1));
+
+    const f2abs = f2.absolute(f1);
+
+    expect(f2abs.o.x).toBeCloseTo(11);
+    expect(f2abs.o.y).toBeCloseTo(11);
+    expect(f2abs.o.z).toBeCloseTo(11);
+  });
 });

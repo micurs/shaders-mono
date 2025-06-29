@@ -205,6 +205,11 @@ export class Frame {
     }
     return x.relative(this);
   }
+
+  absolute(f: Frame): Frame {
+    const t = f.compose(this);
+    return t;
+  }
 }
 
 export const isFrame = (d: unknown): d is Frame => {
