@@ -58,8 +58,20 @@ function App() {
       setGpuError('WebGPU not initialized');
       return;
     }
-    gpu.clearScene();
-    world.clear();
+    gpu.getScene().forEach((geo) => {
+      if (!geo.id.startsWith('ref-xy')) {
+        gpu.removeFromScene(geo.id);
+      }
+    });
+
+    let body: OIMO.Body | null = world.getBodyList();
+    while (body) {
+      const next = body.getNext();
+      if (body.name !== 'floor') {
+        world.removeBody(body);
+      }
+      body = next;
+    }
   };
 
   return (

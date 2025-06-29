@@ -31,12 +31,16 @@ declare module 'oimo' {
     add(shape: Shape): Body;
     remove(shape: Shape): void;
     step(): void; // Advance the simulation by one step
+    getBodyList(): Body;
+    removeBody(body: Body): void;
   }
 
   export declare class Body {
     sleeping: boolean;
     isDynamic: boolean;
+    name: string;
     getPosition(): Vec3;
     getQuaternion(): Vec4;
+    getNext(): Body | null;
   }
 }

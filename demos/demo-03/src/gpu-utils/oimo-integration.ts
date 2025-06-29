@@ -53,17 +53,19 @@ export const addCylinder = (world: OIMO.World, pos: Vector, dim: Vector, rot: [n
   });
 };
 
-export const addStaticBox = (world: OIMO.World, pos: Vector, dim: Vector) => {
-  return world.add({
+export const addStaticBox = (world: OIMO.World, position: Vector, scale: Vector) => {
+  const body = world.add({
     type: 'box',
-    size: dim.triplet,
-    pos: pos.triplet,
+    size: [scale.x, scale.y, scale.z],
+    pos: [position.x, position.y, position.z],
+    rot: [0, 0, 0],
     move: false,
-    world: world,
-    restitution: 0.5,
     density: 1,
-    friction: 0.3,
-  });
+    friction: 0.5,
+    restitution: 0.2,
+  }) as OIMO.Body;
+  body.name = 'floor';
+  return body;
 };
 
 export const updatePhysics = (world: OIMO.World, gpu: WebGPU.Gpu) => {
