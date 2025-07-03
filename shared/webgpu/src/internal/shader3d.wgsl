@@ -144,6 +144,7 @@ fn computeSpecularColor(
     ) -> vec3<f32> {
   var shininess: f32 = 92.0;
   var specular: vec3<f32> = vec3<f32>(0, 0, 0);
+  let V = normalize(eye - pos); // Moved outside the loop
   for (var i: u32 = 0; i < sceneLights.numPointLights; i = i + 1) {
     if (sceneLights.pointLights[i].col.a == 0.0) {
       continue;
@@ -158,7 +159,6 @@ fn computeSpecularColor(
     let lightColor: vec3<f32> = sceneLights.pointLights[i].col.rgb;
 
     // Specular
-    let V = normalize(eye - pos);
     let R = normalize(reflect(-lightDir, normal));
     let specularIntensity = pow(max(dot(V, R), 0.0), shininess);
     let specularColor = specularIntensity * lightColor * intensity; // Multiply by intensity
