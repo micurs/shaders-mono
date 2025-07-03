@@ -326,7 +326,11 @@ fn fragmentTextureBumpShader(in: TextFragment) -> @location(0) vec4<f32> {
   let dV = (heightUp - heightDown) / ( prec * prec * texelSize.y) ;
 
   let deltaVector = vec3<f32>(dU, dV, 0.0);
-  let newNormal = normalize(in.normal + deltaVector);
+  let N = normalize(in.normal);
+  let T = normalize(in.tangent);
+  let B = cross(N, T);
+  let tangentSpaceNormal = vec3<f32>(deltaVector.x, deltaVector.y, 1.0);
+  let newNormal = normalize(T * tangentSpaceNormal.x + B * tangentSpaceNormal.y + N * tangentSpaceNormal.z);
   let diffuse: vec3<f32> = computeDiffuseColor( in.eye, in.pos, newNormal, sceneLights );
   let specular: vec3<f32> = computeSpecularColor( in.eye, in.pos, newNormal, sceneLights, texColor );
 
