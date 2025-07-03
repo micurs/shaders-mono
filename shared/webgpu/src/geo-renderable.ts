@@ -37,6 +37,8 @@ export class GeoRenderable<T = null> implements Renderable {
     translation: Vector.fromValues(0, 0, 0),
   };
 
+  private _transformationData: Float32Array;
+
   public display: 'none' | 'full' | 'no-texture' = 'full';
 
   get id(): string {
@@ -124,7 +126,9 @@ export class GeoRenderable<T = null> implements Renderable {
    */
   get transformationData(): Float32Array {
     const t = this.transformation;
-    return new Float32Array([...t.values, ...t.transpose().invert().values]);
+    this._transformationData.set([...t.values]);
+    this._transformationData.set([...t.transpose().invert().values], 16);
+    return this._transformationData;
   }
 
   /**
@@ -233,7 +237,6 @@ export class GeoRenderable<T = null> implements Renderable {
         }
         fragments.push(...fragment);
       }
-      // console.log('fragments size', fragments.length, fragments.length * float32Size);
       return new Float32Array(fragments);
     });
     return this._bufferData;
@@ -320,6 +323,7 @@ export class GeoRenderable<T = null> implements Renderable {
     this._vertexByteSize = 3 * 4;
     this._stripColors = options.colors ?? [[0.0, 0.0, 0.0, 0.0]];
     this._textureAlpha = options.textureAlpha ?? 1.0;
+    this._transformationData = new Float32Array(32);
   }
 
   buildGpuBuffer(gpu: Gpu) {

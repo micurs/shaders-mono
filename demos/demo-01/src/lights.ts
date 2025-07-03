@@ -4,16 +4,16 @@ import { DirectionalLight, Gpu, LightsTransformationHandlers, PointLight } from 
 export const buildLights = (gpu: Gpu): LightsTransformationHandlers => {
   const one60 = -deg2rad(180 / 20);
 
-  const posSun = Point.fromValues(8.0, 0.0, 0);
-  const posMoon = Point.fromValues(-6.0, 0.0, -1);
+  const posSun = Point.fromValues(28.0, 0.0, 0);
+  const posMoon = Point.fromValues(-8.0, 0.0, -1);
 
-  gpu.setAmbientLight([0.15, 0.15, 0.15, 1.0]);
+  gpu.setAmbientLight([0.01, 0.01, 0.01, 0.01]);
 
   const dirSun = UnitVector.fromVector(Point.origin().subtract(posSun));
-  gpu.setLight('directional', 0, { dir: dirSun, col: [0.55, 0.55, 0.5, 1.0] });
+  gpu.setLight('directional', 0, { dir: dirSun, col: [0.55, 0.55, 0.5, 0.5] });
   gpu.setLight('directional', 1, { dir: UnitVector.fromValues(0, 0, 1), col: [0.6, 0.6, 0.6, 0.0] });
-  gpu.setLight('point', 0, { pos: posSun, col: [0.6, 0.6, 0.55, 18.0] });
-  gpu.setLight('point', 1, { pos: posMoon, col: [0.14, 0.14, 0.35, 14.0] });
+  gpu.setLight('point', 0, { pos: posSun, col: [0.8, 0.8, 0.7, 1.0] });
+  gpu.setLight('point', 1, { pos: posMoon, col: [0.18, 0.18, 0.4, 0.8] });
   gpu.setLight('point', 2, { pos: posMoon, col: [0.1, 0.1, 0.4, 0.0] });
   gpu.setLight('point', 3, { pos: posMoon, col: [0.1, 0.1, 0.4, 0.0] });
 
