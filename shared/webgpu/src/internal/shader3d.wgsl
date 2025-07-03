@@ -118,7 +118,7 @@ fn computeDiffuseColor(
 
     let lightDir: vec3<f32> = normalize(dir);
     let lightColor: vec3<f32> = sceneLights.pointLights[i].col.rgb;
-    var NdotL: f32 = pow(max(dot(normal, lightDir), 0), 2);
+    var NdotL: f32 = max(dot(normal, lightDir), 0.0);
     let diffuseColor = NdotL * lightColor * sceneLights.pointLights[i].col.a; // Multiply by intensity
 
     diffuse = diffuse + diffuseColor * attenuation;
