@@ -158,8 +158,8 @@ fn computeSpecularColor(
     let lightColor: vec3<f32> = sceneLights.pointLights[i].col.rgb;
 
     // Specular
-    let V = normalize(pos - eye);
-    let R = normalize(reflect(lightDir, normal));
+    let V = normalize(eye - pos);
+    let R = normalize(reflect(-lightDir, normal));
     let specularIntensity = pow(max(dot(V, R), 0.0), shininess);
     let specularColor = specularIntensity * lightColor * intensity; // Multiply by intensity
 
