@@ -118,7 +118,7 @@ fn computeDiffuseColor(
 
     let lightDir: vec3<f32> = normalize(dir);
     let lightColor: vec3<f32> = sceneLights.pointLights[i].col.rgb;
-    var NdotL: f32 = pow(max(dot(normal, lightDir), 0), 2);
+    var NdotL: f32 = max(dot(normal, lightDir), 0.0);
     let diffuseColor = NdotL * lightColor * sceneLights.pointLights[i].col.a; // Multiply by intensity
 
     diffuse = diffuse + diffuseColor * attenuation;
@@ -144,6 +144,7 @@ fn computeSpecularColor(
     ) -> vec3<f32> {
   var shininess: f32 = 92.0;
   var specular: vec3<f32> = vec3<f32>(0, 0, 0);
+  let V = normalize(eye - pos); // Moved outside the loop
   for (var i: u32 = 0; i < sceneLights.numPointLights; i = i + 1) {
     if (sceneLights.pointLights[i].col.a == 0.0) {
       continue;
@@ -158,8 +159,7 @@ fn computeSpecularColor(
     let lightColor: vec3<f32> = sceneLights.pointLights[i].col.rgb;
 
     // Specular
-    let V = normalize(pos - eye);
-    let R = normalize(reflect(lightDir, normal));
+    let R = normalize(reflect(-lightDir, normal));
     let specularIntensity = pow(max(dot(V, R), 0.0), shininess);
     let specularColor = specularIntensity * lightColor * intensity; // Multiply by intensity
 
@@ -326,7 +326,11 @@ fn fragmentTextureBumpShader(in: TextFragment) -> @location(0) vec4<f32> {
   let dV = (heightUp - heightDown) / ( prec * prec * texelSize.y) ;
 
   let deltaVector = vec3<f32>(dU, dV, 0.0);
-  let newNormal = normalize(in.normal + deltaVector);
+  let N = normalize(in.normal);
+  let T = normalize(in.tangent);
+  let B = cross(N, T);
+  let tangentSpaceNormal = vec3<f32>(deltaVector.x, deltaVector.y, 1.0);
+  let newNormal = normalize(T * tangentSpaceNormal.x + B * tangentSpaceNormal.y + N * tangentSpaceNormal.z);
   let diffuse: vec3<f32> = computeDiffuseColor( in.eye, in.pos, newNormal, sceneLights );
   let specular: vec3<f32> = computeSpecularColor( in.eye, in.pos, newNormal, sceneLights, texColor );
 

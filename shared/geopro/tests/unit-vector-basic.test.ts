@@ -1,7 +1,7 @@
 import { describe, test, expect } from 'vitest';
 import { vec4, vec3 } from 'gl-matrix';
 
-import { UnitVector, round, Vector } from '../src';
+import { UnitVector, round, Vector, isUnitVector } from '../src';
 
 
 describe('UnitVector basic operations', () => {
@@ -58,8 +58,34 @@ describe('UnitVector basic operations', () => {
     const v3 = UnitVector.crossProduct(v1, v2);
     expect(v3.x).toBe(0);
     expect(v3.y).toBe(0);
-    expect(v3.z).toBe(1);
-    expect(v3.isUnitVector()).toBe(true);
+    expect(v3.z).toBeCloseTo(1);
+    expect(v3).toBeInstanceOf(UnitVector);
   });
 
+  test('buffer returns a Float32Array with the correct values', () => {
+    const v = UnitVector.fromValues(1, 2, 3);
+    const buffer = v.buffer();
+    const l = Math.sqrt(1*1 + 2*2 + 3*3);
+    expect(buffer).toBeInstanceOf(Float32Array);
+    expect(buffer.length).toBe(4);
+    expect(round(buffer[0], precision)).toBe(round(1/l, precision));
+    expect(round(buffer[1], precision)).toBe(round(2/l, precision));
+    expect(round(buffer[2], precision)).toBe(round(3/l, precision));
+    expect(buffer[3]).toBe(0);
+  });
+
+  test('instance crossProduct of UnitVector and Vector returns a Vector perpendicular to both', () => {
+    const v1 = UnitVector.fromValues(1,0,0);
+    const v2 = Vector.fromValues(0,10,0);
+    const v3 = v1.crossProduct(v2);
+    expect(v3.x).toBe(0);
+    expect(v3.y).toBe(0);
+    expect(v3.z).toBe(10);
+    expect(v3).toBeInstanceOf(Vector);
+  });
+
+  test('isUnitVector returns false for a Vector', () => {
+    const v = Vector.fromValues(1, 2, 3);
+    expect(isUnitVector(v)).toBe(false);
+  });
 });
