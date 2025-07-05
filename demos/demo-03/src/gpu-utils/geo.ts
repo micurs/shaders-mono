@@ -99,7 +99,8 @@ const buildCube = (world: OIMO.World, image?: WebGPU.Material): WorldScene => {
       id: `cube-${cubeCounter++}`,
       colors: [[Math.random(), Math.random(), Math.random(), 1.0]],
       textureCoordinates: image ? true : false,
-      textureAlpha: 0.5,
+      alpha: 0.5,
+      bumpIntensity: 0.0,
     });
     cube.scale(scale);
     cube.translate(position);
@@ -132,7 +133,8 @@ const buildCylinder = (world: OIMO.World, image?: WebGPU.Material): WorldScene =
       steps: 12,
       colors: [[Math.random(), Math.random(), 0.3, 1.0]],
       textureCoordinates: true,
-      textureAlpha: 0.6,
+      alpha: 0.6,
+      bumpIntensity: 0.0,
     });
     cylinder.scale(scale);
     cylinder.translate(position);

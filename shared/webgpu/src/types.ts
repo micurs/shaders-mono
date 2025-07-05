@@ -124,7 +124,8 @@ export type GeoOptions<T> = T & {
   id: string; // A unique ID in the scene
   colors?: RGBAColor[];
   textureCoordinates?: boolean; // If true, texture coordinates will be generated
-  textureAlpha?: number; // If set, the alpha channel of the texture will be set to this value (otherwise 1.0)
+  alpha?: number; // If set, the alpha channel of the texture will be set to this value (otherwise 1.0)
+  bumpIntensity?: number; // If set, the bump intensity for bump mapping
 };
 
 // export type GeoGenerator = <B, O = {}>(t: Transform, options: GeoOptions<O>) => GeoRenderable<B>;

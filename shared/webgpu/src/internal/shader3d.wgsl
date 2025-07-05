@@ -66,14 +66,17 @@ struct ColorData {
     color: vec4<f32>,
 };
 
-struct TextureAlpha {
-    value: f32
+struct MaterialProperties {
+    alpha: f32,
+    bumpIntensity: f32,
 };
+
+
 
 @group(0) @binding(0) var<uniform> sceneData: SceneData;
 @group(0) @binding(1) var<uniform> sceneLights: SceneLights;
 @group(1) @binding(0) var<uniform> myColor: ColorData;
-@group(1) @binding(1) var<uniform> textureAlpha: TextureAlpha;
+@group(1) @binding(1) var<uniform> materialProperties: MaterialProperties;
 @group(2) @binding(0) var<uniform> myModel: ModelData;
 @group(3) @binding(0) var myTexture0: texture_2d<f32>;
 @group(3) @binding(1) var myTexture1: texture_2d<f32>;
@@ -326,7 +329,7 @@ fn fragmentTextureShader(in: TextFragment) -> @location(0) vec4<f32> {
   let diffuse: vec3<f32> = computeDiffuseColor( in.eye, in.pos, N, sceneLights );
   let specular: vec3<f32> = computeSpecularColor( in.eye, in.pos, N, sceneLights, texColor );
 
-  let textMix = vec4<f32>(1-textureAlpha.value);
+  let textMix = vec4<f32>(1.0 - materialProperties.alpha);
   let finalColor = mix(texColor, myColor.color, textMix); // mixed the two colors based on alpha.
   return clamp(
     vec4<f32>((finalColor.rgb * diffuse + specular) * att, max(finalColor.a, texColor.a)),
@@ -358,14 +361,14 @@ fn fragmentTextureBumpShader(in: TextFragment) -> @location(0) vec4<f32> {
   let N = normalize(in.normal);
   let T = normalize(in.tangent);
   let B = cross(N, T);
-  let tangentSpaceNormal = vec3<f32>(deltaVector.x, deltaVector.y, 1.0);
+  let tangentSpaceNormal = vec3<f32>(deltaVector.x * materialProperties.bumpIntensity, deltaVector.y * materialProperties.bumpIntensity, 1.0);
   let newNormal = normalize(T * tangentSpaceNormal.x + B * tangentSpaceNormal.y + N * tangentSpaceNormal.z);
   let diffuse: vec3<f32> = computeDiffuseColor( in.eye, in.pos, newNormal, sceneLights );
   let specular: vec3<f32> = computeSpecularColor( in.eye, in.pos, newNormal, sceneLights, texColor );
 
   let att: f32 = computeDistanceToCameraAttenuation(in.viewZ);
 
-  let textMix = vec4<f32>(1-textureAlpha.value);
+  let textMix = vec4<f32>(1.0 - materialProperties.alpha);
   let finalColor = mix(texColor, myColor.color, textMix); // mixed the two colors based on alpha.
   return clamp(
     vec4<f32>((finalColor.rgb * diffuse + specular) * att, max(finalColor.a, texColor.a)),
