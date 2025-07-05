@@ -6,6 +6,11 @@ import { RotationTranslationScale } from 'shared/geopro/src/types';
 
 const float32Size = 4;
 
+export interface MaterialProperties {
+  alpha: number;
+  bumpIntensity: number;
+}
+
 /**
  * TriangleData is a class that holds the data for triangles, its colors, normals and texture coordinates.
  */
@@ -20,19 +25,19 @@ export class GeoRenderable<T = null> implements Renderable {
   private _vertexTextureCoords: Float32Array[] = []; // 2 coordinates per vertex - 3 points for a triangle
 
   private _stripColors: RGBAColor[] = []; // [1.0, 1.0, 1.0, 1.0]; // 4 color components per vertex - 3 points for a triangle
-  private _textureAlpha: number = 1.0;
 
-  private _vertexByteSize: number = 0;
+  private _vertexByteSize = 0;
 
   private _buffers: GPUBuffer[] = [];
   private _bufferLayout: GPUVertexBufferLayout | null = null;
   private _topology: GPUPrimitiveTopology = 'triangle-list';
   private _cullMode: GPUCullMode = 'back';
-
+  private _alpha = 1.0;
+  private _bumpIntensity = 0.2; // Bump intensity for the texture
   private _materials: Material[] = [];
 
   private _transformation: RotationTranslationScale = {
-    rotation: Rotation.identity(),
+    rotation: Rotation.identity(), // Rotation of the object
     scale: Vector.fromValues(1, 1, 1),
     translation: Vector.fromValues(0, 0, 0),
   };
@@ -45,8 +50,8 @@ export class GeoRenderable<T = null> implements Renderable {
     return this._id;
   }
 
-  get textureAlpha(): number {
-    return this._textureAlpha;
+  get materialProperties(): MaterialProperties {
+    return { alpha: this._alpha, bumpIntensity: this._bumpIntensity };
   }
 
   get label(): string {
@@ -322,7 +327,8 @@ export class GeoRenderable<T = null> implements Renderable {
     this._topology = topology;
     this._vertexByteSize = 3 * 4;
     this._stripColors = options.colors ?? [[0.0, 0.0, 0.0, 0.0]];
-    this._textureAlpha = options.textureAlpha ?? 1.0;
+    this._alpha = options.alpha ?? 1.0;
+    this._bumpIntensity = options.bumpIntensity ?? 0.2;
     this._transformationData = new Float32Array(32);
   }
 

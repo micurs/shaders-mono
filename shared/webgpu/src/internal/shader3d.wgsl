@@ -66,14 +66,17 @@ struct ColorData {
     color: vec4<f32>,
 };
 
-struct TextureAlpha {
-    value: f32
+struct MaterialProperties {
+    alpha: f32,
+    bumpIntensity: f32,
 };
+
+
 
 @group(0) @binding(0) var<uniform> sceneData: SceneData;
 @group(0) @binding(1) var<uniform> sceneLights: SceneLights;
 @group(1) @binding(0) var<uniform> myColor: ColorData;
-@group(1) @binding(1) var<uniform> textureAlpha: TextureAlpha;
+@group(1) @binding(1) var<uniform> materialProperties: MaterialProperties;
 @group(2) @binding(0) var<uniform> myModel: ModelData;
 @group(3) @binding(0) var myTexture0: texture_2d<f32>;
 @group(3) @binding(1) var myTexture1: texture_2d<f32>;
@@ -193,6 +196,14 @@ fn computeDistanceToSegment( point: vec3<f32>, segmentStart: vec3<f32>, segmentE
   return length(pointToStart - projection * segmentDirection);
 }
 
+/**
+ * Computes an attenuation factor based on the distance from the camera.
+ * The attenuation is 1.0 for distances less than 50 units, and then
+ * linearly decreases for distances between 50 and 850 units.
+ *
+ * @param d The distance from the camera.
+ * @return The attenuation factor (0.0 to 1.0).
+ */
 fn computeDistanceToCameraAttenuation( d: f32 ) -> f32 {
   if ( d< 50 ) {
     return 1.0;
@@ -200,7 +211,18 @@ fn computeDistanceToCameraAttenuation( d: f32 ) -> f32 {
   return 1 - clamp((d-49)/800 , 0.0, 1.0);
 }
 
-
+/**
+ * Computes a normal perturbation vector for a grid-like bump effect.
+ * This function simulates a grid pattern by perturbing the normal based on
+ * the texture coordinates and predefined thickness and tilt values.
+ *
+ * @param stepU The step size for the U texture coordinate.
+ * @param stepV The step size for the V texture coordinate.
+ * @param tc The 2D texture coordinates (UV).
+ * @param T The tangent vector of the surface.
+ * @param B The bitangent vector of the surface.
+ * @return The normal perturbation vector in tangent space.
+ */
 fn bumpGrid(stepU: f32, stepV: f32, tc: vec2<f32>, T: vec3<f32>, B: vec3<f32>  ) -> vec3<f32> {
   var ND = vec3<f32>(0,0,0);
   let tileDimU: f32 = 100.0 / stepU;
@@ -225,6 +247,16 @@ fn bumpGrid(stepU: f32, stepV: f32, tc: vec2<f32>, T: vec3<f32>, B: vec3<f32>  )
   return ND;
 }
 
+/**
+ * Computes a normal perturbation vector for a wave-like bump effect.
+ * This function generates a wave pattern based on sine functions applied
+ * to the texture coordinates, with configurable amplitude, frequency, and phase.
+ *
+ * @param tc The 2D texture coordinates (UV).
+ * @param T The tangent vector of the surface.
+ * @param B The bitangent vector of the surface.
+ * @return The normal perturbation vector in tangent space.
+ */
 fn bumpWave(tc: vec2<f32>, T: vec3<f32>, B: vec3<f32>  ) -> vec3<f32> {
   // Constants for wave calculations
   let waveAmplitude1: f32 = 0.15;
@@ -297,7 +329,7 @@ fn fragmentTextureShader(in: TextFragment) -> @location(0) vec4<f32> {
   let diffuse: vec3<f32> = computeDiffuseColor( in.eye, in.pos, N, sceneLights );
   let specular: vec3<f32> = computeSpecularColor( in.eye, in.pos, N, sceneLights, texColor );
 
-  let textMix = vec4<f32>(1-textureAlpha.value);
+  let textMix = vec4<f32>(1.0 - materialProperties.alpha);
   let finalColor = mix(texColor, myColor.color, textMix); // mixed the two colors based on alpha.
   return clamp(
     vec4<f32>((finalColor.rgb * diffuse + specular) * att, max(finalColor.a, texColor.a)),
@@ -329,14 +361,14 @@ fn fragmentTextureBumpShader(in: TextFragment) -> @location(0) vec4<f32> {
   let N = normalize(in.normal);
   let T = normalize(in.tangent);
   let B = cross(N, T);
-  let tangentSpaceNormal = vec3<f32>(deltaVector.x, deltaVector.y, 1.0);
+  let tangentSpaceNormal = vec3<f32>(deltaVector.x * materialProperties.bumpIntensity, deltaVector.y * materialProperties.bumpIntensity, 1.0);
   let newNormal = normalize(T * tangentSpaceNormal.x + B * tangentSpaceNormal.y + N * tangentSpaceNormal.z);
   let diffuse: vec3<f32> = computeDiffuseColor( in.eye, in.pos, newNormal, sceneLights );
   let specular: vec3<f32> = computeSpecularColor( in.eye, in.pos, newNormal, sceneLights, texColor );
 
   let att: f32 = computeDistanceToCameraAttenuation(in.viewZ);
 
-  let textMix = vec4<f32>(1-textureAlpha.value);
+  let textMix = vec4<f32>(1.0 - materialProperties.alpha);
   let finalColor = mix(texColor, myColor.color, textMix); // mixed the two colors based on alpha.
   return clamp(
     vec4<f32>((finalColor.rgb * diffuse + specular) * att, max(finalColor.a, texColor.a)),
