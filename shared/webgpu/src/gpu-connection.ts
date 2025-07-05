@@ -414,6 +414,10 @@ export class Gpu implements GPUConnection {
     this.renderLoop();
   }
 
+  setLightsHandler(lights: LightsTransformationHandlers) {
+    this._lightsHandler = lights;
+  }
+
   endRenderLoop() {
     this._activeRenderLoop = false;
   }

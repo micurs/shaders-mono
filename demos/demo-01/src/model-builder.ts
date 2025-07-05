@@ -1,8 +1,10 @@
 import { Transform, deg2rad } from '@shaders-mono/geopro';
-import { Scene, getOrbitHandlers } from '@shaders-mono/webgpu';
+import { Scene, getOrbitHandlers, LightsTransformationHandlers } from '@shaders-mono/webgpu';
 import * as WebGPU from '@shaders-mono/webgpu';
 import { buildLights } from './lights';
 import { buildModelAnim } from './model-anim';
+
+export type GeoType = 'globe' | 'cylinder' | 'cube' | 'cone' | 'plane' | 'none';
 
 interface SceneOptions {
   textures: WebGPU.Material[];
@@ -99,7 +101,7 @@ export const buildGrid = (): Scene => {
  * @param canvasEl
  * @param supportEl
  */
-export async function init(canvasEl: HTMLCanvasElement, _supportEl: HTMLParagraphElement) {
+export async function init(canvasEl: HTMLCanvasElement, _supportEl: HTMLParagraphElement): Promise<WebGPU.Gpu> {
   const gpu = await WebGPU.initialize(canvasEl);
 
   await gpu.setupShaders('standard-3d');
@@ -107,8 +109,8 @@ export async function init(canvasEl: HTMLCanvasElement, _supportEl: HTMLParagrap
   const [mouseHandlers, viewHandlers] = getOrbitHandlers(gpu, [6, 6, 4]);
   gpu.captureMouseMotion(mouseHandlers);
 
-  const lightsPosAnim = buildLights(gpu);
   const modelAnimHandlers = buildModelAnim(gpu);
+  const lightsPosAnim = buildLights(gpu, 'none');
 
   gpu.beginRenderLoop({
     camera: viewHandlers,
@@ -116,17 +118,21 @@ export async function init(canvasEl: HTMLCanvasElement, _supportEl: HTMLParagrap
     models: modelAnimHandlers,
   });
 
-  const scene = await buildGrid();
+  const scene = buildGrid();
   gpu.setScene(scene);
   return gpu;
 }
 
-export const selectGeoToRender = (gpu: WebGPU.Gpu, geo: 'globe' | 'cylinder' | 'cube' | 'cone' | 'plane') => {
+export const selectGeoToRender = (gpu: WebGPU.Gpu, geo: GeoType) => {
   return () => {
     gpu.getScene().forEach((g) => (g.display = 'none'));
     gpu.get('ref-plane')[0].display = sceneOptions.showGrid ? 'full' : 'none';
+
+    const lightsPosAnim = buildLights(gpu, geo);
+    gpu.setLightsHandler(lightsPosAnim);
+
     switch (geo) {
-      case 'plane':
+      case 'plane': {
         const planeScene = gpu.get('plane');
         if (planeScene.length > 0) {
           planeScene.forEach((g) => (g.display = 'full'));
@@ -135,7 +141,8 @@ export const selectGeoToRender = (gpu: WebGPU.Gpu, geo: 'globe' | 'cylinder' | '
           gpu.addToScene(newPlane);
         }
         break;
-      case 'globe':
+      }
+      case 'globe': {
         const globeScene = gpu.get('earth-sphere', 'earth-clouds');
         if (globeScene.length > 0) {
           globeScene.forEach((g) => (g.display = 'full'));
@@ -144,7 +151,8 @@ export const selectGeoToRender = (gpu: WebGPU.Gpu, geo: 'globe' | 'cylinder' | '
           gpu.addToScene(newGlobe);
         }
         break;
-      case 'cylinder':
+      }
+      case 'cylinder': {
         const cylinderScene = gpu.get('cylinder');
         if (cylinderScene.length > 0) {
           cylinderScene.forEach((g) => (g.display = 'full'));
@@ -153,7 +161,8 @@ export const selectGeoToRender = (gpu: WebGPU.Gpu, geo: 'globe' | 'cylinder' | '
           gpu.addToScene(newCylinder);
         }
         break;
-      case 'cone':
+      }
+      case 'cone': {
         const coneScene = gpu.get('cone');
         if (coneScene.length > 0) {
           coneScene.forEach((g) => (g.display = 'full'));
@@ -162,7 +171,8 @@ export const selectGeoToRender = (gpu: WebGPU.Gpu, geo: 'globe' | 'cylinder' | '
           gpu.addToScene(newCone);
         }
         break;
-      case 'cube':
+      }
+      case 'cube': {
         const cubeScene = gpu.get('cube');
         if (cubeScene.length > 0) {
           cubeScene.forEach((g) => (g.display = 'full'));
@@ -171,6 +181,7 @@ export const selectGeoToRender = (gpu: WebGPU.Gpu, geo: 'globe' | 'cylinder' | '
           gpu.addToScene(newCube);
         }
         break;
+      }
     }
   };
 };

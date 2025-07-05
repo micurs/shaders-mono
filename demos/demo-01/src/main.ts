@@ -20,21 +20,21 @@ const getGridHandler = (gpu: Gpu, checkbox: HTMLInputElement) => {
   };
 };
 
-const supportEl = document.getElementById('support') as HTMLParagraphElement | null;
-const canvasEl = document.getElementById('gfx-canvas') as HTMLCanvasElement | null;
-const fpsEl = document.getElementById('fps') as HTMLCanvasElement | null;
+const supportEl = document.getElementById('support');
+const canvasEl = document.getElementById('gfx-canvas');
+const fpsEl = document.getElementById('fps');
 
 if (!supportEl || !canvasEl) {
   alert('The app is broken! No canvas was found!');
 } else {
-  init(canvasEl, supportEl)
+  init(canvasEl as HTMLCanvasElement, supportEl as HTMLParagraphElement)
     .then((gpu) => {
-      supportEl!.innerText = 'Loading textures...';
+      supportEl.innerText = 'Loading textures...';
       return loadTextures(gpu, ['earth.jpg', 'clouds-4k.png']);
     })
     .then(([gpu, textureMaterials]) => {
       sceneOptions.globeTextures.push(...textureMaterials);
-      supportEl!.innerText = 'Almost there...';
+      supportEl.innerText = 'Almost there...';
 
       return gpu;
     })
@@ -60,17 +60,25 @@ if (!supportEl || !canvasEl) {
       planeRadio.onclick = selectGeoToRender(gpu, 'plane');
 
       globeRadio.click();
-      supportEl!.innerText = 'All set!';
-      supportEl!.style.opacity = '0';
-      fpsEl!.style.opacity = '1';
-      fpsEl!.style.width = '160px';
+      supportEl.innerText = 'All set!';
+      supportEl.style.opacity = '0';
+      if (fpsEl) {
+        fpsEl.style.opacity = '1';
+        fpsEl.style.width = '160px';
+      }
 
       setInterval(() => {
-        supportEl!.style.display = 'none';
-        fpsEl!.innerText = `FPS: ${gpu.fps.toFixed(0)}`;
+        if (supportEl) {
+          supportEl.style.display = 'none';
+        }
+        if (fpsEl) {
+          fpsEl.innerText = `FPS: ${gpu.fps.toFixed(0)}`;
+        }
       }, 2000);
     })
     .catch((err) => {
-      supportEl!.innerText = 'Error: ' + err.message;
+      if (supportEl) {
+        supportEl.innerText = 'Error: ' + (err as Error).message;
+      }
     });
 }
