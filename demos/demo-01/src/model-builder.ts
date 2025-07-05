@@ -1,5 +1,5 @@
 import { Transform, deg2rad } from '@shaders-mono/geopro';
-import { Scene, getOrbitHandlers, LightsTransformationHandlers } from '@shaders-mono/webgpu';
+import { Scene, getOrbitHandlers } from '@shaders-mono/webgpu';
 import * as WebGPU from '@shaders-mono/webgpu';
 import { buildLights } from './lights';
 import { buildModelAnim } from './model-anim';
