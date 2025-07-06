@@ -25,17 +25,17 @@ export const buildModelAnim = (_gpu: WebGPU.Gpu) => {
       };
     },
     'earth-clouds': (msDelta: number) => {
-      const deltaSec = msDelta / 1000;
-      angleClouds -= deltaSec * 0.015;
-      const rotZ = Rotation.rotationY(deg2rad(23.5)).rotateZ(angleClouds);
+      const deltaSec = msDelta / 2000;
+      angleClouds -= deltaSec * 0.02;
+      const rotZ = Rotation.rotationY(deg2rad(-12.4)).rotateZ(angleClouds);
       return {
         rotation: rotZ,
       };
     },
     'earth-sphere': (msDelta: number) => {
-      const deltaSec = msDelta / 1000;
-      angle -= deltaSec * 0.022;
-      const rotZ = Rotation.rotationY(deg2rad(23.5)).rotateZ(angle);
+      const deltaSec = msDelta / 2000;
+      angle -= deltaSec * 0.025;
+      const rotZ = Rotation.rotationY(deg2rad(-12.4)).rotateZ(angle);
       return {
         rotation: rotZ,
       };

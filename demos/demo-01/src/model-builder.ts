@@ -25,20 +25,20 @@ export const buildGlobe = (globeTextures: WebGPU.Material[]): Scene => {
     colors: [[0.3, 0.4, 0.7, 1.0]],
     textureCoordinates: true,
     alpha: 0.8,
-    bumpIntensity: 0.004,
+    bumpIntensity: 0.002,
     bumpPrecision: 4,
   });
   earth.addMaterial(globeTextures[0]);
   earth.addMaterial(globeTextures[1]);
 
-  const clouds = WebGPU.sphereTriMesh()(Transform.scale(2.55, 2.55, 2.55), {
+  const clouds = WebGPU.sphereTriMesh()(Transform.scale(2.52, 2.52, 2.52), {
     id: 'earth-clouds',
     steps: 4,
     colors: [[1.0, 1.0, 1.0, 0.0]],
     textureCoordinates: true,
     alpha: 1.0,
-    bumpIntensity: 0.006,
-    bumpPrecision: 6,
+    bumpIntensity: 0.004,
+    bumpPrecision: 8,
   });
   clouds.addMaterial(globeTextures[2]);
   clouds.addMaterial(globeTextures[2]);
@@ -95,7 +95,7 @@ export const buildPlane = (textures: WebGPU.Material[]): Scene => {
     textureCoordinates: true,
     colors: [[0.4, 0.4, 0.4, 1.0]],
     alpha: 1.0,
-    bumpIntensity: 0.1,
+    bumpIntensity: 0.05,
     bumpPrecision: 12,
   });
   plane.addMaterial(textures[2]);

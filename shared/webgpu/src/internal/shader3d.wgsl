@@ -351,14 +351,20 @@ fn fragmentTextureBumpShader(in: TextFragment) -> @location(0) vec4<f32> {
   let texelSize = vec2<f32>(1.0 / f32(textDim.x), 1.0/ f32(textDim.y) ); // Assuming mip level 0
   let texelStartX = vec2<f32>(texelSize.x * gradPrecision, 0.0);
   let texelStartY = vec2<f32>(0.0, texelSize.y * gradPrecision);
-  let heightLeft = textureSample(myTexture1, mySampler, in.texCoord - texelStartX).r;
-  let heightRight = textureSample(myTexture1, mySampler, in.texCoord + texelStartX).r;
-  let heightUp = textureSample(myTexture1, mySampler, in.texCoord + texelStartY).r;
-  let heightDown = textureSample(myTexture1, mySampler, in.texCoord - texelStartY).r;
+  let heightLeft = textureSample(myTexture1, mySampler, in.texCoord - texelStartX);
+  let heightRight = textureSample(myTexture1, mySampler, in.texCoord + texelStartX);
+  let heightUp = textureSample(myTexture1, mySampler, in.texCoord + texelStartY);
+  let heightDown = textureSample(myTexture1, mySampler, in.texCoord - texelStartY);
+
+  let heightLeftVal = heightLeft.r + heightLeft.g + heightLeft.b;
+  let heightRightVal = heightRight.r + heightRight.g + heightRight.b;
+  let heightUpVal = heightUp.r + heightUp.g + heightUp.b;
+  let heightDownVal = heightDown.r + heightDown.g + heightDown.b;
+
 
   // Gradient components
-  let dU = (heightRight - heightLeft) / (  gradPrecision * gradPrecision * texelSize.x);
-  let dV = (heightUp - heightDown) / ( gradPrecision * gradPrecision * texelSize.y) ;
+  let dU = (heightRightVal - heightLeftVal) / (  gradPrecision * gradPrecision * texelSize.x);
+  let dV = (heightUpVal - heightDownVal) / ( gradPrecision * gradPrecision * texelSize.y) ;
 
   let gradientVector = vec3<f32>(dU* materialProperties.bumpIntensity, dV * materialProperties.bumpIntensity, 0.0);
   let N = normalize(in.normal);
