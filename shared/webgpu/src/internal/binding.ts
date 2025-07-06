@@ -108,7 +108,7 @@ export const createColorsBindingGroup = (gpu: Gpu): [GPUBindGroupLayout, GPUBind
     usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
   });
   const textureMixBuffer = gpu.device.createBuffer({
-    size: 2 * 4, // 2 32 bit floats (alpha, bumpIntensity)
+    size: 4 * 4, // 4 32 bit floats (alpha, bumpIntensity, bumpPrecision, and ...)
     usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
   });
 

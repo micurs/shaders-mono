@@ -9,6 +9,7 @@ const float32Size = 4;
 export interface MaterialProperties {
   alpha: number;
   bumpIntensity: number;
+  bumpPrecision: number;
 }
 
 /**
@@ -34,6 +35,7 @@ export class GeoRenderable<T = null> implements Renderable {
   private _cullMode: GPUCullMode = 'back';
   private _alpha = 1.0;
   private _bumpIntensity = 0.2; // Bump intensity for the texture
+  private _bumpPrecision = 2; // Bump precision for the texture
   private _materials: Material[] = [];
 
   private _transformation: RotationTranslationScale = {
@@ -51,7 +53,7 @@ export class GeoRenderable<T = null> implements Renderable {
   }
 
   get materialProperties(): MaterialProperties {
-    return { alpha: this._alpha, bumpIntensity: this._bumpIntensity };
+    return { alpha: this._alpha, bumpIntensity: this._bumpIntensity, bumpPrecision: this._bumpPrecision };
   }
 
   get label(): string {
@@ -329,6 +331,7 @@ export class GeoRenderable<T = null> implements Renderable {
     this._stripColors = options.colors ?? [[0.0, 0.0, 0.0, 0.0]];
     this._alpha = options.alpha ?? 1.0;
     this._bumpIntensity = options.bumpIntensity ?? 0.2;
+    this._bumpPrecision = options.bumpPrecision ?? 2;
     this._transformationData = new Float32Array(32);
   }
 

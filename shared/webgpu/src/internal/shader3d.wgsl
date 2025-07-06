@@ -69,6 +69,7 @@ struct ColorData {
 struct MaterialProperties {
     alpha: f32,
     bumpIntensity: f32,
+    bumpPrecision: f32, // Precision for bump mapping
 };
 
 
@@ -145,7 +146,7 @@ fn computeSpecularColor(
     sceneLights: SceneLights,
     surfaceColor: vec4<f32>
     ) -> vec3<f32> {
-  var shininess: f32 = 92.0;
+  var shininess: f32 = 12.0; // 92.0;
   var specular: vec3<f32> = vec3<f32>(0, 0, 0);
   let V = normalize(eye - pos); // Moved outside the loop
   for (var i: u32 = 0; i < sceneLights.numPointLights; i = i + 1) {
@@ -345,23 +346,25 @@ fn fragmentTextureBumpShader(in: TextFragment) -> @location(0) vec4<f32> {
   let heightCenter = textureSample(myTexture1, mySampler, in.texCoord).r;
 
   // Calculate the gradient of the height field
-  let prec: f32 = 12.0;
+  let gradPrecision: f32 = materialProperties.bumpPrecision;
   let textDim = textureDimensions(myTexture1, 0);
-  let texelSize = vec2<f32>(1.0 / f32(textDim.x), 1.0/ f32(textDim.y)); // Assuming mip level 0
-  let heightLeft = textureSample(myTexture1, mySampler, in.texCoord - vec2<f32>(texelSize.x*prec, 0.0)).r;
-  let heightRight = textureSample(myTexture1, mySampler, in.texCoord + vec2<f32>(texelSize.x*prec, 0.0)).r;
-  let heightUp = textureSample(myTexture1, mySampler, in.texCoord + vec2<f32>(0.0, texelSize.y*prec)).r;
-  let heightDown = textureSample(myTexture1, mySampler, in.texCoord - vec2<f32>(0.0, texelSize.y*prec)).r;
+  let texelSize = vec2<f32>(1.0 / f32(textDim.x), 1.0/ f32(textDim.y) ); // Assuming mip level 0
+  let texelStartX = vec2<f32>(texelSize.x * gradPrecision, 0.0);
+  let texelStartY = vec2<f32>(0.0, texelSize.y * gradPrecision);
+  let heightLeft = textureSample(myTexture1, mySampler, in.texCoord - texelStartX).r;
+  let heightRight = textureSample(myTexture1, mySampler, in.texCoord + texelStartX).r;
+  let heightUp = textureSample(myTexture1, mySampler, in.texCoord + texelStartY).r;
+  let heightDown = textureSample(myTexture1, mySampler, in.texCoord - texelStartY).r;
 
+  // Gradient components
+  let dU = (heightRight - heightLeft) / (  gradPrecision * gradPrecision * texelSize.x);
+  let dV = (heightUp - heightDown) / ( gradPrecision * gradPrecision * texelSize.y) ;
 
-  let dU = (heightRight - heightLeft) / (  prec * prec * texelSize.x);
-  let dV = (heightUp - heightDown) / ( prec * prec * texelSize.y) ;
-
-  let deltaVector = vec3<f32>(dU, dV, 0.0);
+  let gradientVector = vec3<f32>(dU* materialProperties.bumpIntensity, dV * materialProperties.bumpIntensity, 0.0);
   let N = normalize(in.normal);
   let T = normalize(in.tangent);
   let B = cross(N, T);
-  let tangentSpaceNormal = vec3<f32>(deltaVector.x * materialProperties.bumpIntensity, deltaVector.y * materialProperties.bumpIntensity, 1.0);
+  let tangentSpaceNormal = vec3<f32>(gradientVector.x, gradientVector.y, 1.0);
   let newNormal = normalize(T * tangentSpaceNormal.x + B * tangentSpaceNormal.y + N * tangentSpaceNormal.z);
   let diffuse: vec3<f32> = computeDiffuseColor( in.eye, in.pos, newNormal, sceneLights );
   let specular: vec3<f32> = computeSpecularColor( in.eye, in.pos, newNormal, sceneLights, texColor );

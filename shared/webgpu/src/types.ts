@@ -126,6 +126,7 @@ export type GeoOptions<T> = T & {
   textureCoordinates?: boolean; // If true, texture coordinates will be generated
   alpha?: number; // If set, the alpha channel of the texture will be set to this value (otherwise 1.0)
   bumpIntensity?: number; // If set, the bump intensity for bump mapping
+  bumpPrecision?: number; // Precision for bump mapping, default is 2.0
 };
 
 // export type GeoGenerator = <B, O = {}>(t: Transform, options: GeoOptions<O>) => GeoRenderable<B>;

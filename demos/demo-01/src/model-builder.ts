@@ -24,21 +24,24 @@ export const buildGlobe = (globeTextures: WebGPU.Material[]): Scene => {
     steps: 5,
     colors: [[0.3, 0.4, 0.7, 1.0]],
     textureCoordinates: true,
-    alpha: 1.0,
-    bumpIntensity: 0.0,
+    alpha: 0.8,
+    bumpIntensity: 0.004,
+    bumpPrecision: 4,
   });
   earth.addMaterial(globeTextures[0]);
+  earth.addMaterial(globeTextures[1]);
 
-  const clouds = WebGPU.sphereTriMesh()(Transform.scale(2.53, 2.53, 2.53), {
+  const clouds = WebGPU.sphereTriMesh()(Transform.scale(2.55, 2.55, 2.55), {
     id: 'earth-clouds',
     steps: 4,
     colors: [[1.0, 1.0, 1.0, 0.0]],
     textureCoordinates: true,
-    alpha: 0.1,
-    bumpIntensity: 0.01,
+    alpha: 1.0,
+    bumpIntensity: 0.006,
+    bumpPrecision: 6,
   });
-  clouds.addMaterial(globeTextures[1]);
-  clouds.addMaterial(globeTextures[1]);
+  clouds.addMaterial(globeTextures[2]);
+  clouds.addMaterial(globeTextures[2]);
 
   return [earth, clouds];
 };
@@ -50,8 +53,10 @@ export const buildCylinder = (texture: WebGPU.Material[]): Scene => {
     colors: [[0.6, 0.6, 0.5, 1.0]],
     textureCoordinates: true,
     alpha: 0.8,
-    bumpIntensity: 0.0,
+    bumpIntensity: 0.02,
+    bumpPrecision: 6,
   });
+  cyl.addMaterial(texture[0]);
   cyl.addMaterial(texture[0]);
   return [cyl];
 };
@@ -75,8 +80,10 @@ export const buildCone = (textures: WebGPU.Material[]): Scene => {
     textureCoordinates: true,
     colors: [[0.58, 0.83, 0.56, 1.0]],
     alpha: 0.8,
-    bumpIntensity: 0.0,
+    bumpIntensity: 0.01,
+    bumpPrecision: 6,
   });
+  cone.addMaterial(textures[3]);
   cone.addMaterial(textures[3]);
   return [cone];
 };
@@ -89,6 +96,7 @@ export const buildPlane = (textures: WebGPU.Material[]): Scene => {
     colors: [[0.4, 0.4, 0.4, 1.0]],
     alpha: 1.0,
     bumpIntensity: 0.1,
+    bumpPrecision: 12,
   });
   plane.addMaterial(textures[2]);
   plane.addMaterial(textures[2]);
