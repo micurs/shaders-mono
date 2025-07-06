@@ -29,7 +29,8 @@ export const buildLights = (gpu: Gpu, geo: GeoType): LightsTransformationHandler
     case 'cylinder':
       gpu.setAmbientLight([0.1, 0.1, 0.1, 0.01]);
       gpu.setLight('point', 0, { pos: Point.fromValues(20.0, 0.0, 0), col: [0.8, 0.5, 0.5, 1.0] });
-      gpu.setLight('point', 1, { pos: Point.fromValues(-20.0, 0.0, 0), col: [0.3, 0.6, 0.8, 1.0] });
+      gpu.setLight('point', 1, { pos: Point.fromValues(-20.0, 0.0, 0), col: [0.4, 0.6, 0.8, 1.0] });
+      gpu.setLight('point', 2, { pos: Point.fromValues(10.0, 10.0, 0), col: [0.5, 0.5, 0.5, 0.3] });
       break;
     case 'cube':
       gpu.setAmbientLight([0.15, 0.15, 0.15, 0.1]);
