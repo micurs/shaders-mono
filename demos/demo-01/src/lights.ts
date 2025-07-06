@@ -3,12 +3,13 @@ import { DirectionalLight, Gpu, LightsTransformationHandlers, PointLight } from 
 import { GeoType } from './model-builder';
 
 export const buildLights = (gpu: Gpu, geo: GeoType): LightsTransformationHandlers => {
-  const one60 = -deg2rad(180 / 20);
+  const one60 = -deg2rad(180 / 60);
+  const one40 = -deg2rad(180 / 40);
 
   const posSun = Point.fromValues(30.0, 0.0, 0);
   const posMoon = Point.fromValues(-8.0, 0.0, -1);
 
-  gpu.setAmbientLight([0.01, 0.01, 0.01, 0.01]);
+  gpu.setAmbientLight([0.02, 0.01, 0.01, 0.01]);
 
   const dirSun = UnitVector.fromVector(Point.origin().subtract(posSun));
   const dirMoon = UnitVector.fromVector(Point.origin().subtract(posMoon));
@@ -56,11 +57,13 @@ export const buildLights = (gpu: Gpu, geo: GeoType): LightsTransformationHandler
       const deltaSec = msDelta / 1000;
       const rotZ = Transform.rotationZ(one60 * deltaSec);
       dirLights[0].dir = dirLights[0].dir.map(rotZ);
+      const rotMoonZ = Transform.rotationZ(one40 * deltaSec);
+      dirLights[1].dir = dirLights[0].dir.map(rotMoonZ);
     },
     posLights: (msDelta: number, ptLights: PointLight[]) => {
       const deltaSec = msDelta / 1000;
-      const rotSunZ = Transform.rotationZ(one60 * deltaSec * 1.5);
-      const rotMoonZ = Transform.rotationZ(one60 * deltaSec);
+      const rotSunZ = Transform.rotationZ(one60 * deltaSec);
+      const rotMoonZ = Transform.rotationZ(one40 * deltaSec);
       ptLights[0].pos = ptLights[0].pos.map(rotSunZ);
       ptLights[1].pos = ptLights[1].pos.map(rotMoonZ);
     },

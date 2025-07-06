@@ -25,7 +25,7 @@ export const buildGlobe = (globeTextures: WebGPU.Material[]): Scene => {
     colors: [[0.3, 0.4, 0.7, 1.0]],
     textureCoordinates: true,
     alpha: 0.8,
-    bumpIntensity: 0.004,
+    bumpIntensity: 0.002,
     bumpPrecision: 4,
   });
   earth.addMaterial(globeTextures[0]);
@@ -37,7 +37,7 @@ export const buildGlobe = (globeTextures: WebGPU.Material[]): Scene => {
     colors: [[1.0, 1.0, 1.0, 0.0]],
     textureCoordinates: true,
     alpha: 1.0,
-    bumpIntensity: 0.006,
+    bumpIntensity: 0.005,
     bumpPrecision: 6,
   });
   clouds.addMaterial(globeTextures[2]);
@@ -95,7 +95,7 @@ export const buildPlane = (textures: WebGPU.Material[]): Scene => {
     textureCoordinates: true,
     colors: [[0.4, 0.4, 0.4, 1.0]],
     alpha: 1.0,
-    bumpIntensity: 0.1,
+    bumpIntensity: 0.05,
     bumpPrecision: 12,
   });
   plane.addMaterial(textures[2]);
