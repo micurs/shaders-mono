@@ -14,8 +14,8 @@ type TriangleIndexes = [number, number, number];
 // Define the vertices of an icosahedron. The vertices of an icosahedron
 // can be defined using intersections of three orthogonal rectangles,
 // or by intersecting five planes with a sphere.
-const X = 0.525731112119133606;
-const Z = 0.850650808352039932;
+const X = 0.5257311121191336;
+const Z = 0.8506508083520399;
 
 // Initial vertices of the Icosahedron
 const vertices: UnitVector[] = [
