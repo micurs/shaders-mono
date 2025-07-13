@@ -2,7 +2,7 @@ import { Frame, Point, Transform, UnitVector, Vector } from '@shaders-mono/geopr
 import { MouseCbs, MouseLocation, MouseMovement, CameraTransformationHandlers, MouseButton } from '../types';
 import { Gpu } from '../gpu-connection';
 
-export const getOrbitHandlers = (gpu: Gpu, eyeStart: [number, number, number] = [10, 10, 10]): [MouseCbs, CameraTransformationHandlers] => {
+export const getOrbitHandlers = (gpu: Gpu, eyeStart: [number, number, number] = [10, 10, 10], initialFov: number = Math.PI / 5): [MouseCbs, CameraTransformationHandlers] => {
   let target = Point.fromValues(0, 0, 0);
   let eye = Point.fromValues(...eyeStart);
   let vuv = eye.x === 0 && eye.y === 0 ? UnitVector.fromValues(0, 1, 0) : UnitVector.fromValues(0, 0, 1);
@@ -10,7 +10,7 @@ export const getOrbitHandlers = (gpu: Gpu, eyeStart: [number, number, number] = 
   let pan = [0.0, 0.0];
   let zoom = 0.0;
   let tilt = 0.0;
-  let fov = Math.PI / 5;
+  let fov = initialFov;
   let distToTarget = Vector.fromPoints(eye, target).lengthSquare;
   let cameraFrame = Frame.lookAt(eye, target, vuv);
   let rotating = false;
@@ -40,7 +40,7 @@ export const getOrbitHandlers = (gpu: Gpu, eyeStart: [number, number, number] = 
   };
 
   const zoomHandler = (delta: number) => {
-    const sensitivity = Math.log(distToTarget + 1) / (2500 * Math.atan(fov));
+    const sensitivity = Math.log(distToTarget + 1) / (4000 * Math.atan(fov));
     zoom = delta * sensitivity;
   };
 

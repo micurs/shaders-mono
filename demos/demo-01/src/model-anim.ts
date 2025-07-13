@@ -26,7 +26,7 @@ export const buildModelAnim = (_gpu: WebGPU.Gpu) => {
     },
     'earth-clouds': (msDelta: number) => {
       const deltaSec = msDelta / 2000;
-      angleClouds -= deltaSec * 0.02;
+      angleClouds -= deltaSec * 0.08;
       const rotZ = Rotation.rotationY(deg2rad(-12.4)).rotateZ(angleClouds);
       return {
         rotation: rotZ,
@@ -34,7 +34,7 @@ export const buildModelAnim = (_gpu: WebGPU.Gpu) => {
     },
     'earth-sphere': (msDelta: number) => {
       const deltaSec = msDelta / 2000;
-      angle -= deltaSec * 0.025;
+      angle -= deltaSec * 0.1;
       const rotZ = Rotation.rotationY(deg2rad(-12.4)).rotateZ(angle);
       return {
         rotation: rotZ,

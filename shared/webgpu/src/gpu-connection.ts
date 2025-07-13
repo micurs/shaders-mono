@@ -15,6 +15,7 @@ import {
   FrameHandlers,
   LightsTransformationHandlers,
   ModelTransformationHandlers,
+  Material,
 } from './types';
 import { setupShaderModule } from './internal/setup-shaders';
 import { createPipelines } from './internal/setup-pipeline';
@@ -68,6 +69,8 @@ export class Gpu implements GPUConnection {
     { pos: Point.fromValues(-12, -12.0, 8.0), col: [0.2, 0.2, 0.5, 0.0] },
     { pos: Point.fromValues(12.0, -12.0, 8.0), col: [0.5, 0.1, 0.5, 0.0] },
   ];
+
+  private _environmentMaterial: Material | undefined = undefined;
 
   private constructor(canvas: HTMLCanvasElement, context: GPUCanvasContext, device: GPUDevice, format: GPUTextureFormat) {
     this.canvas = canvas;
@@ -200,7 +203,7 @@ export class Gpu implements GPUConnection {
     });
 
     // 2 - Setup the GPU pipeline with the compiled shaders
-    this._pipelines = createPipelines(this, this._shaderModule, scene);
+    this._pipelines = createPipelines(this, this._shaderModule, scene, this._environmentMaterial);
 
     // // 3 - Setup the render pass descriptor
     buildRenderPassDescriptor(this, this._colorTexture!.createView(), this._depthTexture!.createView());
@@ -216,7 +219,7 @@ export class Gpu implements GPUConnection {
     });
 
     // 2 - Update the GPU pipeline with the compiled shaders
-    const newPipelines = createPipelines(this, this._shaderModule, scene);
+    const newPipelines = createPipelines(this, this._shaderModule, scene, this._environmentMaterial);
     newPipelines.forEach((pipeline, key) => {
       this._pipelines.set(key, pipeline);
     });
@@ -228,6 +231,27 @@ export class Gpu implements GPUConnection {
 
   clearScene() {
     this._pipelines.clear();
+  }
+
+  /**
+   * Set the environment material for background rendering
+   * @param material - The environment texture material
+   */
+  setEnvironmentMaterial(material: Material) {
+    this._environmentMaterial = material;
+    // Rebuild pipelines if scene is already set
+    if (this._pipelines.size > 0 && this._shaderModule) {
+      const currentScene = this.getScene();
+      this._pipelines = createPipelines(this, this._shaderModule, currentScene, this._environmentMaterial);
+    }
+  }
+
+  /**
+   * Get the current environment material
+   * @returns The environment material or undefined
+   */
+  getEnvironmentMaterial(): Material | undefined {
+    return this._environmentMaterial;
   }
 
   /**
@@ -329,15 +353,22 @@ export class Gpu implements GPUConnection {
     const timeSpan = this._fps.getLastTimeSpan();
     this.updateLights(timeSpan);
 
-    // Render opaque objects first
+    // Render environment first (if any)
     this.pipelines
-      .filter(({ geoRenderable }) => geoRenderable.colors[0][3] === 1.0)
+      .filter(({ geoRenderable }) => geoRenderable.fragmentShader === 'fragmentEnvironmentShader')
+      .forEach((gpuPipeLine, idx) => {
+        this.renderPipeline(gpuPipeLine, idx, renderPass, timeSpan);
+      });
+      
+    // Render opaque objects
+    this.pipelines
+      .filter(({ geoRenderable }) => geoRenderable.colors[0][3] === 1.0 && geoRenderable.fragmentShader !== 'fragmentEnvironmentShader')
       .forEach((gpuPipeLine, idx) => {
         this.renderPipeline(gpuPipeLine, idx, renderPass, timeSpan);
       });
     // Render transparent objects last
     this.pipelines
-      .filter(({ geoRenderable }) => geoRenderable.colors[0][3] < 1.0)
+      .filter(({ geoRenderable }) => geoRenderable.colors[0][3] < 1.0 && geoRenderable.fragmentShader !== 'fragmentEnvironmentShader')
       .forEach((gpuPipeLine, idx) => {
         this.renderPipeline(gpuPipeLine, idx, renderPass, timeSpan);
       });

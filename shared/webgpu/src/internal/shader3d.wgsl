@@ -84,6 +84,8 @@ struct MaterialProperties {
 @group(3) @binding(2) var myTexture2: texture_2d<f32>;
 @group(3) @binding(3) var myTexture3: texture_2d<f32>;
 @group(3) @binding(4) var mySampler: sampler;
+@group(3) @binding(5) var environmentTexture: texture_2d<f32>;
+@group(3) @binding(6) var environmentSampler: sampler;
 
 /**
   * Computes the diffuse color for a given point in the scene.
@@ -210,6 +212,28 @@ fn computeDistanceToCameraAttenuation( d: f32 ) -> f32 {
     return 1.0;
   }
   return 1 - clamp((d-49)/800 , 0.0, 1.0);
+}
+
+/**
+ * Samples the environment texture using spherical projection.
+ * Converts a 3D world direction vector to equirectangular texture coordinates
+ * and samples the environment texture at infinite distance.
+ *
+ * @param worldDirection The 3D direction vector in world space
+ * @return The environment color at the given direction
+ */
+fn sampleEnvironment(worldDirection: vec3<f32>) -> vec4<f32> {
+  let dir = normalize(worldDirection);
+  
+  // Convert to spherical coordinates
+  let phi = atan2(dir.z, dir.x);
+  let theta = acos(dir.y);
+  
+  // Convert to equirectangular UV coordinates
+  let u = (phi + PI) / (2.0 * PI);
+  let v = theta / PI;
+  
+  return textureSample(environmentTexture, environmentSampler, vec2<f32>(u, v));
 }
 
 /**
@@ -385,6 +409,37 @@ fn fragmentTextureBumpShader(in: TextFragment) -> @location(0) vec4<f32> {
   );
 }
 
+
+// ----------------------------------------------------------------------------------------------- Environment Shaders
+
+struct EnvironmentFragment {
+  @builtin(position) position: vec4<f32>,
+  @location(0) worldDirection: vec3<f32>,
+};
+
+@vertex
+fn vertexEnvironmentShader(
+    @location(0) vertexPosition: vec3<f32>) -> EnvironmentFragment {
+  var output: EnvironmentFragment;
+  
+  // Render fullscreen quad at far plane but inside NDC
+  output.position = vec4<f32>(vertexPosition.xy, 0.999999, 1.0);
+  
+  // Convert clip space position to world direction
+  // Inverse projection to get view space direction
+  let invProj = vec4<f32>(vertexPosition.xy, 1.0, 1.0);
+  let viewDir = vec4<f32>(invProj.xy / vec2<f32>(sceneData.projection[0][0], sceneData.projection[1][1]), -1.0, 0.0);
+  
+  // Transform to world space using inverse view matrix
+  output.worldDirection = (sceneData.invertView * viewDir).xyz;
+  
+  return output;
+}
+
+@fragment
+fn fragmentEnvironmentShader(in: EnvironmentFragment) -> @location(0) vec4<f32> {
+  return sampleEnvironment(normalize(in.worldDirection));
+}
 
 // ----------------------------------------------------------------------------------------------- Color Shaders
 

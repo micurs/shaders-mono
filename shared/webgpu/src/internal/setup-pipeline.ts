@@ -9,7 +9,7 @@ import { createColorsBindingGroup, createTextureBindingGroup, createSceneDataBin
  * @param type - The type of pipeline to create
  * @returns
  */
-const createPipelineLayout = (gpu: Gpu, materials: Material[]): PipelineLayoutData => {
+const createPipelineLayout = (gpu: Gpu, materials: Material[], environmentMaterial?: Material): PipelineLayoutData => {
   const { device } = gpu;
   // Group 0: Transformations
   const [sceneLayout, sceneGroup, sceneBuffers] = createSceneDataBindingGroup(gpu);
@@ -19,13 +19,14 @@ const createPipelineLayout = (gpu: Gpu, materials: Material[]): PipelineLayoutDa
   const [modelLayout, modelGroup, modelBuffers] = createModelTransBindingGroup(gpu);
 
   // Group 3: texture, and sampler
-  const [texturesLayout, texturesGroup] =
-    materials.length > 0
-      ? createTextureBindingGroup(gpu, materials) // Only if we have a texture
-      : [undefined, undefined];
+  // Always create texture binding group if we have materials OR environment material
+  const needsTextureBindings = materials.length > 0 || environmentMaterial !== undefined;
+  const [texturesLayout, texturesGroup] = needsTextureBindings
+    ? createTextureBindingGroup(gpu, materials, environmentMaterial)
+    : [undefined, undefined];
 
   const bindGroupLayouts = texturesLayout
-    ? [sceneLayout, colorLayout, modelLayout, texturesLayout] // If we have a texture
+    ? [sceneLayout, colorLayout, modelLayout, texturesLayout] // If we have texture bindings
     : [sceneLayout, colorLayout, modelLayout];
 
   const groups: PipelineBindingGroups = {
@@ -48,11 +49,11 @@ const createPipelineLayout = (gpu: Gpu, materials: Material[]): PipelineLayoutDa
  * @param scene - The scene with all the object we want to render
  * @returns
  */
-export const createPipelines = (gpu: Gpu, shaderModule: GPUShaderModule, scene: Scene<unknown>): Map<string, GPUPipeline> => {
+export const createPipelines = (gpu: Gpu, shaderModule: GPUShaderModule, scene: Scene<unknown>, environmentMaterial?: Material): Map<string, GPUPipeline> => {
   const { device, format } = gpu;
 
   const idGeoPairs = scene.map<[string, GPUPipeline]>((geoRenderable): [string, GPUPipeline] => {
-    const [pipelineLayout, groups, buffers] = createPipelineLayout(gpu, geoRenderable.materials);
+    const [pipelineLayout, groups, buffers] = createPipelineLayout(gpu, geoRenderable.materials, environmentMaterial);
 
     // Create the render pipeline and decide which shaders to use.
     const regPipelineData: GPURenderPipelineDescriptor = {
@@ -92,8 +93,8 @@ export const createPipelines = (gpu: Gpu, shaderModule: GPUShaderModule, scene: 
         cullMode: geoRenderable.cullMode,
       },
       depthStencil: {
-        depthWriteEnabled: true,
-        depthCompare: 'less',
+        depthWriteEnabled: geoRenderable.fragmentShader !== 'fragmentEnvironmentShader', // Don't write depth for environment
+        depthCompare: geoRenderable.fragmentShader === 'fragmentEnvironmentShader' ? 'always' : 'less', // Always pass depth test for environment
         format: 'depth24plus',
       },
     };
