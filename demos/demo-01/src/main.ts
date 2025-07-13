@@ -1,5 +1,5 @@
-import { Gpu, loadTextures } from '@shaders-mono/webgpu';
-import { init, selectGeoToRender, sceneOptions } from './model-builder';
+import { Gpu, loadTextures, loadTexture } from '@shaders-mono/webgpu';
+import { init, selectGeoToRender, sceneOptions, buildEnvironment } from './model-builder';
 
 const getWireframeHandler = (gpu: Gpu, checkbox: HTMLInputElement) => {
   return () => {
@@ -29,6 +29,16 @@ if (!supportEl || !canvasEl) {
 } else {
   init(canvasEl as HTMLCanvasElement, supportEl as HTMLParagraphElement)
     .then((gpu) => {
+      supportEl.innerText = 'Loading environment...';
+      return loadTexture(gpu, 'env-space-4k.png'); // Back to Milky Way
+    })
+    .then(([gpu, environmentMaterial]) => {
+      sceneOptions.environmentTexture = environmentMaterial;
+      gpu.setEnvironmentMaterial(environmentMaterial);
+      
+      // Now add the environment background to the scene
+      gpu.addToScene(buildEnvironment());
+      
       supportEl.innerText = 'Loading textures...';
       return loadTextures(gpu, ['earth4k.jpg', 'earth4k-bump.jpg', 'earth-clouds.png']);
     })
@@ -59,7 +69,11 @@ if (!supportEl || !canvasEl) {
       coneRadio.onclick = selectGeoToRender(gpu, 'cone');
       planeRadio.onclick = selectGeoToRender(gpu, 'plane');
 
-      globeRadio.click();
+      // Delay globe creation to ensure environment is fully rendered
+      setTimeout(() => {
+        globeRadio.click();
+      }, 100);
+      
       supportEl.innerText = 'All set!';
       supportEl.style.opacity = '0';
       if (fpsEl) {

@@ -294,3 +294,41 @@ export const  rolloverEdgeCoordinates = (t0: [number, number], t1: [number, numb
     }
   }
 }
+
+/**
+ * Create a fullscreen quad for environment mapping.
+ * The quad is positioned in clip space coordinates (-1 to 1) and will be
+ * rendered behind all other geometry to display the environment background.
+ * 
+ * @returns Point array, Normal array, Tangent array - ready for environment rendering
+ */
+export const createEnvironmentQuad = (): [Point[], UnitVector[], UnitVector[]] => {
+  const coordinates: Point[] = [];
+  const normals: UnitVector[] = [];
+  const tangents: UnitVector[] = [];
+
+  // Fullscreen quad in clip space coordinates (-1 to 1)
+  // Two triangles forming a quad
+  
+  // Triangle 1: bottom-left, bottom-right, top-left
+  coordinates.push(Point.fromValues(-1.0, -1.0, 0.0)); // Bottom-left
+  coordinates.push(Point.fromValues( 1.0, -1.0, 0.0)); // Bottom-right  
+  coordinates.push(Point.fromValues(-1.0,  1.0, 0.0)); // Top-left
+  
+  // Triangle 2: top-left, bottom-right, top-right
+  coordinates.push(Point.fromValues(-1.0,  1.0, 0.0)); // Top-left
+  coordinates.push(Point.fromValues( 1.0, -1.0, 0.0)); // Bottom-right
+  coordinates.push(Point.fromValues( 1.0,  1.0, 0.0)); // Top-right
+
+  // Environment quad doesn't need specific normals/tangents since 
+  // direction is calculated in vertex shader from clip position
+  const defaultNormal = UnitVector.fromValues(0, 0, 1);
+  const defaultTangent = UnitVector.fromValues(1, 0, 0);
+  
+  for (let i = 0; i < 6; i++) {
+    normals.push(defaultNormal);
+    tangents.push(defaultTangent);
+  }
+
+  return [coordinates, normals, tangents];
+};

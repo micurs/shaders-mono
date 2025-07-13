@@ -153,7 +153,7 @@ export const createColorsBindingGroup = (gpu: Gpu): [GPUBindGroupLayout, GPUBind
 };
 
 // Group 2: texture, and sampler
-export const createTextureBindingGroup = (gpu: Gpu, materials: Material[]): [GPUBindGroupLayout, GPUBindGroup] => {
+export const createTextureBindingGroup = (gpu: Gpu, materials: Material[], environmentMaterial?: Material): [GPUBindGroupLayout, GPUBindGroup] => {
   const { device } = gpu;
 
   // Create the Sampler to get the image from the texture using u,v coordinates
@@ -166,6 +166,18 @@ export const createTextureBindingGroup = (gpu: Gpu, materials: Material[]): [GPU
     maxAnisotropy: 1,
   };
   const sampler = device.createSampler(samplerDescriptor);
+
+  // Create environment sampler with clamp-to-edge for spherical textures
+  const environmentSamplerDescriptor: GPUSamplerDescriptor = {
+    addressModeU: 'clamp-to-edge',
+    addressModeV: 'clamp-to-edge',
+    magFilter: 'linear',
+    minFilter: 'linear',
+    mipmapFilter: 'linear',
+    maxAnisotropy: 1,
+  };
+  const environmentSampler = device.createSampler(environmentSamplerDescriptor);
+
   const availableViews = materials.map((m) => m.view);
   const entries: GPUBindGroupLayoutEntry[] = [
     ...availableViews.map<GPUBindGroupLayoutEntry>((_, idx) => ({
@@ -175,6 +187,15 @@ export const createTextureBindingGroup = (gpu: Gpu, materials: Material[]): [GPU
     })),
     { binding: 4, visibility: GPUShaderStage.FRAGMENT, sampler: { type: 'filtering' } },
   ];
+
+  // Always add environment texture bindings when environment material exists
+  if (environmentMaterial) {
+    entries.push(
+      { binding: 5, visibility: GPUShaderStage.FRAGMENT, texture: { sampleType: 'float' } },
+      { binding: 6, visibility: GPUShaderStage.FRAGMENT, sampler: { type: 'filtering' } }
+    );
+  }
+
   const layout = gpu.device.createBindGroupLayout({ label: 'texture', entries });
 
   // Build the group (the equivalent of the instance in the shader)
@@ -188,6 +209,14 @@ export const createTextureBindingGroup = (gpu: Gpu, materials: Material[]): [GPU
       resource: sampler,
     },
   ];
+
+  // Always add environment texture bindings when environment material exists
+  if (environmentMaterial) {
+    bindings.push(
+      { binding: 5, resource: environmentMaterial.view },
+      { binding: 6, resource: environmentSampler }
+    );
+  }
 
   const group = gpu.device.createBindGroup({
     label: 'texture',

@@ -9,12 +9,14 @@ export type GeoType = 'globe' | 'cylinder' | 'cube' | 'cone' | 'plane' | 'none';
 interface SceneOptions {
   textures: WebGPU.Material[];
   globeTextures: WebGPU.Material[];
+  environmentTexture: WebGPU.Material | null;
   showGrid: boolean;
 }
 
 export const sceneOptions: SceneOptions = {
   textures: [],
   globeTextures: [],
+  environmentTexture: null,
   showGrid: false,
 };
 
@@ -113,6 +115,15 @@ export const buildGrid = (): Scene => {
   return [refGrid];
 };
 
+export const buildEnvironment = (): Scene => {
+  const environmentQuad = WebGPU.environmentQuad()(Transform.identity(), {
+    id: 'environment-background',
+    colors: [[1.0, 1.0, 1.0, 1.0]],
+  });
+
+  return [environmentQuad];
+};
+
 /**
  *
  * @param canvasEl
@@ -123,7 +134,7 @@ export async function init(canvasEl: HTMLCanvasElement, _supportEl: HTMLParagrap
 
   await gpu.setupShaders('standard-3d');
 
-  const [mouseHandlers, viewHandlers] = getOrbitHandlers(gpu, [6, 6, 4]);
+  const [mouseHandlers, viewHandlers] = getOrbitHandlers(gpu, [4, 4, 2], Math.PI / 2.5); // Closer camera with wider FOV
   gpu.captureMouseMotion(mouseHandlers);
 
   const modelAnimHandlers = buildModelAnim(gpu);
@@ -135,8 +146,9 @@ export async function init(canvasEl: HTMLCanvasElement, _supportEl: HTMLParagrap
     models: modelAnimHandlers,
   });
 
-  const scene = buildGrid();
-  gpu.setScene(scene);
+  const scene = [...buildGrid(), ...buildEnvironment()];
+  // Note: Don't set scene yet - wait for environment material to be loaded first
+  gpu.setScene(scene.filter((item) => item.id !== 'environment-background')); // Add everything except environment
   return gpu;
 }
 
@@ -144,6 +156,10 @@ export const selectGeoToRender = (gpu: WebGPU.Gpu, geo: GeoType) => {
   return () => {
     gpu.getScene().forEach((g) => (g.display = 'none'));
     gpu.get('ref-plane')[0].display = sceneOptions.showGrid ? 'full' : 'none';
+
+    // Always keep environment visible
+    const envObjects = gpu.get('environment-background');
+    envObjects.forEach((g) => (g.display = 'full'));
 
     const lightsPosAnim = buildLights(gpu, geo);
     gpu.setLightsHandler(lightsPosAnim);

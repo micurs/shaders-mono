@@ -187,3 +187,4 @@ export const loadTextures = async (gpu: Gpu, paths: string[]): Promise<[Gpu, Arr
     return Promise.resolve([gpu, textureMaterials.map(([, texture]) => texture)]);
   });
 };
+
