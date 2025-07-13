@@ -89,8 +89,8 @@ export class GeoRenderable<T = null> implements Renderable {
 
   get fragmentShader(): 'fragmentTextureBumpShader' | 'fragmentTextureShader' | 'fragmentColorShader' | 'fragmentLineShader' | 'fragmentEnvironmentShader' {
     if (this._topology === 'triangle-strip' || this._topology === 'triangle-list') {
-      if (this._materials.length == 2) {
-        return 'fragmentTextureBumpShader'; // TODO: This should be controlled by an explicit setting when adding material
+      if (this._materials.length === 2) {
+        return 'fragmentTextureBumpShader';
       }
       return this.hasTextures ? 'fragmentTextureShader' : 'fragmentColorShader';
     }

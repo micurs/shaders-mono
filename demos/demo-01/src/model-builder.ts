@@ -158,8 +158,7 @@ export const selectGeoToRender = (gpu: WebGPU.Gpu, geo: GeoType) => {
     gpu.get('ref-plane')[0].display = sceneOptions.showGrid ? 'full' : 'none';
 
     // Always keep environment visible
-    const envObjects = gpu.get('environment-background');
-    envObjects.forEach((g) => (g.display = 'full'));
+    gpu.get('environment-background').forEach((g) => (g.display = 'full'));
 
     const lightsPosAnim = buildLights(gpu, geo);
     gpu.setLightsHandler(lightsPosAnim);

@@ -7,8 +7,7 @@ import { createEnvironmentQuad } from './geo-utils';
  * Options for environment geometry creation
  */
 export interface EnvironmentOptions {
-  // Environment geometries typically don't need additional options
-  // since they're always fullscreen quads
+  // Environment geometries are fullscreen quads that don't require additional configuration
 }
 
 export type EnvironmentGenerator<B> = GeoGenerator<B, EnvironmentOptions>;
