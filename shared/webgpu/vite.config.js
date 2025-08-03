@@ -17,9 +17,16 @@ export default defineConfig({
     lib: {
       entry: entryRoot,
       name: 'index',
-      formats: ['es', 'umd'],
+      formats: ['es'],
       fileName: 'index',
     },
   },
-  plugins: [checker({ typescript: true }), dts({ rollupTypes: true })],
+  plugins: [
+    checker({ typescript: true }),
+    dts({
+      rollupTypes: true, // Disable rollup types to avoid path resolution issues
+      // exclude: ['**/*.test.ts', '**/*.spec.ts', '**/vite-env.d.ts'],
+      copyDtsFiles: true
+    })
+  ],
 });

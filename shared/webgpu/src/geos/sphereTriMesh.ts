@@ -129,6 +129,7 @@ export const sphereGen: SphereGenerator<any> = <B>(t: Transform, options: GeoOpt
   const normals: number[] = [];
   const tangents: number[] = [];
   const textureUV: number[] = [];
+  const colors: number[] = [];
   const center = Point.fromValues(0, 0, 0); //.map(t);
   sphIndexes.forEach((triangle) => {
     const pt0 = Point.fromVector(sphVertices[triangle[2]]);
@@ -140,6 +141,10 @@ export const sphereGen: SphereGenerator<any> = <B>(t: Transform, options: GeoOpt
     coordinates.push(...pt0.map(t).triplet);
     coordinates.push(...pt1.map(t).triplet);
     coordinates.push(...pt2.map(t).triplet);
+    colors.push(...(options.colors?.[0] ?? [1, 1, 1, 1])); // Default white color
+    colors.push(...(options.colors?.[0] ?? [1, 1, 1, 1]));
+    colors.push(...(options.colors?.[0] ?? [1, 1, 1, 1]));
+    // Add normals and tangents
     normals.push(...n0.map(nt).triplet);
     normals.push(...n1.map(nt).triplet);
     normals.push(...n2.map(nt).triplet);
