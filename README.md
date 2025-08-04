@@ -40,32 +40,42 @@ A simple integration with [Oimo.js 3d physics engine](https://github.com/lo-th/O
 
 ## Development
 
-This mono repo is managed with NX and use `pnpm` as package manager.
+This monorepo is managed with **Turborepo** and uses `pnpm` as package manager.
 
-So first thing run `pnpm install` to get all the dependencies.
+First, run `pnpm install` to get all the dependencies.
 
 Then you can run the main scripts from the root folder of this project to build the code:
 
-* `pnpm build:all`: Build all the projects in the repo. Nx will intelligently order the build process based on the dependency graph.
+* `pnpm build:all`: Build all the projects in the repo. Turborepo will intelligently order the build process based on the dependency graph and provide efficient caching.
 * `pnpm build:shared`: Builds only the shared libraries in the repo (projects under `shared`).
-* `pnpm build:demo`: Builds the current main demo project.
+* `pnpm build:demo1`: Builds demo-01 project.
+* `pnpm build:demo2`: Builds demo-02 project.
+* `pnpm build:demo3`: Builds demo-03 project.
 
-To run the demo apps you can `cd` to any `demos` subfolder and run the `dev` script defined in each `package.json`
+To run the demo apps in development mode, you can use these commands from the root:
 
-For example:
+* `pnpm dev:demo1`: Runs demo-01 in development mode with hot reloading.
+* `pnpm dev:demo2`: Runs demo-02 in development mode with hot reloading.
+* `pnpm dev:demo3`: Runs demo-03 in development mode with hot reloading.
+
+Each demo command will automatically build and watch the shared dependencies as needed.
+
+You can also `cd` to any `demos` subfolder and run the `dev` script defined in each `package.json`:
 
 ```
 cd demos/demo-02
 pnpm dev
 ```
 
-From the root you can run the latest demo by invoking
+### Turborepo Benefits
 
-```
-pnpm dev:demo
-```
+The migration to Turborepo provides several advantages:
+
+- **Intelligent Caching**: Turborepo caches build outputs and only rebuilds what has changed.
+- **Parallel Execution**: Tasks run in parallel when possible, significantly improving build times.
+- **Dependency Awareness**: Automatically handles build order based on package dependencies.
+- **Remote Caching**: Can be configured for team-wide cache sharing (optional).
 
 ### License
 
 This project is licensed under the MIT License - see the [LICENSE](license.txt) file for details.
-

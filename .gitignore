@@ -4,6 +4,6 @@ lib
 temp
 coverage
 build
-.nx
+.turbo
 
 .DS_Store

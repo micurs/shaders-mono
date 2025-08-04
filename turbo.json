@@ -1,0 +1,26 @@
+{
+  "$schema": "https://turborepo.org/schema.json",
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "inputs": ["demos/**", "shared/**"],
+      "outputs": ["dist/**"]
+    },
+    "dev": {
+      "cache": false,
+      "inputs": ["demos/**", "shared/**"]
+    },
+    "lint": {
+      "inputs": ["demos/**", "shared/**"],
+      "outputs": []
+    },
+    "test": {
+      "inputs": ["demos/**", "shared/**", "**/*.test.ts", "**/*.test.tsx"],
+      "outputs": ["coverage/**"]
+    },
+    "serve": {
+      "cache": false,
+      "inputs": ["demos/**", "shared/**"]
+    }
+  }
+}
