@@ -1,5 +1,4 @@
 import { vec3, vec4 } from "gl-matrix";
-import type { Transform } from "./transform";
 import { Frame } from "./frame";
 import { VecEntries } from "./types";
 import { Point } from "./point";

@@ -1,7 +1,6 @@
 import { vec3, vec4 } from "gl-matrix";
 import { Vector } from "./vector";
 import { VecEntries } from "./types";
-import type { Transform } from "./transform";
 import { Frame } from "./frame";
 import { Point } from './point';
 import { GeoMap } from './operations';
