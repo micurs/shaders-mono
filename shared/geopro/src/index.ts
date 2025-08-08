@@ -9,3 +9,4 @@ export * from './ray';
 
 export * from './math';
 export * from './operations';
+export * from './projection';
