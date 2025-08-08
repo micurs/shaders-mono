@@ -9,6 +9,12 @@ type Polygon = Point[];
 type ScreenPoint = { x: number; y: number };
 type ScreenPolygon = ScreenPoint[];
 
+// Camera orbit config (around Z axis)
+const BASE_EYE = { x: 7, y: 3, z: 5 };
+const EYE_RADIUS = Math.hypot(BASE_EYE.x, BASE_EYE.y);
+const EYE_BASE_ANGLE = Math.atan2(BASE_EYE.y, BASE_EYE.x);
+const EYE_ANGULAR_SPEED = 0.0002; // radians per ms (slow)
+
 const projectPoint = (p: Point, view: Transform, proj: Projection, widthCss: number, heightCss: number) => {
   const clip = p.map(view).map(proj);
   const ndc = proj.toNDC(clip);
@@ -80,6 +86,42 @@ const mapPolygons = (polys: Polygon[], map: Transform | Frame | Projection): Pol
   return polys.map(poly => poly.map(p => p.map(map)));
 };
 
+const polygonCenter = (poly: Polygon): Point => {
+  const n = poly.length;
+  let sx = 0, sy = 0, sz = 0;
+  for (const p of poly) {
+    sx += p.x; sy += p.y; sz += p.z;
+  }
+  return Point.fromValues(sx / n, sy / n, sz / n);
+};
+
+const faceNormalOutward = (polyWorld: Polygon): UnitVector => {
+  const p0 = polyWorld[0];
+  const p1 = polyWorld[1];
+  const p2 = polyWorld[2];
+  const e1 = Vector.fromPoints(p1, p0); // p1 - p0
+  const e2 = Vector.fromPoints(p2, p0); // p2 - p0
+  let n = UnitVector.crossProduct(e1, e2); // raw normal
+  // Ensure normal points outward with respect to object center (assumed near origin)
+  const c = polygonCenter(polyWorld);
+  const toCenter = Vector.fromPoints(Point.origin(), c); // toward object center
+  if (Vector.dot(n.scale(1), toCenter) > 0) {
+    n = n.invert();
+  }
+  return n;
+};
+
+const cullBackfaces = (polysWorld: Polygon[], eye: Point): Polygon[] => {
+  return polysWorld.filter(poly => {
+    if (poly.length < 3) return false;
+    const n = faceNormalOutward(poly);
+    const c = polygonCenter(poly);
+    const toEye = Vector.fromPoints(eye, c); // from face center to eye
+    // front-facing if angle between outward normal and toEye is < 90° => dot > 0
+    return Vector.dot(n.scale(1), toEye) > 0;
+  });
+};
+
 /**
  * Project world-space polygons to 2D screen coordinates.
  * Pipeline per vertex:
@@ -127,14 +169,31 @@ const drawWireframe = (ctx: CanvasRenderingContext2D, screenPolys: ScreenPolygon
   ctx.stroke();
 };
 
+const fillPolygons = (ctx: CanvasRenderingContext2D, screenPolys: ScreenPolygon[], color: string) => {
+  ctx.fillStyle = color;
+  for (const poly of screenPolys) {
+    if (poly.length === 0) continue;
+    ctx.beginPath();
+    const first = poly[0];
+    ctx.moveTo(first.x, first.y);
+    for (let i = 1; i < poly.length; i++) {
+      const p = poly[i];
+      ctx.lineTo(p.x, p.y);
+    }
+    ctx.closePath();
+    ctx.fill();
+  }
+};
+
 const drawScene = (ctx: CanvasRenderingContext2D, time: number) => {
   const { canvas } = ctx;
   // Use CSS pixel dimensions for drawing; context is scaled to DPR elsewhere
   const width = canvas.clientWidth;
   const height = canvas.clientHeight;
 
-  // Camera setup: bring camera a bit closer and widen FOV for stronger perspective
-  const eye = Point.fromValues(7, 3, 5);
+  // Camera setup: orbit eye around Z with slow rotation
+  const eyeAngle = EYE_BASE_ANGLE + time * EYE_ANGULAR_SPEED;
+  const eye = Point.fromValues(EYE_RADIUS * Math.cos(eyeAngle), EYE_RADIUS * Math.sin(eyeAngle), BASE_EYE.z);
   const target = Point.fromValues(0, 0, -2);
   // Up is +Z so the XY plane is horizontal
   const up = UnitVector.fromValues(0, 0, 1);
@@ -158,7 +217,10 @@ const drawScene = (ctx: CanvasRenderingContext2D, time: number) => {
   // Draw wireframe cube of size 2x2x2 (half=1)
   const cubePolys = buildCubePolygons(1);
   const cubeWorld = mapPolygons(cubePolys, model);
-  const cubeScreen = projectPolygonsToScreen(cubeWorld, view, proj, width, height);
+  const cubeVisible = cullBackfaces(cubeWorld, eye);
+  const cubeScreen = projectPolygonsToScreen(cubeVisible, view, proj, width, height);
+  // Fill visible faces with background to clip the grid behind
+  fillPolygons(ctx, cubeScreen, DARK_BG);
   drawWireframe(ctx, cubeScreen, WIREFRAME_COLOR, 2);
 };
 

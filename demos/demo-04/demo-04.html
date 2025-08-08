@@ -3,17 +3,22 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Demo 04 - Canvas 2D + GeoPro</title>
+    <title>Demo 4 - GeoPro 3D Perspective on 2D Canvas</title>
     <style>
       :root { color-scheme: dark; }
-      html, body { margin: 0; padding: 0; height: 100%; background: #0b0d12; color: #e5e7eb; }
-      #app { display: grid; place-items: center; height: 100%; }
+      html, body { margin: 0; padding: 0; height: 100%; background: #0b0d12; color: #e5e7eb; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji"; }
+      #app { display: flex; flex-direction: column; height: 100%; }
+      header { padding: 12px 16px; text-align: center; font-weight: 600; letter-spacing: 0.2px; border-bottom: 1px solid #111827; background: #0b0d12; }
+      #stage { flex: 1; min-height: 0; }
       canvas { background: #0b0d12; width: 100%; height: 100%; display: block; image-rendering: pixelated; }
     </style>
   </head>
   <body>
     <div id="app">
-      <canvas id="scene" width="960" height="600"></canvas>
+      <header>Demo 4 - GeoPro 3D Perspective on 2D Canvas</header>
+      <div id="stage">
+        <canvas id="scene" width="960" height="600"></canvas>
+      </div>
     </div>
     <script type="module" src="./src/main.ts"></script>
   </body>
