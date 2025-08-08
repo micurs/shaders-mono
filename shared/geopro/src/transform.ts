@@ -186,11 +186,11 @@ export class Transform {
     return this._inverse.values();
   }
 
-  buffer(): ArrayBuffer {
+  buffer(): Float32Array {
     return new Float32Array(this._direct.values());
   }
 
-  inverseBuffer(): ArrayBuffer {
+  inverseBuffer(): Float32Array {
     return new Float32Array(this._inverse.values());
   }
 

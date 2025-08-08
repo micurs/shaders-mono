@@ -173,7 +173,7 @@ export class Vector {
     return [...this._coord.values()] as VecEntries;
   }
 
-  buffer(): ArrayBuffer {
+  buffer(): Float32Array {
     return new Float32Array(this.coordinates);
   }
 

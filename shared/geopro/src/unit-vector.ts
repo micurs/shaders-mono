@@ -161,7 +161,7 @@ export class UnitVector {
     return v.crossProduct(v2 as Vector);
   }
 
-  buffer(): ArrayBuffer {
+  buffer(): Float32Array {
     return new Float32Array(this.coordinates);
   }
 
