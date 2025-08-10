@@ -1,13 +1,19 @@
-import { Frame, Point, Transform, UnitVector, Vector, Projection, deg2rad } from '@shaders-mono/geopro';
+import { Point, Transform, UnitVector, Projection, deg2rad } from '@shaders-mono/geopro';
+import {
+  DARK_BG,
+  GRID_COLOR,
+  WIREFRAME_COLOR,
+  buildCubePolygons,
+  drawGrid,
+  drawWireframe,
+  fillPolys,
+  mapPolygons,
+  partitionFaces,
+  projectPolygonsToScreen,
+  darkenHex,
+} from './util';
 
-const DARK_BG = '#0b0d12';
-const GRID_COLOR = '#6b7280'; // gray-500
-const WIREFRAME_COLOR = '#9ca3af'; // gray-400
-
-type Line = [number, number, number, number];
-type Polygon = Point[];
-type ScreenPoint = { x: number; y: number };
-type ScreenPolygon = ScreenPoint[];
+type RenderMode = 'wireframe' | 'filled';
 
 // Camera orbit config (around Z axis)
 const BASE_EYE = { x: 7, y: 3, z: 5 };
@@ -15,177 +21,7 @@ const EYE_RADIUS = Math.hypot(BASE_EYE.x, BASE_EYE.y);
 const EYE_BASE_ANGLE = Math.atan2(BASE_EYE.y, BASE_EYE.x);
 const EYE_ANGULAR_SPEED = 0.0002; // radians per ms (slow)
 
-const projectPoint = (p: Point, view: Transform, proj: Projection, widthCss: number, heightCss: number) => {
-  const clip = p.map(view).map(proj);
-  const ndc = proj.toNDC(clip);
-  const x = (ndc.x * 0.5 + 0.5) * widthCss;
-  const y = (1.0 - (ndc.y * 0.5 + 0.5)) * heightCss; // invert Y for canvas
-  return { x, y };
-};
-
-const buildGridLines = (size = 10, step = 1): Line[] => {
-  const lines: Line[] = [];
-  const half = size / 2;
-  for (let i = -half; i <= half; i += step) {
-    // lines parallel to X (varying Y)
-    lines.push([ -half, i, half, i ]);
-    // lines parallel to Y (varying X)
-    lines.push([ i, -half, i, half ]);
-  }
-  return lines;
-};
-
-const drawGrid = (
-  ctx: CanvasRenderingContext2D,
-  view: Transform,
-  proj: Projection,
-  widthCss: number,
-  heightCss: number,
-  color: string = GRID_COLOR,
-  size = 10,
-  step = 1
-) => {
-  ctx.strokeStyle = color;
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  for (const [x1, y1, x2, y2] of buildGridLines(size, step)) {
-    const p1 = Point.fromValues(x1, y1, 0);
-    const p2 = Point.fromValues(x2, y2, 0);
-    const sp1 = projectPoint(p1, view, proj, widthCss, heightCss);
-    const sp2 = projectPoint(p2, view, proj, widthCss, heightCss);
-    ctx.moveTo(sp1.x, sp1.y);
-    ctx.lineTo(sp2.x, sp2.y);
-  }
-  ctx.stroke();
-};
-
-const buildCubePolygons = (half = 1): Polygon[] => {
-  const c = [
-    Point.fromValues(-half, -half, -half), // 0
-    Point.fromValues( half, -half, -half), // 1
-    Point.fromValues( half,  half, -half), // 2
-    Point.fromValues(-half,  half, -half), // 3
-    Point.fromValues(-half, -half,  half), // 4
-    Point.fromValues( half, -half,  half), // 5
-    Point.fromValues( half,  half,  half), // 6
-    Point.fromValues(-half,  half,  half), // 7
-  ];
-  // 6 faces as quads (counter-clockwise order)
-  const faces: Polygon[] = [
-    [c[0], c[1], c[2], c[3]], // back (-Z)
-    [c[4], c[5], c[6], c[7]], // front (+Z)
-    [c[0], c[4], c[7], c[3]], // left (-X)
-    [c[1], c[5], c[6], c[2]], // right (+X)
-    [c[3], c[2], c[6], c[7]], // top (+Y)
-    [c[0], c[1], c[5], c[4]], // bottom (-Y)
-  ];
-  return faces;
-};
-
-const mapPolygons = (polys: Polygon[], map: Transform | Frame | Projection): Polygon[] => {
-  return polys.map(poly => poly.map(p => p.map(map)));
-};
-
-const polygonCenter = (poly: Polygon): Point => {
-  const n = poly.length;
-  let sx = 0, sy = 0, sz = 0;
-  for (const p of poly) {
-    sx += p.x; sy += p.y; sz += p.z;
-  }
-  return Point.fromValues(sx / n, sy / n, sz / n);
-};
-
-const faceNormalOutward = (polyWorld: Polygon): UnitVector => {
-  const p0 = polyWorld[0];
-  const p1 = polyWorld[1];
-  const p2 = polyWorld[2];
-  const e1 = Vector.fromPoints(p1, p0); // p1 - p0
-  const e2 = Vector.fromPoints(p2, p0); // p2 - p0
-  let n = UnitVector.crossProduct(e1, e2); // raw normal
-  // Ensure normal points outward with respect to object center (assumed near origin)
-  const c = polygonCenter(polyWorld);
-  const toCenter = Vector.fromPoints(Point.origin(), c); // toward object center
-  if (Vector.dot(n.scale(1), toCenter) > 0) {
-    n = n.invert();
-  }
-  return n;
-};
-
-const cullBackfaces = (polysWorld: Polygon[], eye: Point): Polygon[] => {
-  return polysWorld.filter(poly => {
-    if (poly.length < 3) return false;
-    const n = faceNormalOutward(poly);
-    const c = polygonCenter(poly);
-    const toEye = Vector.fromPoints(eye, c); // from face center to eye
-    // front-facing if angle between outward normal and toEye is < 90° => dot > 0
-    return Vector.dot(n.scale(1), toEye) > 0;
-  });
-};
-
-/**
- * Project world-space polygons to 2D screen coordinates.
- * Pipeline per vertex:
- * 1) world -> view (camera) -> clip (projection)
- * 2) perspective divide (clip to NDC)
- * 3) NDC [-1,1] -> screen pixels [0,width]x[0,height] with Y flipped for Canvas
- */
-const projectPolygonsToScreen = (
-  polys: Polygon[],
-  view: Transform,
-  proj: Projection,
-  widthCss: number,
-  heightCss: number
-): ScreenPolygon[] => {
-  return polys.map(poly =>
-    poly.map(p => {
-      // world -> view -> clip space
-      const clip = p.map(view).map(proj);
-      // homogeneous divide to get Normalized Device Coordinates
-      const ndc = proj.toNDC(clip);
-      // map NDC to pixel coordinates; Canvas Y grows downward, so flip
-      return {
-        x: (ndc.x * 0.5 + 0.5) * widthCss,
-        y: (1.0 - (ndc.y * 0.5 + 0.5)) * heightCss,
-      };
-    })
-  );
-};
-
-const drawWireframe = (ctx: CanvasRenderingContext2D, screenPolys: ScreenPolygon[], color: string, lineWidth = 1) => {
-  ctx.strokeStyle = color;
-  ctx.lineWidth = lineWidth;
-  ctx.beginPath();
-  for (const poly of screenPolys) {
-    if (poly.length === 0) continue;
-    const first = poly[0];
-    ctx.moveTo(first.x, first.y);
-    for (let i = 1; i < poly.length; i++) {
-      const p = poly[i];
-      ctx.lineTo(p.x, p.y);
-    }
-    // close the polygon
-    ctx.lineTo(first.x, first.y);
-  }
-  ctx.stroke();
-};
-
-const fillPolygons = (ctx: CanvasRenderingContext2D, screenPolys: ScreenPolygon[], color: string) => {
-  ctx.fillStyle = color;
-  for (const poly of screenPolys) {
-    if (poly.length === 0) continue;
-    ctx.beginPath();
-    const first = poly[0];
-    ctx.moveTo(first.x, first.y);
-    for (let i = 1; i < poly.length; i++) {
-      const p = poly[i];
-      ctx.lineTo(p.x, p.y);
-    }
-    ctx.closePath();
-    ctx.fill();
-  }
-};
-
-const drawScene = (ctx: CanvasRenderingContext2D, time: number) => {
+const drawScene = (ctx: CanvasRenderingContext2D, time: number, mode: RenderMode) => {
   const { canvas } = ctx;
   // Use CSS pixel dimensions for drawing; context is scaled to DPR elsewhere
   const width = canvas.clientWidth;
@@ -205,7 +41,9 @@ const drawScene = (ctx: CanvasRenderingContext2D, time: number) => {
   // Model transform: rotating cube around origin
   // Let angle grow continuously for seamless rotation (no modulo reset)
   const angle = time * 0.001;
-  const model = Transform.identity().rotationY(angle).rotationX(angle * 0.3);
+  const model = Transform.identity()
+    .rotationY(angle)
+    .rotationX(angle * 0.3);
 
   // Clear
   ctx.fillStyle = DARK_BG;
@@ -217,11 +55,18 @@ const drawScene = (ctx: CanvasRenderingContext2D, time: number) => {
   // Draw wireframe cube of size 2x2x2 (half=1)
   const cubePolys = buildCubePolygons(1);
   const cubeWorld = mapPolygons(cubePolys, model);
-  const cubeVisible = cullBackfaces(cubeWorld, eye);
-  const cubeScreen = projectPolygonsToScreen(cubeVisible, view, proj, width, height);
-  // Fill visible faces with background to clip the grid behind
-  fillPolygons(ctx, cubeScreen, DARK_BG);
-  drawWireframe(ctx, cubeScreen, WIREFRAME_COLOR, 2);
+  // Partition faces into front and back, render backfaces darker
+  const { front, back } = partitionFaces(cubeWorld, eye);
+  const backScreen = projectPolygonsToScreen(back, view, proj, width, height);
+  const frontScreen = projectPolygonsToScreen(front, view, proj, width, height);
+  if (mode === 'wireframe') {
+    drawWireframe(ctx, backScreen, darkenHex(WIREFRAME_COLOR, 0.5), 2);
+    drawWireframe(ctx, frontScreen, WIREFRAME_COLOR, 2);
+  } else {
+    // filled mode: fill front faces, do not render backfaces
+    fillPolys(ctx, frontScreen, DARK_BG);
+    drawWireframe(ctx, frontScreen, WIREFRAME_COLOR, 2);
+  }
 };
 
 const main = () => {
@@ -240,13 +85,17 @@ const main = () => {
   resize();
   window.addEventListener('resize', resize);
 
+  const modeSel = document.getElementById('modeSelect') as HTMLSelectElement;
+  let mode: RenderMode = (modeSel?.value as RenderMode) || 'wireframe';
+  modeSel?.addEventListener('change', () => {
+    mode = (modeSel.value as RenderMode) || 'wireframe';
+  });
+
   const render = (t: number) => {
-    drawScene(ctx, t);
+    drawScene(ctx, t, mode);
     requestAnimationFrame(render);
   };
   requestAnimationFrame(render);
 };
 
 main();
-
-

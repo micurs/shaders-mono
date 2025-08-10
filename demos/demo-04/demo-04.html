@@ -8,14 +8,28 @@
       :root { color-scheme: dark; }
       html, body { margin: 0; padding: 0; height: 100%; background: #0b0d12; color: #e5e7eb; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji"; }
       #app { display: flex; flex-direction: column; height: 100%; }
-      header { padding: 12px 16px; text-align: center; font-weight: 600; letter-spacing: 0.2px; border-bottom: 1px solid #111827; background: #0b0d12; }
+      header { padding: 12px 16px; display: flex; gap: 16px; align-items: center; justify-content: center; font-weight: 600; letter-spacing: 0.2px; border-bottom: 1px solid #111827; background: #0b0d12; }
+      header .spacer { flex: 1; }
+      header .controls { display: flex; gap: 8px; align-items: center; font-weight: 500; }
+      header select { background: #111827; color: #e5e7eb; border: 1px solid #1f2937; border-radius: 6px; padding: 6px 8px; }
       #stage { flex: 1; min-height: 0; }
       canvas { background: #0b0d12; width: 100%; height: 100%; display: block; image-rendering: pixelated; }
     </style>
   </head>
   <body>
     <div id="app">
-      <header>Demo 4 - GeoPro 3D Perspective on 2D Canvas</header>
+      <header>
+        <div class="spacer"></div>
+        <div>Demo 4 - GeoPro 3D Perspective on 2D Canvas</div>
+        <div class="spacer"></div>
+        <div class="controls">
+          <label for="modeSelect">Mode</label>
+          <select id="modeSelect">
+            <option value="wireframe" selected>Wireframe (backfaces darker)</option>
+            <option value="filled">Filled (front faces only)</option>
+          </select>
+        </div>
+      </header>
       <div id="stage">
         <canvas id="scene" width="960" height="600"></canvas>
       </div>

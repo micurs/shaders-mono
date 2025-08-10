@@ -11,6 +11,7 @@
     "build:demo2": "turbo run build --filter=demo-02",
     "build:demo3": "turbo run build --filter=demo-03",
     "dev:shared": "turbo run dev --filter=@shaders-mono/webgpu",
+    "dev:demo4": "concurrently --names \"shared,demo-04\" --prefix-colors \"blue,green\" \"pnpm dev:shared\" \"turbo run dev --filter=demo-04\"",
     "dev:demo3": "concurrently --names \"shared,demo-03\" --prefix-colors \"blue,green\" \"pnpm dev:shared\" \"turbo run dev --filter=demo-03\"",
     "dev:demo2": "concurrently --names \"shared,demo-02\" --prefix-colors \"blue,green\" \"pnpm dev:shared\" \"turbo run dev --filter=demo-02\"",
     "dev:demo1": "concurrently --names \"shared,demo-01\" --prefix-colors \"blue,green\" \"pnpm dev:shared\" \"turbo run dev --filter=demo-01\"",
