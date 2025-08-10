@@ -1,8 +1,8 @@
 import { vec3, vec4 } from "gl-matrix";
-import { Transform } from "./transform";
 import { Frame } from "./frame";
 import { VecEntries } from "./types";
 import { Point } from "./point";
+import { GeoMap } from './operations';
 
 
 export class Vector {
@@ -73,7 +73,7 @@ export class Vector {
     return `Vector(${this.x}, ${this.y}, ${this.z})`;
   }
 
-  map(t: Transform | Frame): Vector {
+  map(t: GeoMap): Vector {
     const p = new Vector();
     if (t.isFrame()) {
       vec4.transformMat4(p._coord, this._coord, t.inverseMatrix);
@@ -83,7 +83,7 @@ export class Vector {
     return p;
   }
 
-  unMap(t: Transform | Frame): Vector {
+  unMap(t: GeoMap): Vector {
     const p = new Vector();
     if (t.isFrame()) {
       vec4.transformMat4(p._coord, this._coord, t.directMatrix);
@@ -173,7 +173,7 @@ export class Vector {
     return [...this._coord.values()] as VecEntries;
   }
 
-  buffer(): ArrayBuffer {
+  buffer(): Float32Array {
     return new Float32Array(this.coordinates);
   }
 

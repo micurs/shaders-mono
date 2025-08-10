@@ -1,9 +1,9 @@
 import { vec3, vec4 } from "gl-matrix";
 import { Vector } from "./vector";
 import { VecEntries } from "./types";
-import { Transform } from "./transform";
 import { Frame } from "./frame";
 import { Point } from './point';
+import { GeoMap } from './operations';
 
 export class UnitVector {
   private _coord: vec4;
@@ -72,7 +72,7 @@ export class UnitVector {
     return `UnitVector(${this.x}, ${this.y}, ${this.z})`;
   }
 
-  map(t: Transform | Frame): UnitVector {
+  map(t: GeoMap): UnitVector {
     const p = new UnitVector();
     if (t.isFrame()) {
       vec4.transformMat4(p._coord, this._coord, t.inverseMatrix);
@@ -83,7 +83,7 @@ export class UnitVector {
     return p;
   }
 
-  unMap(t: Transform | Frame): UnitVector {
+  unMap(t: GeoMap): UnitVector {
     const p = new UnitVector();
     if (t.isFrame()) {
       vec4.transformMat4(p._coord, this._coord, t.directMatrix);
@@ -161,7 +161,7 @@ export class UnitVector {
     return v.crossProduct(v2 as Vector);
   }
 
-  buffer(): ArrayBuffer {
+  buffer(): Float32Array {
     return new Float32Array(this.coordinates);
   }
 

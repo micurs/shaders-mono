@@ -13,7 +13,7 @@
     }
   },
   "scripts": {
-    "dev": "vite build --watch",
+    "dev": "vite build --watch --mode development",
     "build": "tsc && rimraf dist && vite build",
     "preview": "vite preview",
     "test": "vitest run --coverage",

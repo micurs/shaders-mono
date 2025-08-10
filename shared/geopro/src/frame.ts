@@ -193,7 +193,7 @@ export class Frame {
    * The origin of this frame
    */
   get origin(): Point {
-    return Point.fromValues(this._inverse[12], this._inverse[13], this._inverse[14], this._inverse[15]);
+    return this.o;
   }
 
   relative<T extends { relative: (f: Frame) => T }>(x: T): T {

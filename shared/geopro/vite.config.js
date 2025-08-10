@@ -14,9 +14,15 @@ export default defineConfig({
     lib: {
       entry: entryRoot,
       name: 'index',
-      formats: ['es', 'umd'],
+      formats: ['es'],
       fileName: 'index',
     },
   },
-  plugins: [checker({ typescript: true }), dts({ rollupTypes: true })],
+  plugins: [
+    checker({ typescript: true }),
+    dts({
+      rollupTypes: false, // Disable rollup types to avoid path resolution issues
+      copyDtsFiles: true
+    })
+  ],
 });

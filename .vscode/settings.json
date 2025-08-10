@@ -13,6 +13,7 @@
     "unmap",
     "unorm",
     "webgpu",
+    "wgsl",
     "wireframe",
     "worldscale",
     "xygrid",

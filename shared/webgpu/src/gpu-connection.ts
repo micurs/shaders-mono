@@ -359,7 +359,7 @@ export class Gpu implements GPUConnection {
       .forEach((gpuPipeLine, idx) => {
         this.renderPipeline(gpuPipeLine, idx, renderPass, timeSpan);
       });
-      
+
     // Render opaque objects
     this.pipelines
       .filter(({ geoRenderable }) => geoRenderable.colors[0][3] === 1.0 && geoRenderable.fragmentShader !== 'fragmentEnvironmentShader')

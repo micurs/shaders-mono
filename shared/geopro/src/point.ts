@@ -147,7 +147,7 @@ export class Point {
     return [this.x, this.y, this.z];
   }
 
-  buffer(): ArrayBuffer {
+  buffer(): Float32Array {
     return new Float32Array(this.coordinates);
   }
 

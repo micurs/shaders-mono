@@ -1,0 +1,21 @@
+{
+  "name": "demo-04",
+  "private": true,
+  "version": "0.0.0",
+  "scripts": {
+    "dev": "vite",
+    "build": "rimraf dist && tsc && vite build",
+    "preview": "vite preview",
+    "pages:deploy": "cp -r dist/* ../../docs"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.2",
+    "vite": "^4.4.5"
+  },
+  "dependencies": {
+    "@shaders-mono/geopro": "workspace:*"
+  }
+}
+
+
+
